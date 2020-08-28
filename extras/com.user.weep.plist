@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE plist PUBLIC -//Apple Computer//DTD PLIST 1.0//EN http://www.apple.com/DTDs/PropertyList-1.0.dtd > 
+<plist version="1.0"> 
+<dict> 
+  <key>Label</key> 
+  <string>com.user.weep</string> 
+  <key>ProgramArguments</key> 
+  <array> 
+    <string>/bin/bash</string> 
+    <string>-c</string> 
+    <string>echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9090" | sudo pfctl -ef -</string> 
+  </array> 
+  <key>RunAtLoad</key> <true/> 
+  <key>Nice</key> 
+  <integer>10</integer> 
+  <key>KeepAlive</key> 
+  <false/> 
+  <key>AbandonProcessGroup</key> 
+  <true/> 
+  <key>StandardErrorPath</key> 
+  <string>/var/log/weep-pf.log</string> 
+  <key>StandardOutPath</key> 
+  <string>/var/log/weep-pf.log</string> 
+</dict> 
+</plist>
