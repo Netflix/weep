@@ -1,5 +1,4 @@
 # weep
-<<<<<<< HEAD
 
 Weep is a CLI utility for retreiving AWS credentials from ConsoleMe. Weep can run
 a local instance metadata service proxy, or export credentials as environmental
