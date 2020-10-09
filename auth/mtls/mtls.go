@@ -1,8 +1,9 @@
-package mtls
+package main
 
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"github.com/netflix/weep/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -14,7 +15,9 @@ func (c CertificateParseError) Error() string {
 	return "tls: failed to parse certificate from server: " + c.Cause.Error()
 }
 
-func NewHTTPClient() (*http.Client, error) {
+type clientMaker string
+
+func (cm clientMaker) NewHTTPClient(weepConfig *config.WeepConfig) (*http.Client, error) {
 	certFile := viper.GetString("mtls_settings.cert")
 	keyFile := viper.GetString("mtls_settings.key")
 	caFile := viper.GetString("mtls_settings.catrust")
@@ -69,3 +72,5 @@ func NewHTTPClient() (*http.Client, error) {
 
 	return client, err
 }
+
+var ClientMaker clientMaker

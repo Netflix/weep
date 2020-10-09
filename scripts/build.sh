@@ -16,6 +16,13 @@ BUILD_TAGS="${BUILD_TAGS:-"weep"}"
 GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_DIRTY="$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)"
 
+go build -ldflags "${LD_FLAGS}" \
+    -tags netgo \
+    -buildmode=plugin -o auth/mtls/mtls.so ./auth/mtls/
+go build -ldflags "${LD_FLAGS}" \
+    -tags netgo \
+    -buildmode=plugin -o auth/challenge/challenge.so ./auth/challenge/
+
 echo "=> Building..."
 go build \
     -ldflags "${LD_FLAGS} \
@@ -23,5 +30,15 @@ go build \
     -X github.com/netflix/weep/version.VersionPrerelease=${VERSION_PRERELEASE} \
     -X github.com/netflix/weep/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} \
     -X github.com/netflix/weep/version.BuildDate=${BUILD_DATE}" \
+    -tags netgo \
     -trimpath \
     -o ${BINARY}
+
+go build -ldflags "${LD_FLAGS}" \
+    -tags netgo \
+    -buildmode=plugin -o auth/mtls/mtls.so ./auth/mtls/
+
+go build -ldflags "${LD_FLAGS}" \
+    -tags netgo \
+    -buildmode=plugin -o auth/challenge/challenge.so ./auth/challenge/
+

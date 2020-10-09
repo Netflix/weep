@@ -1,10 +1,11 @@
-package challenge
+package main
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/netflix/weep/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -16,16 +17,23 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
-	"github.com/netflix/weep/consoleme"
 	"strings"
 	"time"
 )
 
-func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
+type clientMaker string
+var mainConfig *config.WeepConfig
+
+func (cm clientMaker) NewHTTPClient(weepConfig *config.WeepConfig) (*http.Client, error) {
+	mainConfig = weepConfig
+	err := RefreshChallenge()
+	if err != nil {
+		log.Fatal("Could not refresh challenge")
+	}
 	if !HasValidJwt() {
 		return nil, errors.New("Your authentication to ConsoleMe has expired. Please restart weep.")
 	}
-	var challenge consoleme.ConsolemeChallengeResponse
+	var challenge ConsolemeChallengeResponse
 	jar, err := cookiejar.New(&cookiejar.Options{})
 	if err != nil { return nil, err }
 	credentialsPath, err := getCredentialsPath()
@@ -43,6 +51,7 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 		Expires:  time.Unix(challenge.Expires, 0),
 	},
 	}
+	consolemeUrl := mainConfig.ConsoleMeUrl
 	consoleMeUrlParsed, err := url.Parse(consolemeUrl)
 	if err != nil { return nil, err }
 	jar.SetCookies(consoleMeUrlParsed, cookies)
@@ -53,6 +62,8 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 
 	return client, err
 }
+
+var ClientMaker clientMaker
 
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
@@ -70,8 +81,8 @@ func isWSL() bool {
 	return false
 }
 
-func poll(pollingUrl string) (*consoleme.ConsolemeChallengeResponse, error) {
-	var pollResponse consoleme.ConsolemeChallengeResponse
+func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
+	var pollResponse ConsolemeChallengeResponse
 	var pollResponseBody []byte
 	timeout := time.After(2 * time.Minute)
 	tick := time.Tick(3 * time.Second)
@@ -115,7 +126,7 @@ func getCredentialsPath() (string, error) {
 }
 
 func HasValidJwt() bool {
-	var challenge consoleme.ConsolemeChallengeResponse
+	var challenge ConsolemeChallengeResponse
 	credentialPath, err := getCredentialsPath()
 	if err != nil {
 		return false
@@ -150,10 +161,10 @@ func RefreshChallenge() error {
 	}
 	var consoleMeChallengeGeneratorEndpoint string = fmt.Sprintf(
 		"%s/noauth/v1/challenge_generator/%s",
-		viper.GetString("consoleme_url"),
-		viper.GetString("challenge_settings.user"),
+		mainConfig.ConsoleMeUrl,
+		mainConfig.ChallengeSettings.User,
 	)
-	var challenge consoleme.ConsolemeChallenge
+	var challenge ConsolemeChallenge
 	req, err := http.NewRequest("GET", consoleMeChallengeGeneratorEndpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}

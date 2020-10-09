@@ -37,28 +37,9 @@ type Client struct {
 	host  string
 }
 
-// NewClientWithMtls takes a ConsoleMe hostname and *http.Client, and returns a
+// NewClient takes a ConsoleMe hostname and *http.Client, and returns a
 // ConsoleMe client that will talk to that ConsoleMe instance for AWS Credentials.
-func NewClientWithMtls(hostname string, httpc HTTPClient) (*Client, error) {
-	if len(hostname) == 0 {
-		return nil, errors.New("hostname cannot be empty string")
-	}
-
-	if httpc == nil {
-		httpc = &http.Client{Transport: defaultTransport()}
-	}
-
-	c := &Client{
-		httpc: httpc,
-		host:  hostname,
-	}
-
-	return c, nil
-}
-
-// NewClientWithJwtAuth takes a ConsoleMe hostname and *http.Client, and returns a
-// ConsoleMe client that will talk to that ConsoleMe instance
-func NewClientWithJwtAuth(hostname string, httpc HTTPClient) (*Client, error) {
+func NewClient(hostname string, httpc HTTPClient) (*Client, error) {
 	if len(hostname) == 0 {
 		return nil, errors.New("hostname cannot be empty string")
 	}

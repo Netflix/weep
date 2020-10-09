@@ -8,22 +8,21 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"plugin"
 	"runtime"
-	"github.com/netflix/weep/challenge"
-	"github.com/netflix/weep/mtls"
 	"strings"
 	"syscall"
 
 	"github.com/gorilla/mux"
 	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/netflix/weep/config"
 	"github.com/netflix/weep/consoleme"
 	"github.com/netflix/weep/handlers"
 	"github.com/netflix/weep/metadata"
 	"github.com/netflix/weep/util"
 	"github.com/netflix/weep/version"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -35,6 +34,10 @@ var (
 
 	mtlsClient *http.Client
 )
+
+type ConsoleMeAuth interface {
+	NewHTTPClient(*config.WeepConfig) (*http.Client, error)
+}
 
 func main() {
 	versionPtr := flag.Bool("version", false, "Prints version")
@@ -122,23 +125,21 @@ func main() {
 	authenticationMethod := viper.GetString("authentication_method")
 
 	var client *consoleme.Client
+	var authedHttpClient *http.Client
 
-	if authenticationMethod == "mtls" {
-		mtlsClient, err := mtls.NewHTTPClient()
-		util.CheckError(err)
-		client, err = consoleme.NewClientWithMtls(consoleMeUrl, mtlsClient)
-		util.CheckError(err)
-	} else if authenticationMethod == "challenge" {
-		err = challenge.RefreshChallenge()
-		util.CheckError(err)
-		httpClient, err := challenge.NewHTTPClient(consoleMeUrl)
-		util.CheckError(err)
-		client, err = consoleme.NewClientWithJwtAuth(consoleMeUrl, httpClient)
-		util.CheckError(err)
-	} else {
-		log.Fatal("Authentication method unsupported or not provided.")
+	authMod := fmt.Sprintf("./auth/%s/%s.so", authenticationMethod, authenticationMethod)
+	authPlugin, err := plugin.Open(authMod)
+	util.CheckError(err)
+	NewHTTPClient, err := authPlugin.Lookup("ClientMaker")
+	util.CheckError(err)
+	clientMaker, ok := NewHTTPClient.(ConsoleMeAuth)
+	if !ok {
+		log.Fatal("something went so, so wrong")
 	}
-
+	authedHttpClient, err = clientMaker.NewHTTPClient(&config.Config)
+	util.CheckError(err)
+	client, err = consoleme.NewClient(consoleMeUrl, authedHttpClient)
+	util.CheckError(err)
 
 	if *listPtr {
 		roles, err := client.Roles()

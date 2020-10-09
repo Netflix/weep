@@ -19,7 +19,7 @@ type MtlsSettings struct {
 }
 
 type ChallengeSettings struct {
-	user string `yaml:"user"`
+	User string `yaml:"user"`
 }
 
 type WeepConfig struct {
