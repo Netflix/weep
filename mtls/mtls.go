@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 )
+
 type CertificateParseError struct{ Cause error }
 
 func (c CertificateParseError) Error() string {
@@ -15,10 +16,18 @@ func (c CertificateParseError) Error() string {
 }
 
 func NewHTTPClient() (*http.Client, error) {
-	certFile := viper.GetString("mtls_settings.cert")
-	keyFile := viper.GetString("mtls_settings.key")
-	caFile := viper.GetString("mtls_settings.catrust")
-	insecureSkipVerify := viper.GetBool("mtls_settings.insecure")
+	certFile, keyFile, caFile, insecureSkipVerify, err := GetEmbeddedConfig()
+	if err != nil && err == EmbeddedConfigDisabled {
+		log.Debug("Embedded MTLS config is disabled")
+	} else if err != nil {
+		return nil, err
+	}
+	if certFile == "" || keyFile == "" || caFile == "" {
+		certFile = viper.GetString("mtls_settings.cert")
+		keyFile = viper.GetString("mtls_settings.key")
+		caFile = viper.GetString("mtls_settings.catrust")
+		insecureSkipVerify = viper.GetBool("mtls_settings.insecure")
+	}
 	if certFile == "" || keyFile == "" || caFile == "" {
 		log.Fatal("MTLS cert, key, or CA file not defined in configuration")
 	}
@@ -32,8 +41,8 @@ func NewHTTPClient() (*http.Client, error) {
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: insecureSkipVerify,
-				RootCAs: caCertPool,
-				Certificates: []tls.Certificate{cert},
+				RootCAs:            caCertPool,
+				Certificates:       []tls.Certificate{cert},
 				VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 					// Based on the golang verification code. See https://golang.org/src/crypto/tls/handshake_client.go
 					certs := make([]*x509.Certificate, len(rawCerts))
