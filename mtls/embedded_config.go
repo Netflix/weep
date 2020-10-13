@@ -1,7 +1,7 @@
 package mtls
 
 import (
-	"fmt"
+	"crypto/tls"
 	"github.com/markbates/pkger"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -16,41 +16,43 @@ var (
 	EmbeddedConfigFile string
 )
 
-type Error string
-
-func (e Error) Error() string { return string(e) }
-
-const EmbeddedConfigDisabled = Error("embedded config is disabled")
-
-type MTLSConfig struct {
-	Enabled      bool     `yaml:"enabled"`
-	InsecureSkipVerify bool `yaml:"insecure"`
-	CertFilename string   `yaml:"cert_filename"`
-	KeyFilename  string   `yaml:"key_filename"`
-	CAFilename   string   `yaml:"ca_filename"`
-	Darwin       []string `yaml:"darwin"`
-	Linux        []string `yaml:"linux"`
-	Windows      []string `yaml:"windows"`
+type embeddedTLSConfig struct {
+	Enabled            bool     `yaml:"enabled"`
+	InsecureSkipVerify bool     `yaml:"insecure"`
+	CertFilename       string   `yaml:"cert_filename"`
+	KeyFilename        string   `yaml:"key_filename"`
+	CAFilename         string   `yaml:"ca_filename"`
+	Darwin             []string `yaml:"darwin"`
+	Linux              []string `yaml:"linux"`
+	Windows            []string `yaml:"windows"`
 }
 
-func GetEmbeddedConfig() (string, string, string, bool, error) {
+// GetEmbeddedTLSConfig attempts to read the embedded mTLS config and create a tls.Config
+func GetEmbeddedTLSConfig() (*tls.Config, error) {
 	if EmbeddedConfigFile == "" {
-		return "", "", "", false, EmbeddedConfigDisabled
+		return nil, EmbeddedConfigDisabledError
 	}
-	conf, err := ReadMTLSConfig()
+	conf, err := readEmbeddedTLSConfig()
 	if err != nil {
-		return "", "", "", false, err
+		return nil, err
 	}
 	dirs, err := getConfigDirs(conf)
-	cert, key, ca, insecure, err := getClientCertificatePath(dirs, conf)
 	if err != nil {
-		return "", "", "", false, err
+		return nil, err
 	}
-	return cert, key, ca, insecure, nil
+	cert, key, ca, insecure, err := getClientCertificatePaths(dirs, conf)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig, err := GetTLSConfig(cert, key, ca, insecure)
+	if err != nil {
+		return nil, err
+	}
+	return tlsConfig, nil
 }
 
-func ReadMTLSConfig() (*MTLSConfig, error) {
-	var conf MTLSConfig
+func readEmbeddedTLSConfig() (*embeddedTLSConfig, error) {
+	var conf embeddedTLSConfig
 	f, err := pkger.Open(EmbeddedConfigFile)
 	if err != nil {
 		log.Errorf("could not open mtls config file: %s", EmbeddedConfigFile)
@@ -75,8 +77,11 @@ func ReadMTLSConfig() (*MTLSConfig, error) {
 	return &conf, nil
 }
 
-func getConfigDirs(conf *MTLSConfig) ([]string, error) {
+// getConfigDirs returns a list of directories to search for mTLS certs based on platform
+func getConfigDirs(conf *embeddedTLSConfig) ([]string, error) {
 	var mtlsDirs []string
+
+	// Select config section based on platform
 	switch os := runtime.GOOS; os {
 	case "darwin":
 		mtlsDirs = conf.Darwin
@@ -85,24 +90,21 @@ func getConfigDirs(conf *MTLSConfig) ([]string, error) {
 	case "windows":
 		mtlsDirs = conf.Windows
 	default:
-		return nil, fmt.Errorf("running on unsupported OS %s", os)
+		return nil, UnsupportedOSError
 	}
-	log.Debugf("%v", mtlsDirs)
 
 	// Replace $HOME token with home dir
 	homeDir, err := getUserHome()
 	if err != nil {
-		return nil, fmt.Errorf("could not get user's home directory")
+		return nil, HomeDirectoryError
 	}
 	for i, path := range mtlsDirs {
-		log.Debug(path)
 		mtlsDirs[i] = strings.Replace(path, "$HOME", homeDir, -1)
 	}
-	log.Debugf("%v", mtlsDirs)
 	return mtlsDirs, nil
 }
 
-func getClientCertificatePath(configDirs []string, conf *MTLSConfig) (string, string, string, bool, error) {
+func getClientCertificatePaths(configDirs []string, conf *embeddedTLSConfig) (string, string, string, bool, error) {
 	for _, metatronDir := range configDirs {
 		certPath := filepath.Join(metatronDir, conf.CertFilename)
 		if exists, err := fileExists(certPath); err != nil {
@@ -127,7 +129,7 @@ func getClientCertificatePath(configDirs []string, conf *MTLSConfig) (string, st
 
 		return certPath, keyPath, caPath, conf.InsecureSkipVerify, nil
 	}
-	return "", "", "", false, fmt.Errorf("could not find client certificates")
+	return "", "", "", false, ClientCertificatesNotFoundError
 }
 
 func fileExists(path string) (bool, error) {
