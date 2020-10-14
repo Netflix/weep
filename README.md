@@ -8,26 +8,41 @@ variables for your AWS needs.
 ## Configuration
 
 Make a weep configuration file in one of the following locations:
-`./.weep.yaml`
-`~/.weep.yaml`
-`~/.config/weep/.weep.yaml`
-``
+
+- `./.weep.yaml`
+- `~/.weep.yaml`
+- `~/.config/weep/.weep.yaml`
+
+### Embedding mTLS configuration
+
+`weep` binaries can be shipped with an embedded mutual TLS (mTLS) configuration to 
+avoid making users set this configuration. An example of such a configuration is included
+in [mtls/mtls_paths.yaml](mtls/mtls_paths.yaml).
+
+To compile with an embedded config, set the `MTLS_CONFIG_FILE` environment variable at
+build time. The value of this variable MUST be the **absolute path** of the configuration
+file **relative to the root of the module**:
+
+```bash
+MTLS_CONFIG_FILE=/mtls/mtls_paths.yaml make build
+```
+
 ## Routing traffic
 
 ### Mac
 
-```
+```bash
 sudo ifconfig lo0 169.254.169.254 alias
 echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9090" | sudo pfctl -ef -
 ```
 
 #### Persisting Changes
-Plist files are located in ./extras/com.user.lo0-loopback.plist and ./extras/com.user.weep.plist
+Plist files are located in [extras/com.user.lo0-loopback.plist](extras/com.user.lo0-loopback.plist) and [extras/com.user.weep.plist](extras/com.user.weep.plist)
 
-To persist the settings above on a Mac, download the plists and place them in /Library/LaunchDaemons and
+To persist the settings above on a Mac, download the plists and place them in `/Library/LaunchDaemons` and
 reboot or issue the following commands:
 
-```
+```bash
 launchctl load /Library/LaunchDaemons/com.user.weep.plist
 launchctl load /Library/LaunchDaemons/com.user.lo0-loopback.plist
 ```
@@ -35,7 +50,7 @@ launchctl load /Library/LaunchDaemons/com.user.lo0-loopback.plist
 
 ### Linux
 
-```
+```bash
 # trap all output packets to metadata proxy and send them to localhost:9090
 iptables -t nat -A OUTPUT -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to 127.0.0.1:9090
 ```
