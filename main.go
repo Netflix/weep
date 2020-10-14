@@ -117,9 +117,9 @@ func main() {
 			log.Fatalf("unable to decode into struct, %v", err)
 		}
 	}
-	consoleMeUrl := viper.GetString("consoleme_url")
+	consoleMeUrl := config.Config.ConsoleMeUrl
 
-	authenticationMethod := viper.GetString("authentication_method")
+	authenticationMethod := config.Config.AuthenticationMethod
 
 	var client *consoleme.Client
 

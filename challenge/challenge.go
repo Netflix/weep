@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/netflix/weep/config"
+	"github.com/netflix/weep/consoleme"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -16,7 +17,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
-	"github.com/netflix/weep/consoleme"
 	"strings"
 	"time"
 )
@@ -142,7 +142,7 @@ func RefreshChallenge() error {
 		return nil
 	}
 	// Step 1: Make unauthed request to ConsoleMe challenge endpoint and get a challenge challenge
-	if viper.GetString("challenge_settings.user") == "" {
+	if config.Config.ChallengeSettings.User == "" {
 		log.Fatalf(
 			"Invalid configuration. You must define challenge_settings.user as the ",
 			"user you wish to authenticate as.",
@@ -150,8 +150,8 @@ func RefreshChallenge() error {
 	}
 	var consoleMeChallengeGeneratorEndpoint string = fmt.Sprintf(
 		"%s/noauth/v1/challenge_generator/%s",
-		viper.GetString("consoleme_url"),
-		viper.GetString("challenge_settings.user"),
+		config.Config.ConsoleMeUrl,
+		config.Config.ChallengeSettings.User,
 	)
 	var challenge consoleme.ConsolemeChallenge
 	req, err := http.NewRequest("GET", consoleMeChallengeGeneratorEndpoint, nil)

@@ -1,0 +1,21 @@
+# This is an example of an embedded mTLS configuration
+enabled: false
+insecure: false
+cert_filename: "user.crt"
+key_filename: "user.key"
+ca_filename: "mtlsClient.trust.pem"
+darwin:
+  - "/run/mtls/certificates"
+  - "/mtls/certificates"
+  - "$HOME/.mtls/certificates"
+  - "$HOME/.mtls"
+linux:
+  - "/run/mtls/certificates"
+  - "/mtls/certificates"
+  - "$HOME/.mtls/certificates"
+  - "$HOME/.mtls"
+windows:
+  - "C:\\run\\mtls\\certificates"
+  - "C:\\mtls\\certificates"
+  - "$HOME\\.mtls\\certificates"
+  - "$HOME\\.mtls"
