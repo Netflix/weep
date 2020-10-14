@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	EmbeddedConfigFile string
+	EmbeddedConfigFile string // To be set by ldflags at compile time
 )
 
 type embeddedTLSConfig struct {
@@ -35,6 +35,9 @@ func GetEmbeddedTLSConfig() (*tls.Config, error) {
 	conf, err := readEmbeddedTLSConfig()
 	if err != nil {
 		return nil, err
+	}
+	if !conf.Enabled {
+		return nil, EmbeddedConfigDisabledError
 	}
 	dirs, err := getConfigDirs(conf)
 	if err != nil {
@@ -142,4 +145,3 @@ func fileExists(path string) (bool, error) {
 	}
 	return true, nil
 }
-

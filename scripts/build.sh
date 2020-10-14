@@ -8,7 +8,7 @@ BINARY="${BINARY_NAME:-"weep"}"
 VERSION="${VERSION:-"unknown"}"
 VERSION_PRERELEASE="${VERSION_PRERELEASE:-""}"
 BUILD_DATE=$(date +%FT%T%z)
-MTLS_CONFIG_FILE="/mtls_paths.yaml"
+MTLS_CONFIG_FILE="${MTLS_CONFIG_FILE:-""}"
 
 # Set build tags
 BUILD_TAGS="${BUILD_TAGS:-"weep"}"

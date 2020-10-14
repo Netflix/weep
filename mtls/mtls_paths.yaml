@@ -1,5 +1,6 @@
-enabled: true
-insecure: true
+# This is an example of an embedded mTLS configuration
+enabled: false
+insecure: false
 cert_filename: "user.crt"
 key_filename: "user.key"
 ca_filename: "mtlsClient.trust.pem"
