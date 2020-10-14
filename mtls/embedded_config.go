@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"github.com/markbates/pkger"
 	"github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
@@ -58,24 +58,24 @@ func readEmbeddedTLSConfig() (*embeddedTLSConfig, error) {
 	var conf embeddedTLSConfig
 	f, err := pkger.Open(EmbeddedConfigFile)
 	if err != nil {
-		log.Errorf("could not open mtls config file: %s", EmbeddedConfigFile)
-		return nil, err
+		return &conf, errors.Wrap(err, "could not open embedded config")
 	}
 	defer f.Close()
+
+	// Stat embedded config file to get the size for the byte slice to read into
 	info, err := f.Stat()
 	if err != nil {
-		// TODO: handle error better
-		return nil, err
+		return &conf, errors.Wrap(err, "could not stat embedded config")
 	}
+
 	fileData := make([]byte, info.Size())
 	if _, err = f.Read(fileData); err != nil {
-		log.Fatal("could not read mtls config, read %d bytes")
+		return &conf, errors.Wrap(err, "could not read embedded config")
 	}
+
 	err = yaml.Unmarshal(fileData, &conf)
 	if err != nil {
-		// TODO: handle error better
-		log.Fatal("could not load mtls config")
-		return nil, err
+		return &conf, errors.Wrap(err, "could not load embedded config")
 	}
 	return &conf, nil
 }
@@ -85,7 +85,7 @@ func getConfigDirs(conf *embeddedTLSConfig) ([]string, error) {
 	var mtlsDirs []string
 
 	// Select config section based on platform
-	switch os := runtime.GOOS; os {
+	switch goos := runtime.GOOS; goos {
 	case "darwin":
 		mtlsDirs = conf.Darwin
 	case "linux":
