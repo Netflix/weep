@@ -5,27 +5,29 @@ var (
 )
 
 type MetaDataPath struct {
-	Path string `yaml:"path"`
-	Data string `yaml:"data"`
+	Path string `mapstructure:"path"`
+	Data string `mapstructure:"data"`
 }
 
 type MetaDataConfig struct {
-	Routes []MetaDataPath `yaml:"routes"`
+	Routes []MetaDataPath `mapstructure:"routes"`
 }
 
 type MtlsSettings struct {
-	Cert string `yaml:"cert"`
-	Key string `yaml:"key"`
+	Cert string `mapstructure:"cert"`
+	Key string `mapstructure:"key"`
+	CATrust string `mapstructure:"catrust"`
+	Insecure bool `mapstructure:"insecure"`
 }
 
 type ChallengeSettings struct {
-	user string `yaml:"user"`
+	User string `mapstructure:"user"`
 }
 
 type WeepConfig struct {
-	MetaData MetaDataConfig `yaml:"metadata"`
-	ConsoleMeUrl string `yaml:"consoleme_url"`
-	MtlsSettings MtlsSettings `yaml:"mtls_settings"`
-	ChallengeSettings ChallengeSettings `yaml:"challenge_settings"`
-	AuthenticationMethod string `yaml:"authentication_method"`
+	MetaData MetaDataConfig `mapstructure:"metadata"`
+	ConsoleMeUrl string `mapstructure:"consoleme_url"`
+	MtlsSettings MtlsSettings `mapstructure:"mtls_settings"`
+	ChallengeSettings ChallengeSettings `mapstructure:"challenge_settings"`
+	AuthenticationMethod string `mapstructure:"authentication_method"`
 }

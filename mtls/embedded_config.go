@@ -3,10 +3,10 @@ package mtls
 import (
 	"crypto/tls"
 	"github.com/markbates/pkger"
+	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"os"
-	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -94,7 +94,7 @@ func getConfigDirs(conf *embeddedTLSConfig) ([]string, error) {
 	}
 
 	// Replace $HOME token with home dir
-	homeDir, err := getUserHome()
+	homeDir, err := homedir.Dir()
 	if err != nil {
 		return nil, HomeDirectoryError
 	}
@@ -143,10 +143,3 @@ func fileExists(path string) (bool, error) {
 	return true, nil
 }
 
-func getUserHome() (string, error) {
-	currentUser, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	return currentUser.HomeDir, nil
-}

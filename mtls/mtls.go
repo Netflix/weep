@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/netflix/weep/config"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
 )
@@ -73,10 +73,10 @@ func NewHTTPClient() (*http.Client, error) {
 
 	if tlsConfig == nil {
 		// We don't have an embedded TLS config, so we'll make one from the app config
-		certFile := viper.GetString("mtls_settings.cert")
-		keyFile := viper.GetString("mtls_settings.key")
-		caFile := viper.GetString("mtls_settings.catrust")
-		insecureSkipVerify := viper.GetBool("mtls_settings.insecure")
+		certFile := config.Config.MtlsSettings.Cert
+		keyFile := config.Config.MtlsSettings.Key
+		caFile := config.Config.MtlsSettings.CATrust
+		insecureSkipVerify := config.Config.MtlsSettings.Insecure
 		tlsConfig, err = GetTLSConfig(certFile, keyFile, caFile, insecureSkipVerify)
 		if err != nil {
 			return nil, err
