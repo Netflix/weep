@@ -22,22 +22,20 @@ var (
 )
 
 func init() {
-	metadataCmd.PersistentFlags().StringVar(&metadataRole, "role", "", "name of role")
 	metadataCmd.PersistentFlags().StringVar(&metadataListenAddr, "listen_ip", "127.0.0.1", "IP address for metadata service to listen on")
 	metadataCmd.PersistentFlags().IntVar(&metadataListenPort, "port", 9090, "port for metadata service to listen on")
 	rootCmd.AddCommand(metadataCmd)
 }
 
 var metadataCmd = &cobra.Command{
-	Use:   "metadata",
+	Use:   "metadata [role_name]",
 	Short: "Run a local Instance Metadata Service (IMDS) endpoint that serves credentials",
+	Args: cobra.ExactArgs(1),
 	RunE:  runMetadata,
 }
 
 func runMetadata(cmd *cobra.Command, args []string) error {
-	if metadataRole == "" {
-
-	}
+	metadataRole = args[0]
 	metadata.Role = metadataRole
 	client, err := consoleme.GetClient()
 	if err != nil {

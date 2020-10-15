@@ -18,12 +18,14 @@ func init() {
 }
 
 var exportCmd = &cobra.Command{
-	Use:   "export",
+	Use:   "export [role_name]",
 	Short: "Retrieve credentials to be exported as environment variables",
+	Args: cobra.ExactArgs(1),
 	RunE:  runExport,
 }
 
 func runExport(cmd *cobra.Command, args []string) error {
+	exportRole = args[0]
 	client, err := consoleme.GetClient()
 	if err != nil {
 		return err
