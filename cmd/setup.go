@@ -15,3 +15,6 @@ var setupCmd = &cobra.Command{
 		PrintSetup()
 	},
 }
+
+var fishSetup = `set
+`

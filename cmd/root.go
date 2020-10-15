@@ -29,9 +29,9 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	cobra.OnInitialize(initLogging)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.weep.yaml)")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "log_format", "", "log format (json or tty)")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "log_level", "", "log level (debug, info, warn)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.weep.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "log-format", "", "log format (json or tty)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "log-level", "", "log level (debug, info, warn)")
 
 }
 

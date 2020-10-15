@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/netflix/weep/consoleme"
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 )
 
 var (
@@ -12,8 +14,7 @@ var (
 )
 
 func init() {
-	exportCmd.PersistentFlags().StringVar(&exportRole, "role", "", "name of role")
-	exportCmd.PersistentFlags().BoolVar(&exportNoIPRestrict, "no-ip", false, "remove IP restrictions")
+	exportCmd.PersistentFlags().BoolVarP(&exportNoIPRestrict, "no-ip", "n", false, "remove IP restrictions")
 	rootCmd.AddCommand(exportCmd)
 }
 
@@ -34,7 +35,28 @@ func runExport(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("export AWS_ACCESS_KEY_ID=%s && export AWS_SECRET_ACCESS_KEY=%s && export AWS_SESSION_TOKEN=%s\n",
-		creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken)
+	printExport(creds)
 	return nil
+}
+
+// isFish will try its best to identify if we're running in fish shell
+func isFish() bool {
+	shellVar := os.Getenv("SHELL")
+
+	if strings.Contains(shellVar, "fish") {
+		return true
+	} else {
+		return false
+	}
+}
+
+func printExport(creds consoleme.AwsCredentials) {
+	if isFish() {
+		// fish has a different way of setting variables than bash/zsh and others
+		fmt.Printf("set -x AWS_ACCESS_KEY_ID %s && set -x AWS_SECRET_ACCESS_KEY %s && set -x AWS_SESSION_TOKEN %s\n",
+			creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken)
+	} else {
+		fmt.Printf("export AWS_ACCESS_KEY_ID=%s && export AWS_SECRET_ACCESS_KEY=%s && export AWS_SESSION_TOKEN=%s\n",
+			creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken)
+	}
 }

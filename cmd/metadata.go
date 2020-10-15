@@ -17,13 +17,15 @@ import (
 
 var (
 	metadataRole       string
+	metadataRegion     string
 	metadataListenAddr string
 	metadataListenPort int
 )
 
 func init() {
-	metadataCmd.PersistentFlags().StringVar(&metadataListenAddr, "listen_ip", "127.0.0.1", "IP address for metadata service to listen on")
-	metadataCmd.PersistentFlags().IntVar(&metadataListenPort, "port", 9090, "port for metadata service to listen on")
+	metadataCmd.PersistentFlags().StringVarP(&metadataRegion, "region", "r", "us-east-1", "region of metadata service")
+	metadataCmd.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for metadata service to listen on")
+	metadataCmd.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9090, "port for metadata service to listen on")
 	rootCmd.AddCommand(metadataCmd)
 }
 
@@ -37,6 +39,7 @@ var metadataCmd = &cobra.Command{
 func runMetadata(cmd *cobra.Command, args []string) error {
 	metadataRole = args[0]
 	metadata.Role = metadataRole
+	metadata.MetadataRegion = metadataRegion
 	client, err := consoleme.GetClient()
 	if err != nil {
 		return err
@@ -48,7 +51,7 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	listener_addr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)
+	listenAddr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/{version}/", handlers.MetaDataServiceMiddleware(handlers.BaseVersionHandler))
@@ -65,8 +68,8 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 
 	go func() {
 		log.Info("Starting weep meta-data service...")
-		log.Info("Server started on: ", listener_addr)
-		log.Info(http.ListenAndServe(listener_addr, router))
+		log.Info("Server started on: ", listenAddr)
+		log.Info(http.ListenAndServe(listenAddr, router))
 	}()
 
 	// Check for interrupt signal and exit cleanly
