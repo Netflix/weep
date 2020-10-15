@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/netflix/weep/config"
-	"github.com/netflix/weep/consoleme"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -25,7 +24,7 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 	if !HasValidJwt() {
 		return nil, errors.New("Your authentication to ConsoleMe has expired. Please restart weep.")
 	}
-	var challenge consoleme.ConsolemeChallengeResponse
+	var challenge ConsolemeChallengeResponse
 	jar, err := cookiejar.New(&cookiejar.Options{})
 	if err != nil { return nil, err }
 	credentialsPath, err := getCredentialsPath()
@@ -70,8 +69,8 @@ func isWSL() bool {
 	return false
 }
 
-func poll(pollingUrl string) (*consoleme.ConsolemeChallengeResponse, error) {
-	var pollResponse consoleme.ConsolemeChallengeResponse
+func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
+	var pollResponse ConsolemeChallengeResponse
 	var pollResponseBody []byte
 	timeout := time.After(2 * time.Minute)
 	tick := time.Tick(3 * time.Second)
@@ -115,7 +114,7 @@ func getCredentialsPath() (string, error) {
 }
 
 func HasValidJwt() bool {
-	var challenge consoleme.ConsolemeChallengeResponse
+	var challenge ConsolemeChallengeResponse
 	credentialPath, err := getCredentialsPath()
 	if err != nil {
 		return false
@@ -153,7 +152,7 @@ func RefreshChallenge() error {
 		config.Config.ConsoleMeUrl,
 		config.Config.ChallengeSettings.User,
 	)
-	var challenge consoleme.ConsolemeChallenge
+	var challenge ConsolemeChallenge
 	req, err := http.NewRequest("GET", consoleMeChallengeGeneratorEndpoint, nil)
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
