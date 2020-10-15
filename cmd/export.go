@@ -20,7 +20,7 @@ func init() {
 var exportCmd = &cobra.Command{
 	Use:   "export [role_name]",
 	Short: "Retrieve credentials to be exported as environment variables",
-	Args: cobra.ExactArgs(1),
+	Args:  cobra.ExactArgs(1),
 	RunE:  runExport,
 }
 
