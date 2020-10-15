@@ -25,7 +25,7 @@ func init() {
 	metadataCmd.PersistentFlags().StringVar(&metadataRole, "role", "", "name of role")
 	metadataCmd.PersistentFlags().StringVar(&metadataListenAddr, "listen_ip", "127.0.0.1", "IP address for metadata service to listen on")
 	metadataCmd.PersistentFlags().IntVar(&metadataListenPort, "port", 9090, "port for metadata service to listen on")
-	rootCmd.AddCommand(exportCmd)
+	rootCmd.AddCommand(metadataCmd)
 }
 
 var metadataCmd = &cobra.Command{
