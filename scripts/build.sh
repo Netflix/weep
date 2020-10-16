@@ -8,7 +8,7 @@ BINARY="${BINARY_NAME:-"weep"}"
 VERSION="${VERSION:-"unknown"}"
 VERSION_PRERELEASE="${VERSION_PRERELEASE:-""}"
 BUILD_DATE=$(date +%FT%T%z)
-MTLS_CONFIG_FILE="${MTLS_CONFIG_FILE:-""}"
+EMBEDDED_CONFIG_FILE="${EMBEDDED_CONFIG_FILE:-""}"
 
 # Set build tags
 BUILD_TAGS="${BUILD_TAGS:-"weep"}"
@@ -20,15 +20,15 @@ GIT_DIRTY="$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)"
 rm pkger.go 2&> /dev/null || true
 
 echo "=> Building..."
-if [[ ! -z $MTLS_CONFIG_FILE ]]; then
-  echo "Bundling mTLS config"
-  pkger -include "${MTLS_CONFIG_FILE}"
+if [ ! -z "$EMBEDDED_CONFIG_FILE" ]; then
+  echo "Bundling config"
+  pkger -include "${EMBEDDED_CONFIG_FILE}"
 else
-  echo "Not bundling mTLS config"
+  echo "Not bundling config"
 fi
 go build \
     -ldflags "${LD_FLAGS} \
-    -X github.com/netflix/weep/mtls.EmbeddedConfigFile=${MTLS_CONFIG_FILE} \
+    -X github.com/netflix/weep/config.EmbeddedConfigFile=${EMBEDDED_CONFIG_FILE} \
     -X github.com/netflix/weep/version.Version=${VERSION} \
     -X github.com/netflix/weep/version.VersionPrerelease=${VERSION_PRERELEASE} \
     -X github.com/netflix/weep/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} \

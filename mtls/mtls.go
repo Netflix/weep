@@ -7,12 +7,34 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"path/filepath"
+	"runtime"
+	"strings"
+
+	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/config"
+	"github.com/netflix/weep/util"
 	log "github.com/sirupsen/logrus"
 )
 
 // GetTLSConfig makes and returns a pointer to a tls.Config
-func GetTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config, error) {
+func GetTLSConfig(mtlsConfig *config.MtlsSettings) (*tls.Config, error) {
+	dirs, err := getTLSDirs(mtlsConfig)
+	if err != nil {
+		return nil, err
+	}
+	certFile, keyFile, caFile, insecure, err := getClientCertificatePaths(dirs, mtlsConfig)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig, err := makeTLSConfig(certFile, keyFile, caFile, insecure)
+	if err != nil {
+		return nil, err
+	}
+	return tlsConfig, nil
+}
+
+func makeTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config, error) {
 	if certFile == "" || keyFile == "" || caFile == "" {
 		log.Error("MTLS cert, key, or CA file not defined in configuration")
 		return nil, MissingTLSConfigError
@@ -64,24 +86,10 @@ func GetTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config,
 }
 
 func NewHTTPClient() (*http.Client, error) {
-	// Attempt to get a TLS config from the embedded configuration
-	tlsConfig, err := GetEmbeddedTLSConfig()
-	if err != nil && err == EmbeddedConfigDisabledError {
-		log.Debug("Embedded MTLS config is disabled")
-	} else if err != nil {
+	mtlsConfig := &config.Config.MtlsSettings
+	tlsConfig, err := GetTLSConfig(mtlsConfig)
+	if err != nil {
 		return nil, err
-	}
-
-	if tlsConfig == nil {
-		// We don't have an embedded TLS config, so we'll make one from the app config
-		certFile := config.Config.MtlsSettings.Cert
-		keyFile := config.Config.MtlsSettings.Key
-		caFile := config.Config.MtlsSettings.CATrust
-		insecureSkipVerify := config.Config.MtlsSettings.Insecure
-		tlsConfig, err = GetTLSConfig(certFile, keyFile, caFile, insecureSkipVerify)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	client := &http.Client{
@@ -91,4 +99,63 @@ func NewHTTPClient() (*http.Client, error) {
 	}
 
 	return client, nil
+}
+
+// getTLSDirs returns a list of directories to search for mTLS certs based on platform
+func getTLSDirs(conf *config.MtlsSettings) ([]string, error) {
+	var mtlsDirs []string
+
+	// Select config section based on platform
+	switch goos := runtime.GOOS; goos {
+	case "darwin":
+		mtlsDirs = conf.Darwin
+	case "linux":
+		mtlsDirs = conf.Linux
+	case "windows":
+		mtlsDirs = conf.Windows
+	default:
+		return nil, UnsupportedOSError
+	}
+
+	// Replace $HOME token with home dir
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		return nil, HomeDirectoryError
+	}
+	for i, path := range mtlsDirs {
+		mtlsDirs[i] = strings.Replace(path, "$HOME", homeDir, -1)
+	}
+	return mtlsDirs, nil
+}
+
+func getClientCertificatePaths(configDirs []string, mtlsConfig *config.MtlsSettings) (string, string, string, bool, error) {
+	// If cert, key, and catrust are paths that exist, we'll just use those
+	if util.FileExists(mtlsConfig.Cert) && util.FileExists(mtlsConfig.Key) && util.FileExists(mtlsConfig.CATrust) {
+		return mtlsConfig.Cert, mtlsConfig.Key, mtlsConfig.CATrust, mtlsConfig.Insecure, nil
+	}
+
+	// Otherwise, get a platform-specific list of directories and look for the files there
+	configDirs, err := getTLSDirs(mtlsConfig)
+	if err != nil {
+		return "", "", "", false, err
+	}
+	for _, metatronDir := range configDirs {
+		certPath := filepath.Join(metatronDir, mtlsConfig.Cert)
+		if !util.FileExists(certPath) {
+			continue
+		}
+
+		keyPath := filepath.Join(metatronDir, mtlsConfig.Key)
+		if !util.FileExists(keyPath) {
+			continue
+		}
+
+		caPath := filepath.Join(metatronDir, mtlsConfig.CATrust)
+		if !util.FileExists(caPath) {
+			continue
+		}
+
+		return certPath, keyPath, caPath, mtlsConfig.Insecure, nil
+	}
+	return "", "", "", false, config.ClientCertificatesNotFoundError
 }
