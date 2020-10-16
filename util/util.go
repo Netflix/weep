@@ -3,6 +3,7 @@ package util
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,6 @@ type AwsArn struct {
 	Resource          string
 	ResourceDelimiter string
 }
-
 
 func validate(arn string, pieces []string) error {
 	if len(pieces) < 6 {
@@ -67,4 +67,9 @@ func CheckError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

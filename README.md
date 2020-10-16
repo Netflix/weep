@@ -89,6 +89,23 @@ eval $(weep export fullOrPartialRoleName)
 
 Then run `aws sts get-caller-identity` to confirm that your credentials work properly.
 
+### Credentials file
+
+Write retrieved credentials to an AWS credentials file (`~/.aws/credentials` by default with the profile name `consoleme`).
+
+```bash
+weep file exampleRole
+
+# you can also specify a profile name
+weep file stagingRole --profile staging
+weep file prodRole --profile prod
+
+# or you can save it to a different place
+weep file exampleRole -o /tmp/credentials
+```
+
+Weep will do its best to preserve existing credentials in the file (but it will overwrite a conflicting profile name, so be careful!).
+
 ## Building
 
 In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires
