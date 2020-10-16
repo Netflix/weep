@@ -14,10 +14,10 @@ type MetaDataConfig struct {
 }
 
 type MtlsSettings struct {
-	Cert string `mapstructure:"cert"`
-	Key string `mapstructure:"key"`
-	CATrust string `mapstructure:"catrust"`
-	Insecure bool `mapstructure:"insecure"`
+	Cert     string `mapstructure:"cert"`
+	Key      string `mapstructure:"key"`
+	CATrust  string `mapstructure:"catrust"`
+	Insecure bool   `mapstructure:"insecure"`
 }
 
 type ChallengeSettings struct {
@@ -25,9 +25,9 @@ type ChallengeSettings struct {
 }
 
 type WeepConfig struct {
-	MetaData MetaDataConfig `mapstructure:"metadata"`
-	ConsoleMeUrl string `mapstructure:"consoleme_url"`
-	MtlsSettings MtlsSettings `mapstructure:"mtls_settings"`
-	ChallengeSettings ChallengeSettings `mapstructure:"challenge_settings"`
-	AuthenticationMethod string `mapstructure:"authentication_method"`
+	MetaData             MetaDataConfig    `mapstructure:"metadata"`
+	ConsoleMeUrl         string            `mapstructure:"consoleme_url"`
+	MtlsSettings         MtlsSettings      `mapstructure:"mtls_settings"`
+	ChallengeSettings    ChallengeSettings `mapstructure:"challenge_settings"`
+	AuthenticationMethod string            `mapstructure:"authentication_method"`
 }
