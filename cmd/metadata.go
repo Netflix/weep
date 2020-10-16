@@ -2,17 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/consoleme"
 	"github.com/netflix/weep/handlers"
 	"github.com/netflix/weep/metadata"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func init() {

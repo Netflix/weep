@@ -3,10 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/netflix/weep/consoleme"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 func init() {

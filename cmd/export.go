@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/netflix/weep/consoleme"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
+
+	"github.com/netflix/weep/consoleme"
+	"github.com/spf13/cobra"
 )
 
 func init() {

@@ -2,13 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
+
+	ini "gopkg.in/ini.v1"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/consoleme"
 	"github.com/netflix/weep/util"
 	"github.com/spf13/cobra"
-	"gopkg.in/ini.v1"
-	"os"
-	"path"
 )
 
 func init() {

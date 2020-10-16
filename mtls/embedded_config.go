@@ -2,14 +2,15 @@ package mtls
 
 import (
 	"crypto/tls"
-	"github.com/markbates/pkger"
-	"github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/markbates/pkger"
+	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 var (
