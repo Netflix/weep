@@ -14,10 +14,6 @@ import (
 )
 
 var (
-	cfgFile   string
-	logLevel  string
-	logFormat string
-
 	rootCmd = &cobra.Command{
 		Use:   "weep",
 		Short: "weep helps you get the most out of ConsoleMe credentials",

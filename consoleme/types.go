@@ -7,6 +7,14 @@ type AwsCredentials struct {
 	Expiration      int64  `json:"Expiration"`
 }
 
+type CredentialProcess struct {
+	Version         int    `json:"Version"`
+	AccessKeyId     string `json:"AccessKeyId"`
+	SecretAccessKey string `json:"SecretAccessKey"`
+	SessionToken    string `json:"SessionToken"`
+	Expiration      string `json:"Expiration"`
+}
+
 type ConsolemeCredentialResponseType struct {
 	Credentials AwsCredentials `json:"Credentials"`
 }
@@ -23,5 +31,3 @@ type ConsolemeCredentialErrorMessageType struct {
 	Exception     string `json:"exception"`
 	RequestID     string `json:"request_id"`
 }
-
-

@@ -1,14 +1,16 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/netflix/weep/consoleme"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"time"
 )
 
 func init() {
-	CredentialProcessCmd.PersistentFlags().BoolVarP(&exportNoIPRestrict, "no-ip", "n", false, "remove IP restrictions")
+	CredentialProcessCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	rootCmd.AddCommand(CredentialProcessCmd)
 }
 
@@ -20,12 +22,12 @@ var CredentialProcessCmd = &cobra.Command{
 }
 
 func runCredentialProcess(cmd *cobra.Command, args []string) error {
-	exportRole = args[0]
+	role = args[0]
 	client, err := consoleme.GetClient()
 	if err != nil {
 		return err
 	}
-	creds, err := client.GetRoleCredentials(exportRole, exportNoIPRestrict)
+	creds, err := client.GetRoleCredentials(role, noIpRestrict)
 	if err != nil {
 		return err
 	}
@@ -33,10 +35,20 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-
 func printCredentialProcess(creds consoleme.AwsCredentials) {
 	expirationTimeFormat := time.Unix(creds.Expiration, 0).Format(time.RFC3339)
 
-	fmt.Printf("{\n  \"Version\": 1,\n  \"AccessKeyId\": \"%s\",\n  \"SecretAccessKey\": \"%s\",\n  \"SessionToken\": \"%s\", \n  \"Expiration\": \"%s\"\n}",
-		creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken, expirationTimeFormat)
+	credentialProcessOutput := &consoleme.CredentialProcess{
+		Version:         1,
+		AccessKeyId:     creds.AccessKeyId,
+		SecretAccessKey: creds.SecretAccessKey,
+		SessionToken:    creds.SessionToken,
+		Expiration:      expirationTimeFormat,
+	}
+
+	b, err := json.Marshal(credentialProcessOutput)
+	if err != nil {
+		log.Error(err)
+	}
+	fmt.Printf(string(b))
 }

@@ -15,13 +15,6 @@ import (
 	"syscall"
 )
 
-var (
-	metadataRole       string
-	metadataRegion     string
-	metadataListenAddr string
-	metadataListenPort int
-)
-
 func init() {
 	metadataCmd.PersistentFlags().StringVarP(&metadataRegion, "region", "r", "us-east-1", "region of metadata service")
 	metadataCmd.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for metadata service to listen on")
@@ -37,8 +30,8 @@ var metadataCmd = &cobra.Command{
 }
 
 func runMetadata(cmd *cobra.Command, args []string) error {
-	metadataRole = args[0]
-	metadata.Role = metadataRole
+	role = args[0]
+	metadata.Role = role
 	metadata.MetadataRegion = metadataRegion
 	client, err := consoleme.GetClient()
 	if err != nil {
