@@ -1,6 +1,6 @@
 GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 BINARY_NAME=weep
-VERSION=0.1.0
+VERSION=0.1.1
 REGISTRY=$(REGISTRY)
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
