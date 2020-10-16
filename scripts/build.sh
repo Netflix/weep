@@ -17,8 +17,15 @@ BUILD_TAGS="${BUILD_TAGS:-"weep"}"
 GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_DIRTY="$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)"
 
+rm pkger.go 2&> /dev/null || true
+
 echo "=> Building..."
-pkger -include "${MTLS_CONFIG_FILE}"
+if [[ ! -z $MTLS_CONFIG_FILE ]]; then
+  echo "Bundling mTLS config"
+  pkger -include "${MTLS_CONFIG_FILE}"
+else
+  echo "Not bundling mTLS config"
+fi
 go build \
     -ldflags "${LD_FLAGS} \
     -X github.com/netflix/weep/mtls.EmbeddedConfigFile=${MTLS_CONFIG_FILE} \

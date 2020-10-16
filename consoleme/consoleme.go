@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/netflix/weep/challenge"
+	"github.com/netflix/weep/config"
+	"github.com/netflix/weep/mtls"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
@@ -35,6 +38,41 @@ type HTTPClient interface {
 type Client struct {
 	httpc HTTPClient
 	host  string
+}
+
+// GetClient creates an authenticated ConsoleMe client
+func GetClient() (*Client, error) {
+	var client *Client
+	consoleMeUrl := config.Config.ConsoleMeUrl
+	authenticationMethod := config.Config.AuthenticationMethod
+
+	if authenticationMethod == "mtls" {
+		mtlsClient, err := mtls.NewHTTPClient()
+		if err != nil {
+			return client, err
+		}
+		client, err = NewClientWithMtls(consoleMeUrl, mtlsClient)
+		if err != nil {
+			return client, err
+		}
+	} else if authenticationMethod == "challenge" {
+		err := challenge.RefreshChallenge()
+		if err != nil {
+			return client, err
+		}
+		httpClient, err := challenge.NewHTTPClient(consoleMeUrl)
+		if err != nil {
+			return client, err
+		}
+		client, err = NewClientWithJwtAuth(consoleMeUrl, httpClient)
+		if err != nil {
+			return client, err
+		}
+	} else {
+		log.Fatal("Authentication method unsupported or not provided.")
+	}
+
+	return client, nil
 }
 
 // NewClientWithMtls takes a ConsoleMe hostname and *http.Client, and returns a

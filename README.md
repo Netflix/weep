@@ -13,18 +13,10 @@ Make a weep configuration file in one of the following locations:
 - `~/.weep.yaml`
 - `~/.config/weep/.weep.yaml`
 
-### Embedding mTLS configuration
+You can also specify a config file as a CLI arg:
 
-`weep` binaries can be shipped with an embedded mutual TLS (mTLS) configuration to 
-avoid making users set this configuration. An example of such a configuration is included
-in [mtls/mtls_paths.yaml](mtls/mtls_paths.yaml).
-
-To compile with an embedded config, set the `MTLS_CONFIG_FILE` environment variable at
-build time. The value of this variable MUST be the **absolute path** of the configuration
-file **relative to the root of the module**:
-
-```bash
-MTLS_CONFIG_FILE=/mtls/mtls_paths.yaml make build
+```
+weep --config somethingdifferent.yaml list
 ```
 
 ## Routing traffic
@@ -73,28 +65,59 @@ Enable the rules by running the following:
 sudo /sbin/iptables-restore < <path_to_file>.txt
 
 ## Usage
+
 ### Metadata Proxy
-```$ weep --meta-data --role arn:aws:iam::123456789012:role/exampleInstanceProfile
-INFO[0000] Starting weep meta-data service...
-INFO[0000] Server started on: 127.0.0.1:9090
+
+```bash
+# You can use a full ARN
+weep metadata arn:aws:iam::123456789012:role/exampleRole
+
+# ...or just the role name
+weep metadata exampleRole
 ```
+
 run `aws sts get-caller-identity` to confirm that your DNAT rules are correctly configured.
 
 ### Credential export
-```$ eval $(weep -export -role arn:aws:iam::123456789012:role/fullOrPartialRoleName)```
 
-run `aws sts get-caller-identity` to confirm that your credentials work properly.
+```bash
+eval $(weep export arn:aws:iam::123456789012:role/fullOrPartialRoleName)
 
-## Docker
+# this one also works with just the role name!
+eval $(weep export fullOrPartialRoleName)
+```
 
-### Building and Running
+Then run `aws sts get-caller-identity` to confirm that your credentials work properly.
+
+## Building
+
+In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires
+[`upx`](https://upx.github.io/)) will build and compress the binary for distribution.
+
+### Embedding mTLS configuration
+
+`weep` binaries can be shipped with an embedded mutual TLS (mTLS) configuration to 
+avoid making users set this configuration. An example of such a configuration is included
+in [mtls/mtls_paths.yaml](mtls/mtls_paths.yaml).
+
+To compile with an embedded config, set the `MTLS_CONFIG_FILE` environment variable at
+build time. The value of this variable MUST be the **absolute path** of the configuration
+file **relative to the root of the module**:
+
+```bash
+MTLS_CONFIG_FILE=/mtls/mtls_paths.yaml make
+```
+
+### Docker
+
+#### Building and Running
 
 ```
 make build-docker
 docker run -v ~</optional/path/to/your/mtls/certs>:</optional/path/to/your/mtls/certs> --rm weep --meta-data --role <roleArn>
 ```
 
-### Publishing a Docker image
+#### Publishing a Docker image
 
 To publish a Docker image, you can invoke `make docker`, which runs `make build-docker` and `make publish-docker`. When run from any branch other than `master`, the image is tagged with the version number and branch name. On the `master` branch the image is tagged with only the version number.
 
