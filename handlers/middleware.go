@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/netflix/weep/metadata"
+	log "github.com/sirupsen/logrus"
 )
 
 func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
