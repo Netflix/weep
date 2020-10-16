@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/netflix/weep/config"
+	"github.com/netflix/weep/util"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -26,13 +27,21 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 	}
 	var challenge ConsolemeChallengeResponse
 	jar, err := cookiejar.New(&cookiejar.Options{})
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	credentialsPath, err := getCredentialsPath()
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	challengeBody, err := ioutil.ReadFile(credentialsPath)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	err = json.Unmarshal(challengeBody, &challenge)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	cookies := []*http.Cookie{{
 		Name:     challenge.CookieName,
 		Value:    challenge.EncodedJwt,
@@ -43,9 +52,13 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 	},
 	}
 	consoleMeUrlParsed, err := url.Parse(consolemeUrl)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	jar.SetCookies(consoleMeUrlParsed, cookies)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	client := &http.Client{
 		Jar: jar,
 	}
@@ -53,13 +66,8 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 	return client, err
 }
 
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
 func isWSL() bool {
-	if fileExists("/proc/sys/kernel/osrelease") {
+	if util.FileExists("/proc/sys/kernel/osrelease") {
 		if osrelease, err := ioutil.ReadFile("/proc/sys/kernel/osrelease"); err == nil {
 			if strings.Contains(strings.ToLower(string(osrelease)), "microsoft") {
 				return true
@@ -75,7 +83,9 @@ func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
 	timeout := time.After(2 * time.Minute)
 	tick := time.Tick(3 * time.Second)
 	req, err := http.NewRequest("GET", pollingUrl, nil)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	// Keep trying until we're timed out or got a result or got an error
@@ -85,12 +95,16 @@ func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
 			return nil, errors.New("*** Unable to validate Challenge Response after 2 minutes. Quitting. ***")
 		case <-tick:
 			resp, err := client.Do(req)
-			if err != nil { return nil, err }
+			if err != nil {
+				return nil, err
+			}
 			defer resp.Body.Close()
 			if resp.Body != nil {
 				pollResponseBody, err = ioutil.ReadAll(resp.Body)
 				err := json.Unmarshal(pollResponseBody, &pollResponse)
-				if err != nil { return nil, err }
+				if err != nil {
+					return nil, err
+				}
 				if pollResponse.Status == "success" {
 					return &pollResponse, nil
 				}
@@ -101,7 +115,9 @@ func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
 
 func getCredentialsPath() (string, error) {
 	currentUser, err := user.Current()
-	if err != nil { return "", err }
+	if err != nil {
+		return "", err
+	}
 	weepDir := filepath.Join(currentUser.HomeDir, ".weep")
 	// Setup the directories where we will be writing credentials
 	if _, err := os.Stat(weepDir); os.IsNotExist(err) {
@@ -157,10 +173,14 @@ func RefreshChallenge() error {
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 	tokenResponseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	if err := json.Unmarshal(tokenResponseBody, &challenge); err != nil {
 		return err
@@ -205,14 +225,22 @@ func RefreshChallenge() error {
 
 	// Step 3: Continue polling backend to see if request has been authenticated yet. Poll every 3 seconds for 2 minutes
 	pollResponse, err := poll(challenge.PollingUrl)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	jsonPollResponse, err := json.Marshal(pollResponse)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	credentialsPath, err := getCredentialsPath()
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	err = ioutil.WriteFile(credentialsPath, jsonPollResponse, 0600)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	return nil
 }
