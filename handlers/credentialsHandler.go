@@ -16,7 +16,9 @@ import (
 func RoleHandler(w http.ResponseWriter, r *http.Request) {
 
 	arn, _ := util.ArnParse(metadata.Role)
-	if arn != nil {fmt.Fprint(w, arn.Resource)}
+	if arn != nil {
+		fmt.Fprint(w, arn.Resource)
+	}
 }
 
 func CredentialsHandler(w http.ResponseWriter, r *http.Request) {

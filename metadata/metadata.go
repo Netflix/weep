@@ -2,15 +2,16 @@ package metadata
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
-	log "github.com/sirupsen/logrus"
 	"github.com/netflix/weep/util"
-	"strings"
-	"time"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/netflix/weep/consoleme"
 )

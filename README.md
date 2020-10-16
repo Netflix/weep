@@ -106,6 +106,27 @@ weep file exampleRole -o /tmp/credentials
 
 Weep will do its best to preserve existing credentials in the file (but it will overwrite a conflicting profile name, so be careful!).
 
+### Credentials Process
+The AWS CLI can source credentials from weep using the `credential_process` configuration which can be defined for a
+profile in the `~/.aws/config` file. Read more about this process [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sourcing-external.html).
+
+Here's an example of an `~/.aws/config` file:
+
+```bash
+[profile role1]
+credential_process = /path/to/weep credential_process role1
+
+[profile role2]
+credential_process = /path/to/weep credential_process role2
+```
+
+To use the credential process, you would invoke the AWS CLI with the `AWS_PROFILE` environment variable set  to the
+profile you wanted to use. Example:
+
+```bash
+AWS_PROFILE=role1 aws s3 ls
+```
+
 ## Building
 
 In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires

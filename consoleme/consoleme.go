@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/netflix/weep/challenge"
-	"github.com/netflix/weep/config"
-	"github.com/netflix/weep/mtls"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net"
@@ -16,6 +12,11 @@ import (
 	"runtime"
 	"syscall"
 	"time"
+
+	"github.com/netflix/weep/challenge"
+	"github.com/netflix/weep/config"
+	"github.com/netflix/weep/mtls"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 

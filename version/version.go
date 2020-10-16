@@ -3,6 +3,7 @@ package version
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/netflix/weep/mtls"
 )
 

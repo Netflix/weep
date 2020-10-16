@@ -2,24 +2,18 @@ package cmd
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/consoleme"
 	"github.com/netflix/weep/handlers"
 	"github.com/netflix/weep/metadata"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-)
-
-var (
-	metadataRole       string
-	metadataRegion     string
-	metadataListenAddr string
-	metadataListenPort int
 )
 
 func init() {
@@ -37,8 +31,8 @@ var metadataCmd = &cobra.Command{
 }
 
 func runMetadata(cmd *cobra.Command, args []string) error {
-	metadataRole = args[0]
-	metadata.Role = metadataRole
+	role = args[0]
+	metadata.Role = role
 	metadata.MetadataRegion = metadataRegion
 	client, err := consoleme.GetClient()
 	if err != nil {

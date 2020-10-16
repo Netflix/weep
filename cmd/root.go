@@ -2,22 +2,19 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"runtime"
+	"strings"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
-	"path"
-	"runtime"
-	"strings"
 )
 
 var (
-	cfgFile   string
-	logLevel  string
-	logFormat string
-
 	rootCmd = &cobra.Command{
 		Use:   "weep",
 		Short: "weep helps you get the most out of ConsoleMe credentials",

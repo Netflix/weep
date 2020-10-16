@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/netflix/weep/config"
-	"github.com/netflix/weep/util"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -19,6 +15,11 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/netflix/weep/config"
+	"github.com/netflix/weep/util"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
@@ -159,8 +160,7 @@ func RefreshChallenge() error {
 	// Step 1: Make unauthed request to ConsoleMe challenge endpoint and get a challenge challenge
 	if config.Config.ChallengeSettings.User == "" {
 		log.Fatalf(
-			"Invalid configuration. You must define challenge_settings.user as the ",
-			"user you wish to authenticate as.",
+			"Invalid configuration. You must define challenge_settings.user as the user you wish to authenticate as.",
 		)
 	}
 	var consoleMeChallengeGeneratorEndpoint string = fmt.Sprintf(

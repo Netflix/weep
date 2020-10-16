@@ -2,19 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/netflix/weep/consoleme"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
-)
 
-var (
-	exportRole         string
-	exportNoIPRestrict bool
+	"github.com/netflix/weep/consoleme"
+	"github.com/spf13/cobra"
 )
 
 func init() {
-	exportCmd.PersistentFlags().BoolVarP(&exportNoIPRestrict, "no-ip", "n", false, "remove IP restrictions")
+	exportCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	rootCmd.AddCommand(exportCmd)
 }
 
@@ -26,12 +22,12 @@ var exportCmd = &cobra.Command{
 }
 
 func runExport(cmd *cobra.Command, args []string) error {
-	exportRole = args[0]
+	role = args[0]
 	client, err := consoleme.GetClient()
 	if err != nil {
 		return err
 	}
-	creds, err := client.GetRoleCredentials(exportRole, exportNoIPRestrict)
+	creds, err := client.GetRoleCredentials(role, noIpRestrict)
 	if err != nil {
 		return err
 	}

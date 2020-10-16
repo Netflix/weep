@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/netflix/weep/cmd"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 func init() {

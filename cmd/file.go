@@ -2,26 +2,21 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
+
+	ini "gopkg.in/ini.v1"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/consoleme"
 	"github.com/netflix/weep/util"
 	"github.com/spf13/cobra"
-	"gopkg.in/ini.v1"
-	"os"
-	"path"
-)
-
-var (
-	fileDestination  string
-	fileNoIPRestrict bool
-	fileProfileName  string
-	fileRole         string
 )
 
 func init() {
-	fileCmd.PersistentFlags().BoolVarP(&fileNoIPRestrict, "no-ip", "n", false, "remove IP restrictions")
-	fileCmd.PersistentFlags().StringVarP(&fileDestination, "output", "o", getDefaultCredentialsFile(), "output file for credentials")
-	fileCmd.PersistentFlags().StringVarP(&fileProfileName, "profile", "p", "consoleme", "profile name")
+	fileCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
+	fileCmd.PersistentFlags().StringVarP(&destination, "output", "o", getDefaultCredentialsFile(), "output file for credentials")
+	fileCmd.PersistentFlags().StringVarP(&profileName, "profile", "p", "consoleme", "profile name")
 	rootCmd.AddCommand(fileCmd)
 }
 
@@ -33,12 +28,12 @@ var fileCmd = &cobra.Command{
 }
 
 func runFile(cmd *cobra.Command, args []string) error {
-	fileRole = args[0]
+	role = args[0]
 	client, err := consoleme.GetClient()
 	if err != nil {
 		return err
 	}
-	credentials, err := client.GetRoleCredentials(fileRole, fileNoIPRestrict)
+	credentials, err := client.GetRoleCredentials(role, noIpRestrict)
 	if err != nil {
 		return err
 	}
@@ -66,8 +61,8 @@ func writeCredentialsFile(credentials consoleme.AwsCredentials) error {
 	ini.PrettyFormat = false
 	ini.PrettyEqual = true
 
-	if util.FileExists(fileDestination) {
-		credentialsINI, err = ini.Load(fileDestination)
+	if util.FileExists(destination) {
+		credentialsINI, err = ini.Load(destination)
 		if err != nil {
 			return err
 		}
@@ -75,10 +70,10 @@ func writeCredentialsFile(credentials consoleme.AwsCredentials) error {
 		credentialsINI = ini.Empty()
 	}
 
-	credentialsINI.Section(fileProfileName).Key("aws_access_key_id").SetValue(credentials.AccessKeyId)
-	credentialsINI.Section(fileProfileName).Key("aws_secret_access_key").SetValue(credentials.SecretAccessKey)
-	credentialsINI.Section(fileProfileName).Key("aws_session_token").SetValue(credentials.SessionToken)
-	err = credentialsINI.SaveTo(fileDestination)
+	credentialsINI.Section(profileName).Key("aws_access_key_id").SetValue(credentials.AccessKeyId)
+	credentialsINI.Section(profileName).Key("aws_secret_access_key").SetValue(credentials.SecretAccessKey)
+	credentialsINI.Section(profileName).Key("aws_session_token").SetValue(credentials.SessionToken)
+	err = credentialsINI.SaveTo(destination)
 	if err != nil {
 		return err
 	}

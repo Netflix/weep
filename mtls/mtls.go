@@ -4,10 +4,11 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/netflix/weep/config"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/netflix/weep/config"
+	log "github.com/sirupsen/logrus"
 )
 
 // GetTLSConfig makes and returns a pointer to a tls.Config
