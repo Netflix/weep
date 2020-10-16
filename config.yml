@@ -1,5 +1,5 @@
 consoleme_url: https://path_to_consoleme:port
-authentication_method: challenge|mtls
+authentication_method: mtls # challenge or mtls
 mtls_settings:
   cert: mtls.crt
   key: mtls.key
