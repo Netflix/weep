@@ -56,13 +56,21 @@ func initConfig() {
 		viper.AddConfigPath(home + "/.config/weep/")
 	}
 
-	err := viper.ReadInConfig()
-	if err == nil {
-		log.Debug("Found config")
-		err = viper.Unmarshal(&config.Config)
-		if err != nil {
-			log.Fatalf("unable to decode into struct, %v", err)
+	if err := config.ReadEmbeddedConfig(); err != nil {
+		log.Errorf("unable to read embedded config: %v; falling back to config file", err)
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {
+			log.Debug("no config file found, trying to use embedded config")
+		} else {
+			log.Fatalf("unable to read config file: %v", err)
 		}
+	}
+
+	log.Debug("Found config")
+	if err := viper.Unmarshal(&config.Config); err != nil {
+		log.Fatalf("unable to decode config into struct: %v", err)
 	}
 }
 

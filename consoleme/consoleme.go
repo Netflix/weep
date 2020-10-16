@@ -13,8 +13,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/netflix/weep/challenge"
-	"github.com/netflix/weep/config"
 	"github.com/netflix/weep/mtls"
 	log "github.com/sirupsen/logrus"
 
@@ -44,8 +45,8 @@ type Client struct {
 // GetClient creates an authenticated ConsoleMe client
 func GetClient() (*Client, error) {
 	var client *Client
-	consoleMeUrl := config.Config.ConsoleMeUrl
-	authenticationMethod := config.Config.AuthenticationMethod
+	consoleMeUrl := viper.GetString("consoleme_url")
+	authenticationMethod := viper.GetString("authentication_method")
 
 	if authenticationMethod == "mtls" {
 		mtlsClient, err := mtls.NewHTTPClient()

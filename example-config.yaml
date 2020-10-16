@@ -1,0 +1,29 @@
+consoleme_url: https://path_to_consoleme:port
+authentication_method: mtls # challenge or mtls
+mtls_settings:
+  cert: mtls.crt
+  key: mtls.key
+  cafile: mtlsCA.pem
+  insecure: false
+  darwin: # weep will look in platform-specific directories for the three files specified above
+    - "/run/mtls/certificates"
+    - "/mtls/certificates"
+    - "$HOME/.mtls/certificates"
+    - "$HOME/.mtls"
+  linux:
+    - "/run/mtls/certificates"
+    - "/mtls/certificates"
+    - "$HOME/.mtls/certificates"
+    - "$HOME/.mtls"
+  windows:
+    - "C:\\run\\mtls\\certificates"
+    - "C:\\mtls\\certificates"
+    - "$HOME\\.mtls\\certificates"
+    - "$HOME\\.mtls"
+metadata:
+  routes:
+    - path: latest/user-data
+    - path: latest/meta-data/local-ipv4
+      data: "127.0.0.1"
+    - path: latest/meta-data/local-hostname
+      data: ip-127-0-0-1.us-west-2.compute.internal

@@ -132,19 +132,20 @@ AWS_PROFILE=role1 aws s3 ls
 In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires
 [`upx`](https://upx.github.io/)) will build and compress the binary for distribution.
 
-### Embedding mTLS configuration
+### Embedded configuration
 
-`weep` binaries can be shipped with an embedded mutual TLS (mTLS) configuration to 
-avoid making users set this configuration. An example of such a configuration is included
-in [mtls/mtls_paths.yaml](mtls/mtls_paths.yaml).
+`weep` binaries can be shipped with an embedded configuration to allow shipping an "all-in-one" binary.
+An example of such a configuration is included in [example-config.yaml](example-config.yaml).
 
-To compile with an embedded config, set the `MTLS_CONFIG_FILE` environment variable at
+To compile with an embedded config, set the `EMBEDDED_CONFIG_FILE` environment variable at
 build time. The value of this variable MUST be the **absolute path** of the configuration
 file **relative to the root of the module**:
 
 ```bash
-MTLS_CONFIG_FILE=/mtls/mtls_paths.yaml make
+EMBEDDED_CONFIG_FILE=/example-config.yaml make
 ```
+
+Note that the embedded configuration can be overridden by a configuration file in the locations listed above.
 
 ### Docker
 

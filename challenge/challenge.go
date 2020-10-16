@@ -16,8 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/golang/glog"
-	"github.com/netflix/weep/config"
 	"github.com/netflix/weep/util"
 	log "github.com/sirupsen/logrus"
 )
@@ -57,9 +58,6 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 		return nil, err
 	}
 	jar.SetCookies(consoleMeUrlParsed, cookies)
-	if err != nil {
-		return nil, err
-	}
 	client := &http.Client{
 		Jar: jar,
 	}
@@ -79,8 +77,6 @@ func isWSL() bool {
 }
 
 func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
-	var pollResponse ConsolemeChallengeResponse
-	var pollResponseBody []byte
 	timeout := time.After(2 * time.Minute)
 	tick := time.Tick(3 * time.Second)
 	req, err := http.NewRequest("GET", pollingUrl, nil)
@@ -95,23 +91,28 @@ func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
 		case <-timeout:
 			return nil, errors.New("*** Unable to validate Challenge Response after 2 minutes. Quitting. ***")
 		case <-tick:
-			resp, err := client.Do(req)
+			pollResponse, err := pollRequest(client, req)
 			if err != nil {
 				return nil, err
 			}
-			defer resp.Body.Close()
-			if resp.Body != nil {
-				pollResponseBody, err = ioutil.ReadAll(resp.Body)
-				err := json.Unmarshal(pollResponseBody, &pollResponse)
-				if err != nil {
-					return nil, err
-				}
-				if pollResponse.Status == "success" {
-					return &pollResponse, nil
-				}
+			if pollResponse.Status == "success" {
+				return pollResponse, nil
 			}
 		}
 	}
+}
+
+func pollRequest(c *http.Client, r *http.Request) (*ConsolemeChallengeResponse, error) {
+	var pollResponse ConsolemeChallengeResponse
+	var pollResponseBody []byte
+	resp, err := c.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	pollResponseBody, err = ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(pollResponseBody, &pollResponse)
+	return &pollResponse, err
 }
 
 func getCredentialsPath() (string, error) {
@@ -158,18 +159,21 @@ func RefreshChallenge() error {
 		return nil
 	}
 	// Step 1: Make unauthed request to ConsoleMe challenge endpoint and get a challenge challenge
-	if config.Config.ChallengeSettings.User == "" {
+	if viper.GetString("challenge_settings.user") == "" {
 		log.Fatalf(
 			"Invalid configuration. You must define challenge_settings.user as the user you wish to authenticate as.",
 		)
 	}
-	var consoleMeChallengeGeneratorEndpoint string = fmt.Sprintf(
+	var consoleMeChallengeGeneratorEndpoint = fmt.Sprintf(
 		"%s/noauth/v1/challenge_generator/%s",
-		config.Config.ConsoleMeUrl,
-		config.Config.ChallengeSettings.User,
+		viper.GetString("consoleme_url"),
+		viper.GetString("challenge_settings.user"),
 	)
 	var challenge ConsolemeChallenge
 	req, err := http.NewRequest("GET", consoleMeChallengeGeneratorEndpoint, nil)
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)

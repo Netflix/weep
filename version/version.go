@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/netflix/weep/mtls"
+	"github.com/netflix/weep/config"
 )
 
 var (
@@ -62,8 +62,8 @@ func (c *VersionInfo) String() string {
 
 	fmt.Fprintf(&versionString, " Built on: %s", BuildDate)
 
-	if mtls.EmbeddedConfigFile != "" {
-		fmt.Fprintf(&versionString, " with embedded mTLS config %s", mtls.EmbeddedConfigFile)
+	if config.EmbeddedConfigFile != "" {
+		fmt.Fprintf(&versionString, " with embedded mTLS config %s", config.EmbeddedConfigFile)
 	}
 
 	return versionString.String()

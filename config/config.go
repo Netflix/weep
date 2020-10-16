@@ -14,10 +14,13 @@ type MetaDataConfig struct {
 }
 
 type MtlsSettings struct {
-	Cert     string `mapstructure:"cert"`
-	Key      string `mapstructure:"key"`
-	CATrust  string `mapstructure:"catrust"`
-	Insecure bool   `mapstructure:"insecure"`
+	Cert     string   `mapstructure:"cert"`
+	Key      string   `mapstructure:"key"`
+	CATrust  string   `mapstructure:"catrust"`
+	Insecure bool     `mapstructure:"insecure"`
+	Darwin   []string `mapstructure:"darwin"`
+	Linux    []string `mapstructure:"linux"`
+	Windows  []string `mapstructure:"windows"`
 }
 
 type ChallengeSettings struct {
