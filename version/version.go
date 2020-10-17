@@ -37,7 +37,7 @@ func (c *VersionInfo) String() string {
 	if Version == "" {
 		fmt.Fprintf(&versionString, "weep (version unknown)")
 	}
-	fmt.Fprintf(&versionString, "weep v%s", c.Version)
+	fmt.Fprintf(&versionString, "weep %s", c.Version)
 
 	if c.Revision != "" {
 		fmt.Fprintf(&versionString, " (%s)", c.Revision)
