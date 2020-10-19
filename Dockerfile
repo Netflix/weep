@@ -1,5 +1,5 @@
 FROM scratch
 ENV USER=docker
 EXPOSE 9090
-COPY weep-docker /weep
+COPY weep /
 ENTRYPOINT ["/weep"]

@@ -31,10 +31,7 @@ build-docker: weep-docker
 	docker build -t weep .
 	docker tag weep:latest $(REGISTRY)/infrasec/weep:$(DOCKER_TAG)
 
-publish-docker:
-	docker push $(REGISTRY)/infrasec/weep:$(DOCKER_TAG)
-
-docker: build-docker publish-docker
+docker: build-docker
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"

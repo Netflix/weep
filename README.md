@@ -156,8 +156,17 @@ make build-docker
 docker run -v ~</optional/path/to/your/mtls/certs>:</optional/path/to/your/mtls/certs> --rm weep --meta-data --role <roleArn>
 ```
 
-#### Publishing a Docker image
+### Releasing
 
-To publish a Docker image, you can invoke `make docker`, which runs `make build-docker` and `make publish-docker`. When run from any branch other than `master`, the image is tagged with the version number and branch name. On the `master` branch the image is tagged with only the version number.
+Weep uses [goreleaser](https://goreleaser.com/) in Github Actions for releases. Check their
+[install docs](https://goreleaser.com/install/) if you would like to experiment with the release process locally.
 
-> To update the version number, change the `VERSION` variable in `Makefile`.
+To create a new release, create and push a tag containing the [semantic version](https://semver.org/):
+
+```bash
+git tag -am "v1.2.3" v1.2.3
+git push origin v1.2.3
+```
+
+Goreleaser will create a draft release on the [Releases page](https://github.com/Netflix/weep/releases). If everything
+looks good, press Publish and the release will be made public.
