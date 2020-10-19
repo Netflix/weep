@@ -24,7 +24,7 @@ import (
 	"github.com/netflix/weep/version"
 )
 
-var clientVersion = fmt.Sprintf("%s-%s", version.Version, version.VersionPrerelease)
+var clientVersion = fmt.Sprintf("%s", version.Version)
 
 var userAgent = "weep/" + clientVersion + " Go-http-client/1.1"
 

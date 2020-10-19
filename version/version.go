@@ -8,59 +8,42 @@ import (
 )
 
 var (
-	GitCommit         string
-	GitDescribe       string
-	BuildDate         string
-	Version           string
-	VersionPrerelease string
+	Commit  string
+	Date    string
+	Version string
 )
 
 // VersionInfo contains information about the program's version.
 type VersionInfo struct {
-	Revision          string
-	Version           string
-	VersionPrerelease string
-	BuildDate         string
+	Revision  string
+	Version   string
+	BuildDate string
 }
 
 // GetVersion returns the program's version information via a VersionInfo pointer.
 func GetVersion() *VersionInfo {
 	ver := Version
-	rel := VersionPrerelease
-
-	if GitDescribe != "" {
-		ver = GitDescribe
-	}
-	if GitDescribe == "" && rel == "" && VersionPrerelease != "" {
-		rel = "dev"
-	}
 
 	return &VersionInfo{
-		Revision:          GitCommit,
-		Version:           ver,
-		VersionPrerelease: rel,
-		BuildDate:         BuildDate,
+		Revision:  Commit,
+		Version:   ver,
+		BuildDate: Date,
 	}
 }
 
 func (c *VersionInfo) String() string {
 	var versionString bytes.Buffer
 
-	if Version == "" && VersionPrerelease == "" {
+	if Version == "" {
 		fmt.Fprintf(&versionString, "weep (version unknown)")
 	}
-	fmt.Fprintf(&versionString, "weep v%s", c.Version)
-
-	if c.VersionPrerelease != "" {
-		fmt.Fprintf(&versionString, "-%s", c.VersionPrerelease)
-
-	}
+	fmt.Fprintf(&versionString, "weep %s", c.Version)
 
 	if c.Revision != "" {
 		fmt.Fprintf(&versionString, " (%s)", c.Revision)
 	}
 
-	fmt.Fprintf(&versionString, " Built on: %s", BuildDate)
+	fmt.Fprintf(&versionString, " Built on: %s", Date)
 
 	if config.EmbeddedConfigFile != "" {
 		fmt.Fprintf(&versionString, " with embedded mTLS config %s", config.EmbeddedConfigFile)
