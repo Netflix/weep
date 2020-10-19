@@ -161,3 +161,8 @@ docker run -v ~</optional/path/to/your/mtls/certs>:</optional/path/to/your/mtls/
 To publish a Docker image, you can invoke `make docker`, which runs `make build-docker` and `make publish-docker`. When run from any branch other than `master`, the image is tagged with the version number and branch name. On the `master` branch the image is tagged with only the version number.
 
 > To update the version number, change the `VERSION` variable in `Makefile`.
+
+### Releasing
+
+Weep uses [goreleaser](https://goreleaser.com/) in Github Actions for releases. Check their
+[install docs](https://goreleaser.com/install/) if you would like to experiment with the release process locally.
