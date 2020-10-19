@@ -34,7 +34,6 @@ changelog:
       - '^docs:'
       - '^test:'
 release:
-  draft: true
   prerelease: auto
 dockers:
   - goos: linux
@@ -42,10 +41,6 @@ dockers:
     binaries:
       - weep
     image_templates:
-      - "netflix/{{.ProjectName}}:latest"
-      - "netflix/{{.ProjectName}}:{{ .Tag }}"
-      - "netflix/{{.ProjectName}}:v{{ .Major }}"
-      - "netflix/{{.ProjectName}}:v{{ .Major }}.{{ .Minor }}"
       - "docker.pkg.github.com/netflix/{{.ProjectName}}/{{.ProjectName}}:latest"
       - "docker.pkg.github.com/netflix/{{.ProjectName}}/{{.ProjectName}}:{{ .Tag }}"
       - "docker.pkg.github.com/netflix/{{.ProjectName}}/{{.ProjectName}}:v{{ .Major }}"

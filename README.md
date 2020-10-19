@@ -168,5 +168,4 @@ git tag -am "v1.2.3" v1.2.3
 git push origin v1.2.3
 ```
 
-Goreleaser will create a draft release on the [Releases page](https://github.com/Netflix/weep/releases). If everything
-looks good, press Publish and the release will be made public.
+Goreleaser will automatically create a release on the [Releases page](https://github.com/Netflix/weep/releases).
