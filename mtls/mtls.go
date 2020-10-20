@@ -4,9 +4,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/spf13/viper"
 
 	"path/filepath"
 	"runtime"
@@ -129,11 +130,7 @@ func getClientCertificatePaths(configDirs []string) (string, string, string, boo
 		return cert, key, caFile, insecure, nil
 	}
 
-	// Otherwise, get a platform-specific list of directories and look for the files there
-	configDirs, err := getTLSDirs()
-	if err != nil {
-		return "", "", "", false, err
-	}
+	// Otherwise, look for the files in the list of dirs from the config
 	for _, metatronDir := range configDirs {
 		certPath := filepath.Join(metatronDir, cert)
 		if !util.FileExists(certPath) {
