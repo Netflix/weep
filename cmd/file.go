@@ -53,6 +53,15 @@ func getDefaultCredentialsFile() string {
 	return path.Join(home, ".aws", "credentials")
 }
 
+func getDefaultAwsConfigFile() string {
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Printf("couldn't get default directory!")
+		os.Exit(1)
+	}
+	return path.Join(home, ".aws", "config")
+}
+
 func writeCredentialsFile(credentials consoleme.AwsCredentials) error {
 	var credentialsINI *ini.File
 	var err error
