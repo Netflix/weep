@@ -4,6 +4,7 @@ var (
 	role               string
 	profileName        string
 	destination        string
+	destinationConfig  string
 	noIpRestrict       bool
 	metadataRegion     string
 	metadataListenAddr string
