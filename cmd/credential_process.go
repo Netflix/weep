@@ -72,7 +72,10 @@ func runGenerateCredentialProcessConfig(cmd *cobra.Command, args []string) error
 	if err != nil {
 		return err
 	}
-	writeConfigFile(roles)
+	err = writeConfigFile(roles)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
