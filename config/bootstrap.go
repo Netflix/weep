@@ -3,12 +3,13 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"path"
+
 	"github.com/manifoldco/promptui"
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/util"
 	"github.com/spf13/viper"
-	"net/url"
-	"path"
 )
 
 // FirstRunPrompt gets user input to bootstrap a bare-minimum configuration.
@@ -54,7 +55,11 @@ func FirstRunPrompt() error {
 		}
 		viper.Set("mtls_settings.insecure", insecure)
 	} else if authMethod == "challenge" {
-
+		challengeUser, err := promptString("ConsoleMe username")
+		if err != nil {
+			return err
+		}
+		viper.Set("challenge_settings.user", challengeUser)
 	}
 
 	home, err := homedir.Dir()
@@ -63,6 +68,9 @@ func FirstRunPrompt() error {
 	}
 	defaultConfig := path.Join(home, ".weep.yaml")
 	saveLocation, err := promptFilePathNoValidate("Config destination", defaultConfig)
+	if err != nil {
+		return err
+	}
 	err = viper.SafeWriteConfigAs(saveLocation)
 	if err != nil {
 		return err
@@ -159,4 +167,18 @@ func promptBool(label string) (bool, error) {
 	}
 
 	return index == 0, nil
+}
+
+func promptString(label string) (string, error) {
+	prompt := promptui.Prompt{
+		Label: label,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
