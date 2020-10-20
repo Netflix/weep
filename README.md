@@ -7,7 +7,10 @@ variables for your AWS needs.
 
 ## Configuration
 
-Make a weep configuration file in one of the following locations:
+Weep gets its configuration from a YAML-formatted file. We've included an example config file in 
+[example-config.yaml](example-config.yaml).
+
+Weep searches for a configuration file in the following locations:
 
 - `./.weep.yaml`
 - `~/.weep.yaml`
@@ -29,12 +32,18 @@ echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.
 ```
 
 #### Persisting Changes
-Plist files are located in [extras/com.user.lo0-loopback.plist](extras/com.user.lo0-loopback.plist) and [extras/com.user.weep.plist](extras/com.user.weep.plist)
 
-To persist the settings above on a Mac, download the plists and place them in `/Library/LaunchDaemons` and
-reboot or issue the following commands:
+You can look at the recommended plist files in [extras/com.user.lo0-loopback.plist](extras/com.user.lo0-loopback.plist) and [extras/com.user.weep.plist](extras/com.user.weep.plist)
+
+To persist the settings above on a Mac, download the plists, place them in `/Library/LaunchDaemons`, and load them
+using `launchctl`:
+
+> **Note:** Make sure you know what you're doing here -- these commands change system behavior.
 
 ```bash
+curl https://raw.githubusercontent.com/Netflix/weep/master/extras/com.user.weep.plist -o com.user.weep.plist
+curl https://raw.githubusercontent.com/Netflix/weep/master/extras/com.user.lo0-loopback.plist -o com.user.lo0-loopback.plist
+sudo mv com.user.weep.plist com.user.lo0-loopback.plist /Library/LaunchDaemons/
 launchctl load /Library/LaunchDaemons/com.user.weep.plist
 launchctl load /Library/LaunchDaemons/com.user.lo0-loopback.plist
 ```
