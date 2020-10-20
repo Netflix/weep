@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/spf13/viper"
+
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -19,11 +21,11 @@ import (
 
 // GetTLSConfig makes and returns a pointer to a tls.Config
 func GetTLSConfig(mtlsConfig *config.MtlsSettings) (*tls.Config, error) {
-	dirs, err := getTLSDirs(mtlsConfig)
+	dirs, err := getTLSDirs()
 	if err != nil {
 		return nil, err
 	}
-	certFile, keyFile, caFile, insecure, err := getClientCertificatePaths(dirs, mtlsConfig)
+	certFile, keyFile, caFile, insecure, err := getClientCertificatePaths(dirs)
 	if err != nil {
 		return nil, err
 	}
@@ -102,20 +104,10 @@ func NewHTTPClient() (*http.Client, error) {
 }
 
 // getTLSDirs returns a list of directories to search for mTLS certs based on platform
-func getTLSDirs(conf *config.MtlsSettings) ([]string, error) {
-	var mtlsDirs []string
-
+func getTLSDirs() ([]string, error) {
 	// Select config section based on platform
-	switch goos := runtime.GOOS; goos {
-	case "darwin":
-		mtlsDirs = conf.Darwin
-	case "linux":
-		mtlsDirs = conf.Linux
-	case "windows":
-		mtlsDirs = conf.Windows
-	default:
-		return nil, UnsupportedOSError
-	}
+	mtlsDirKey := fmt.Sprintf("mtls_settings.%s", runtime.GOOS)
+	mtlsDirs := viper.GetStringSlice(mtlsDirKey)
 
 	// Replace $HOME token with home dir
 	homeDir, err := homedir.Dir()
@@ -128,34 +120,34 @@ func getTLSDirs(conf *config.MtlsSettings) ([]string, error) {
 	return mtlsDirs, nil
 }
 
-func getClientCertificatePaths(configDirs []string, mtlsConfig *config.MtlsSettings) (string, string, string, bool, error) {
+func getClientCertificatePaths(configDirs []string) (string, string, string, bool, error) {
 	// If cert, key, and catrust are paths that exist, we'll just use those
-	if util.FileExists(mtlsConfig.Cert) && util.FileExists(mtlsConfig.Key) && util.FileExists(mtlsConfig.CATrust) {
-		return mtlsConfig.Cert, mtlsConfig.Key, mtlsConfig.CATrust, mtlsConfig.Insecure, nil
+	cert := viper.GetString("mtls_settings.cert")
+	key := viper.GetString("mtls_settings.key")
+	caFile := viper.GetString("mtls_settings.cafile")
+	insecure := viper.GetBool("mtls_settings.insecure")
+	if util.FileExists(cert) && util.FileExists(key) && util.FileExists(caFile) {
+		return cert, key, caFile, insecure, nil
 	}
 
-	// Otherwise, get a platform-specific list of directories and look for the files there
-	configDirs, err := getTLSDirs(mtlsConfig)
-	if err != nil {
-		return "", "", "", false, err
-	}
+	// Otherwise, look for the files in the list of dirs from the config
 	for _, metatronDir := range configDirs {
-		certPath := filepath.Join(metatronDir, mtlsConfig.Cert)
+		certPath := filepath.Join(metatronDir, cert)
 		if !util.FileExists(certPath) {
 			continue
 		}
 
-		keyPath := filepath.Join(metatronDir, mtlsConfig.Key)
+		keyPath := filepath.Join(metatronDir, key)
 		if !util.FileExists(keyPath) {
 			continue
 		}
 
-		caPath := filepath.Join(metatronDir, mtlsConfig.CATrust)
+		caPath := filepath.Join(metatronDir, caFile)
 		if !util.FileExists(caPath) {
 			continue
 		}
 
-		return certPath, keyPath, caPath, mtlsConfig.Insecure, nil
+		return certPath, keyPath, caPath, insecure, nil
 	}
 	return "", "", "", false, config.ClientCertificatesNotFoundError
 }

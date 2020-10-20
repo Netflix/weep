@@ -1,6 +1,8 @@
 consoleme_url: https://path_to_consoleme:port
 authentication_method: mtls # challenge or mtls
-mtls_settings:
+challenge_settings: # only needed if authentication_method is challenge
+  user: you@example.com
+mtls_settings: # only needed if authentication_method is mtls
   cert: mtls.crt
   key: mtls.key
   cafile: mtlsCA.pem

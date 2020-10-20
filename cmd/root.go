@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/mattn/go-isatty"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/config"
 	log "github.com/sirupsen/logrus"
@@ -34,13 +36,12 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
 func initConfig() {
-
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -62,13 +63,18 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {
-			log.Debug("no config file found, trying to use embedded config")
+			log.Debugf("no config file found, trying to use embedded config")
+		} else if isatty.IsTerminal(os.Stdout.Fd()) {
+			err = config.FirstRunPrompt()
+			if err != nil {
+				log.Fatalf("config bootstrap failed: %v", err)
+			}
 		} else {
-			log.Fatalf("unable to read config file: %v", err)
+			log.Debugf("unable to read config file: %v", err)
 		}
 	}
 
-	log.Debug("Found config")
+	log.Debugf("found config at %s", viper.ConfigFileUsed())
 	if err := viper.Unmarshal(&config.Config); err != nil {
 		log.Fatalf("unable to decode config into struct: %v", err)
 	}
