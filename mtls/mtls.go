@@ -19,8 +19,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// GetTLSConfig makes and returns a pointer to a tls.Config
-func GetTLSConfig(mtlsConfig *config.MtlsSettings) (*tls.Config, error) {
+// getTLSConfig makes and returns a pointer to a tls.Config
+func getTLSConfig() (*tls.Config, error) {
 	dirs, err := getTLSDirs()
 	if err != nil {
 		return nil, err
@@ -88,8 +88,7 @@ func makeTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config
 }
 
 func NewHTTPClient() (*http.Client, error) {
-	mtlsConfig := &config.Config.MtlsSettings
-	tlsConfig, err := GetTLSConfig(mtlsConfig)
+	tlsConfig, err := getTLSConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +123,7 @@ func getClientCertificatePaths(configDirs []string) (string, string, string, boo
 	// If cert, key, and catrust are paths that exist, we'll just use those
 	cert := viper.GetString("mtls_settings.cert")
 	key := viper.GetString("mtls_settings.key")
-	caFile := viper.GetString("mtls_settings.cafile")
+	caFile := viper.GetString("mtls_settings.catrust")
 	insecure := viper.GetBool("mtls_settings.insecure")
 	if util.FileExists(cert) && util.FileExists(key) && util.FileExists(caFile) {
 		return cert, key, caFile, insecure, nil
