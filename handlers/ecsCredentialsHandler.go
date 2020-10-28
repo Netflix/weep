@@ -27,6 +27,18 @@ func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request
 	val, ok := credentialMap[requestedRole]
 	if ok {
 		Credentials = val
+
+		// Refresh credentials on demand if expired or within 10 minutes of expiry
+		currentTime := time.Now()
+		tm := time.Unix(Credentials.Expiration, 0)
+		timeToRenew := tm.Add(-10 * time.Minute)
+		if currentTime.After(timeToRenew) {
+			Credentials, err = client.GetRoleCredentials(requestedRole, false)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+		}
 	} else {
 		Credentials, err = client.GetRoleCredentials(requestedRole, false)
 		if err != nil {

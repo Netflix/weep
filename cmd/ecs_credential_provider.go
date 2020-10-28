@@ -15,14 +15,14 @@ import (
 )
 
 func init() {
-	ecsMetadataCmd.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for metadata service to listen on")
-	ecsMetadataCmd.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9090, "port for metadata service to listen on")
-	rootCmd.AddCommand(ecsMetadataCmd)
+	ecsCredentialProvider.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for the ECS credential provider to listen on")
+	ecsCredentialProvider.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9090, "port for the ECS credential provider service to listen on")
+	rootCmd.AddCommand(ecsCredentialProvider)
 }
 
-var ecsMetadataCmd = &cobra.Command{
-	Use:   "ecs_metadata",
-	Short: "Run a local ECS Metadata Service (IMDS) endpoint that serves and caches credentials for roles on demand",
+var ecsCredentialProvider = &cobra.Command{
+	Use:   "ecs_credential_provider",
+	Short: "Run a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand",
 	RunE:  runEcsMetadata,
 }
 
@@ -37,7 +37,7 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/ecs_imds/{role:.*}", handlers.MetaDataServiceMiddleware(handlers.ECSMetadataServiceCredentialsHandler))
+	router.HandleFunc("/ecs/{role:.*}", handlers.MetaDataServiceMiddleware(handlers.ECSMetadataServiceCredentialsHandler))
 	router.HandleFunc("/{path:.*}", handlers.MetaDataServiceMiddleware(handlers.CustomHandler))
 
 	go func() {
@@ -50,7 +50,7 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Print("Shutdown signal received, exiting weep meta-data service...")
+	log.Print("Shutdown signal received, exiting weep...")
 
 	return nil
 }
