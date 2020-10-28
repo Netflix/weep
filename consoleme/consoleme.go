@@ -4,12 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	AwsSdkCredentials "github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/netflix/weep/util"
 	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -217,7 +224,52 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (AwsCredential
 		return credentials.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
 	}
 
+	credentials.Credentials.RoleArn, err = getRoleArnFromCredentials(credentials.Credentials)
+
 	return credentials.Credentials, nil
+}
+
+func getRoleArnFromCredentials(credentials AwsCredentials) (string, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Credentials: AwsSdkCredentials.NewStaticCredentials(
+			credentials.AccessKeyId,
+			credentials.SecretAccessKey,
+			credentials.SessionToken),
+	})
+	util.CheckError(err)
+	svc := sts.New(sess)
+	input := &sts.GetCallerIdentityInput{}
+
+	result, err := svc.GetCallerIdentity(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+		return "", err
+	}
+	// Replace assumed role ARN with role ARN, if possible
+	// arn:aws:sts::123456789012:assumed-role/exampleInstanceProfile/user@example.com ->
+	// arn:aws:iam::123456789012:role/exampleInstanceProfile
+	Role := strings.Replace(*result.Arn, ":sts:", ":iam:", 1)
+	Role = strings.Replace(Role, ":assumed-role/", ":role/", 1)
+	// result.UserId looks like AROAIEBAVBLAH:user@example.com
+	splittedUserId := strings.Split(*result.UserId, ":")
+	if len(splittedUserId) > 1 {
+		sessionName := splittedUserId[1]
+		Role = strings.Replace(
+			Role,
+			fmt.Sprintf("/%s", sessionName),
+			"",
+			1)
+	}
+	return Role, nil
 }
 
 func defaultTransport() *http.Transport {
