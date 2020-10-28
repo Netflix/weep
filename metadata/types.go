@@ -12,6 +12,14 @@ type MetaDataCredentialResponse struct {
 	Expiration      string
 }
 
+type ECSMetaDataCredentialResponse struct {
+	AccessKeyId     string
+	SecretAccessKey string
+	Token           string
+	Expiration      string
+	RoleArn         string
+}
+
 type MetaDataIamInfoResponse struct {
 	Code               string `json:"Code"`
 	LastUpdated        string `json:"LastUpdated"`

@@ -5,6 +5,7 @@ type AwsCredentials struct {
 	SecretAccessKey string `json:"SecretAccessKey"`
 	SessionToken    string `json:"SessionToken"`
 	Expiration      int64  `json:"Expiration"`
+	RoleArn         string `json:"RoleArn"`
 }
 
 type CredentialProcess struct {

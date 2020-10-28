@@ -34,7 +34,7 @@ func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				"user-agent":       ua,
 				"path":             r.URL.Path,
 				"metadata_version": metadataVersion,
-			}).Info("You are using a SDK that does not support User-Agents that Netflix wants")
+			}).Info("You are using a SDK that is not passing an appropriate AWS User-Agent")
 		} else {
 			log.WithFields(log.Fields{
 				"user-agent":       ua,
