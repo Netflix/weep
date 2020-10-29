@@ -29,7 +29,7 @@ func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			metadataVersion = 2
 		}
 
-		if !checkUserAgent(ua) {
+		if checkUserAgent(ua) {
 			log.WithFields(log.Fields{
 				"user-agent":       ua,
 				"path":             r.URL.Path,

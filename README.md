@@ -171,6 +171,36 @@ profile you wanted to use. Example:
 AWS_PROFILE=role1 aws s3 ls
 ```
 
+## Shell Completion
+
+###Bash:
+
+$ source <(weep completion bash)
+
+#### To load completions for each session, execute once:
+Linux:
+  $ weep completion bash > /etc/bash_completion.d/weep
+MacOS:
+  $ weep completion bash > /usr/local/etc/bash_completion.d/weep
+
+###Zsh:
+If shell completion is not already enabled in your environment you will need
+to enable it.  You can execute the following once:
+
+$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+#### To load completions for each session, execute once:
+$ weep completion zsh > "${fpath[1]}/_weep"
+
+#### You will need to start a new shell for this setup to take effect.
+
+###Fish:
+
+$ weep completion fish | source
+
+#### To load completions for each session, execute once:
+$ weep completion fish > ~/.config/fish/completions/weep.fish
+
 ## Building
 
 In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires
