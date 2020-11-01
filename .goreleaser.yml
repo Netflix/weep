@@ -11,11 +11,11 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/netflix/weep/version.Version={{.Version}} -X github.com/netflix/weep/version.Commit={{.CommitDate}} -X github.com/netflix/weep/version.Date={{.Date}}
+      - -s -w -extldflags "-static" -X github.com/netflix/weep/version.Version={{.Version}} -X github.com/netflix/weep/version.Commit={{.CommitDate}} -X github.com/netflix/weep/version.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
-    hooks:
-      post:
-        - upx "{{ .Path }}"
+#    hooks:
+#      post:
+#        - upx "{{ .Path }}"
 archives:
   - replacements:
       darwin: Darwin

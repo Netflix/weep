@@ -173,33 +173,48 @@ AWS_PROFILE=role1 aws s3 ls
 
 ## Shell Completion
 
-###Bash:
+### Bash
 
-$ source <(weep completion bash)
+```bash
+source <(weep completion bash)
+```
 
-#### To load completions for each session, execute once:
-Linux:
-  $ weep completion bash > /etc/bash_completion.d/weep
-MacOS:
-  $ weep completion bash > /usr/local/etc/bash_completion.d/weep
+To load completions for each session, execute this command once:
 
-###Zsh:
+```bash
+# Linux:
+weep completion bash > /etc/bash_completion.d/weep
+# MacOS:
+weep completion bash > /usr/local/etc/bash_completion.d/weep
+```
+
+### Zsh
 If shell completion is not already enabled in your environment you will need
 to enable it.  You can execute the following once:
 
-$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+```bash
+echo "autoload -U compinit; compinit" >> ~/.zshrc
+```
 
-#### To load completions for each session, execute once:
-$ weep completion zsh > "${fpath[1]}/_weep"
+To load completions for each session, execute this command once:
 
-#### You will need to start a new shell for this setup to take effect.
+```bash
+weep completion zsh > "${fpath[1]}/_weep"
+```
 
-###Fish:
+You will need to start a new shell for this setup to take effect.
 
-$ weep completion fish | source
+### Fish
 
-#### To load completions for each session, execute once:
-$ weep completion fish > ~/.config/fish/completions/weep.fish
+```bash
+weep completion fish | source
+```
+
+To load completions for each session, execute this command once:
+
+```bash
+weep completion fish > ~/.config/fish/completions/weep.fish
+```
 
 ## Building
 
@@ -235,11 +250,10 @@ docker run -v ~</optional/path/to/your/mtls/certs>:</optional/path/to/your/mtls/
 Weep uses [goreleaser](https://goreleaser.com/) in Github Actions for releases. Check their
 [install docs](https://goreleaser.com/install/) if you would like to experiment with the release process locally.
 
-To create a new release, create and push a tag containing the [semantic version](https://semver.org/):
+To create a new release, create and push a tag using the release script (requires [svu](https://github.com/caarlos0/svu)):
 
 ```bash
-git tag -am "v1.2.3" v1.2.3
-git push origin v1.2.3
+./scripts/release.sh
 ```
 
 Goreleaser will automatically create a release on the [Releases page](https://github.com/Netflix/weep/releases).
