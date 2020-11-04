@@ -22,6 +22,12 @@ You can also specify a config file as a CLI arg:
 weep --config somethingdifferent.yaml list
 ```
 
+Weep supports authenticating to ConsoleMe in either a standalone challenge mode (ConsoleMe will authenticate the user
+according to its settings), or mutual TLS (ConsoleMe has to be configured to accept mutual TLS).
+
+In challenge mode, Weep will prompt the user for their username the first time they authenticate, and then attempt to
+derive their username from their valid/expired jwt on subsequent attempts. You can also specify the desired username
+in weep's configuration under the `challenge_settings.user` setting as seen in  `example-config.yaml`.
 
 
 ## Routing traffic

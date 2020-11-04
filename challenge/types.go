@@ -29,4 +29,5 @@ type ConsolemeChallengeResponse struct {
 	WantHttpOnly bool   `json:"http_only"`
 	SameSite     int    `json:"same_site"`
 	Expires      int64  `json:"expiration"`
+	User         string `json:"user"`
 }
