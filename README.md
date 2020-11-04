@@ -7,8 +7,8 @@ variables for your AWS needs.
 
 ## Configuration
 
-Weep gets its configuration from a YAML-formatted file. We've included an example config file in 
-[example-config.yaml](example-config.yaml).
+Weep can be compiled with an embedded configuration (See the Building section below), or it can get its configuration 
+from a YAML-formatted file. We've included an example config file in [example-config.yaml](example-config.yaml).
 
 Weep searches for a configuration file in the following locations:
 
@@ -21,6 +21,8 @@ You can also specify a config file as a CLI arg:
 ```
 weep --config somethingdifferent.yaml list
 ```
+
+
 
 ## Routing traffic
 
@@ -171,6 +173,21 @@ profile you wanted to use. Example:
 AWS_PROFILE=role1 aws s3 ls
 ```
 
+#### Generating Credential Process Commands
+
+Weep can also generate credential process commands and populate your ~/.aws/config file. 
+
+**CAUTION**
+
+AWS SDKs appear to be analyzing your ~/.aws/config file on each API call
+and this could drastically slow you down if your ~/.aws/config file is too large. We strongly recommend using Weep's 
+ECS credential provider to avoid this issue.
+
+```bash
+# Please read the caveat above before running this command. The size of your ~/.aws/config file may negatively impact 
+# the rate of your AWS API calls.
+weep generate_credential_process_config
+```
 ## Shell Completion
 
 ### Bash
