@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/manifoldco/promptui"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -40,7 +41,12 @@ import (
 )
 
 func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
-	if !HasValidJwt() {
+	existingChallengeBody, err := getChallenge()
+	if err != nil {
+		log.Debugf("unable to read existing challenge file: %v", err)
+
+	}
+	if !HasValidJwt(existingChallengeBody) {
 		return nil, errors.New("Your authentication to ConsoleMe has expired. Please restart weep.")
 	}
 	var challenge ConsolemeChallengeResponse
@@ -147,18 +153,39 @@ func getCredentialsPath() (string, error) {
 	return credentialsPath, nil
 }
 
-func HasValidJwt() bool {
+func getChallenge() (*ConsolemeChallengeResponse, error) {
 	var challenge ConsolemeChallengeResponse
 	credentialPath, err := getCredentialsPath()
 	if err != nil {
-		return false
+		return nil, err
 	}
 	challengeBody, err := ioutil.ReadFile(credentialPath)
 	if err != nil {
-		return false
+		return nil, err
 	}
 	err = json.Unmarshal(challengeBody, &challenge)
 	if err != nil {
+		return nil, err
+	}
+	return &challenge, nil
+}
+
+func promptUser() (string, error) {
+	prompt := promptui.Prompt{
+		Label: "Please enter your ConsoleMe username",
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
+}
+
+func HasValidJwt(challenge *ConsolemeChallengeResponse) bool {
+	if challenge == nil {
 		return false
 	}
 	now := time.Now()
@@ -170,20 +197,38 @@ func HasValidJwt() bool {
 }
 
 func RefreshChallenge() error {
+	existingChallengeBody, err := getChallenge()
+	var user = viper.GetString("challenge_settings.user")
+	if err != nil {
+		log.Debugf("unable to read existing challenge file: %v", err)
+
+	}
 	// If credentials are still valid, no need to refresh them.
-	if HasValidJwt() {
+	if HasValidJwt(existingChallengeBody) {
 		return nil
 	}
 	// Step 1: Make unauthed request to ConsoleMe challenge endpoint and get a challenge challenge
-	if viper.GetString("challenge_settings.user") == "" {
+	// Check Config for username
+	if user == "" && existingChallengeBody != nil {
+		// Find user from old jwt
+		user = existingChallengeBody.User
+	}
+	if user == "" {
+		user, err = promptUser()
+		if err != nil {
+			return err
+		}
+	}
+	if user == "" {
 		log.Fatalf(
-			"Invalid configuration. You must define challenge_settings.user as the user you wish to authenticate as.",
+			"Invalid configuration. You must define challenge_settings.user as the user you wish to authenticate" +
+				" as.",
 		)
 	}
 	var consoleMeChallengeGeneratorEndpoint = fmt.Sprintf(
 		"%s/noauth/v1/challenge_generator/%s",
 		viper.GetString("consoleme_url"),
-		viper.GetString("challenge_settings.user"),
+		user,
 	)
 	var challenge ConsolemeChallenge
 	req, err := http.NewRequest("GET", consoleMeChallengeGeneratorEndpoint, nil)
