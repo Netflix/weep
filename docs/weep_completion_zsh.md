@@ -6,15 +6,15 @@ Generate Zsh completion
 
 To load completions:
 
-# If shell completion is not already enabled in your environment you will need
-# to enable it.  You can execute the following once:
+If shell completion is not already enabled in your environment you will need
+to enable it.  You can execute the following once:
 
 $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
-# To load completions for each session, execute once:
+To load completions for each session, execute once:
 $ weep completion zsh > "${fpath[1]}/_weep"
 
-# You will need to start a new shell for this setup to take effect.
+You will need to start a new shell for this setup to take effect.
 
 
 ```

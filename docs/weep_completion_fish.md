@@ -8,7 +8,7 @@ To load completions:
 
 $ weep completion fish | source
 
-# To load completions for each session, execute once:
+To load completions for each session, execute once:
 $ weep completion fish > ~/.config/fish/completions/weep.fish
 
 
