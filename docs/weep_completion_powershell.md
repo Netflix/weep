@@ -6,7 +6,11 @@ Generate Powershell completion
 
 To load completions:
 
-uhhhhh how does powershell work?
+We don't really know how Powershell works. 🙈
+
+This doc has a little more context: https://github.com/spf13/cobra/blob/master/powershell_completions.md
+
+Want to improve this help text? Check out this issue: https://github.com/Netflix/weep/issues/17
 
 
 ```
