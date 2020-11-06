@@ -38,9 +38,13 @@ var bashCompletionCmd = &cobra.Command{
 $ source <(weep completion bash)
 
 To load completions for each session, execute once:
+
 Linux:
+
   $ weep completion bash > /etc/bash_completion.d/weep
+
 MacOS:
+
   $ weep completion bash > /usr/local/etc/bash_completion.d/weep
 `,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -61,6 +65,7 @@ to enable it.  You can execute the following once:
 $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
 To load completions for each session, execute once:
+
 $ weep completion zsh > "${fpath[1]}/_weep"
 
 You will need to start a new shell for this setup to take effect.
@@ -80,6 +85,7 @@ var fishCompletionCmd = &cobra.Command{
 $ weep completion fish | source
 
 To load completions for each session, execute once:
+
 $ weep completion fish > ~/.config/fish/completions/weep.fish
 `,
 	Run: func(cmd *cobra.Command, args []string) {

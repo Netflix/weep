@@ -9,9 +9,13 @@ To load completions:
 $ source <(weep completion bash)
 
 To load completions for each session, execute once:
+
 Linux:
+
   $ weep completion bash > /etc/bash_completion.d/weep
+
 MacOS:
+
   $ weep completion bash > /usr/local/etc/bash_completion.d/weep
 
 
