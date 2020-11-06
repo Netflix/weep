@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -24,28 +25,88 @@ import (
 
 // completionCmd represents the completion command
 var completionCmd = &cobra.Command{
-	Use:   "completion",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "completion [bash|zsh|fish|powershell]",
+	Short: "Generate completion script",
+	Long:  `Generate shell completion script for Bash, Zsh, Fish, and Powershell.`,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+var bashCompletionCmd = &cobra.Command{
+	Use:   "bash",
+	Short: "Generate Bash completion",
+	Long: `To load completions:
+
+$ source <(weep completion bash)
+
+# To load completions for each session, execute once:
+Linux:
+  $ weep completion bash > /etc/bash_completion.d/weep
+MacOS:
+  $ weep completion bash > /usr/local/etc/bash_completion.d/weep
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		switch args[0] {
-		case "bash":
-			cmd.Root().GenBashCompletion(os.Stdout)
-		case "zsh":
-			cmd.Root().GenZshCompletion(os.Stdout)
-		case "fish":
-			cmd.Root().GenFishCompletion(os.Stdout, true)
-		case "powershell":
-			cmd.Root().GenPowerShellCompletion(os.Stdout)
+		if err := cmd.Root().GenBashCompletion(os.Stdout); err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+var zshCompletionCmd = &cobra.Command{
+	Use:   "zsh",
+	Short: "Generate Zsh completion",
+	Long: `To load completions:
+
+# If shell completion is not already enabled in your environment you will need
+# to enable it.  You can execute the following once:
+
+$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+# To load completions for each session, execute once:
+$ weep completion zsh > "${fpath[1]}/_weep"
+
+# You will need to start a new shell for this setup to take effect.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := cmd.Root().GenZshCompletion(os.Stdout); err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+var fishCompletionCmd = &cobra.Command{
+	Use:   "fish",
+	Short: "Generate Fish completion",
+	Long: `To load completions:
+
+$ weep completion fish | source
+
+# To load completions for each session, execute once:
+$ weep completion fish > ~/.config/fish/completions/weep.fish
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := cmd.Root().GenFishCompletion(os.Stdout, true); err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+var powershellCompletionCmd = &cobra.Command{
+	Use:   "powershell",
+	Short: "Generate Powershell completion",
+	Long: `To load completions:
+
+uhhhhh how does powershell work?
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := cmd.Root().GenPowerShellCompletion(os.Stdout); err != nil {
+			log.Fatal(err)
 		}
 	},
 }
 
 func init() {
+	completionCmd.AddCommand(bashCompletionCmd)
+	completionCmd.AddCommand(zshCompletionCmd)
+	completionCmd.AddCommand(fishCompletionCmd)
+	completionCmd.AddCommand(powershellCompletionCmd)
 	rootCmd.AddCommand(completionCmd)
 }

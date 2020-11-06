@@ -38,7 +38,7 @@ func init() {
 
 var fileCmd = &cobra.Command{
 	Use:   "file [role_name]",
-	Short: "retrieve credentials and save them to a credentials file",
+	Short: "Retrieve credentials and save them to a credentials file",
 	Args:  cobra.ExactArgs(1),
 	RunE:  runFile,
 }

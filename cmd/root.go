@@ -34,9 +34,10 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "weep",
-		Short: "weep helps you get the most out of ConsoleMe credentials",
-		Long:  "TBD",
+		Use:               "weep",
+		Short:             "weep helps you get the most out of ConsoleMe credentials",
+		Long:              "Weep is a CLI tool that manages AWS access via ConsoleMe for local development.",
+		DisableAutoGenTag: true,
 	}
 )
 
