@@ -38,7 +38,7 @@ func init() {
 
 var GenerateCredentialProcessCmd = &cobra.Command{
 	Use:   "generate_credential_process_config",
-	Short: "Writes all of your eligible roles as profiles in your AWS Config to source credentials from Weep",
+	Short: "Write all of your eligible roles as profiles in your AWS Config to source credentials from Weep",
 	RunE:  runGenerateCredentialProcessConfig,
 }
 

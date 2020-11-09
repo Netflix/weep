@@ -280,3 +280,11 @@ To create a new release, create and push a tag using the release script (require
 ```
 
 Goreleaser will automatically create a release on the [Releases page](https://github.com/Netflix/weep/releases).
+
+### Generating docs
+
+Weep has a built-in command to generate command documentation (in the `docs/` directory):
+
+```bash
+weep docs
+```

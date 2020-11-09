@@ -17,20 +17,24 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 )
 
-func init() {
-	rootCmd.AddCommand(setupCmd)
-}
-
-var setupCmd = &cobra.Command{
-	Use:   "setup",
-	Short: "Print setup information",
+var docCommand = &cobra.Command{
+	Use:    "docs",
+	Short:  "Generate Markdown docs for CLI commands",
+	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		PrintSetup()
+		err := doc.GenMarkdownTree(rootCmd, "./docs/")
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
-var fishSetup = `set
-`
+func init() {
+	rootCmd.AddCommand(docCommand)
+}
