@@ -45,19 +45,11 @@ func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			metadataVersion = 2
 		}
 
-		if checkUserAgent(ua) {
-			log.WithFields(log.Fields{
-				"user-agent":       ua,
-				"path":             r.URL.Path,
-				"metadata_version": metadataVersion,
-			}).Info("You are using a SDK that is not passing an appropriate AWS User-Agent")
-		} else {
-			log.WithFields(log.Fields{
-				"user-agent":       ua,
-				"path":             r.URL.Path,
-				"metadata_version": metadataVersion,
-			}).Info()
-		}
+		log.WithFields(log.Fields{
+			"user-agent":       ua,
+			"path":             r.URL.Path,
+			"metadata_version": metadataVersion,
+		}).Info()
 		next.ServeHTTP(w, r)
 	}
 }
