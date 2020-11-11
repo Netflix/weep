@@ -32,7 +32,7 @@ import (
 func init() {
 	fileCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	fileCmd.PersistentFlags().StringVarP(&destination, "output", "o", getDefaultCredentialsFile(), "output file for credentials")
-	fileCmd.PersistentFlags().StringVarP(&profileName, "profile", "p", "consoleme", "profile name")
+	fileCmd.PersistentFlags().StringVarP(&profileName, "profile", "p", "default", "profile name")
 	rootCmd.AddCommand(fileCmd)
 }
 
