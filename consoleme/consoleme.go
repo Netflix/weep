@@ -223,7 +223,7 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (AwsCredential
 				return credentials.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
 			}
 			if cmCredentialErrorMessageType.Code == "905" {
-				return credentials.Credentials, fmt.Errorf("Mtls certificate is too old, please refresh mtls certificate")
+				return credentials.Credentials, fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
 			}
 			if cmCredentialErrorMessageType.Code == "invalid_jwt" {
 				log.Errorf("Authentication has expired. Please restart weep to re-authenticate.")

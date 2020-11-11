@@ -28,6 +28,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	// Set default configuration values here
+	viper.SetDefault("mtls_settings.old_cert_message", "Mtls certificate is too old, please refresh mtls certificate")
+}
+
 // FirstRunPrompt gets user input to bootstrap a bare-minimum configuration.
 func FirstRunPrompt() error {
 	fmt.Println("Welcome to weep, the ConsoleMe CLI!")
