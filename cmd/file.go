@@ -29,8 +29,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var force bool
-
 func init() {
 	fileCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	fileCmd.PersistentFlags().StringVarP(&destination, "output", "o", getDefaultCredentialsFile(), "output file for credentials")
