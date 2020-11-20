@@ -32,7 +32,7 @@ import (
 
 func init() {
 	ecsCredentialProvider.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for the ECS credential provider to listen on")
-	ecsCredentialProvider.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9090, "port for the ECS credential provider service to listen on")
+	ecsCredentialProvider.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9091, "port for the ECS credential provider service to listen on")
 	rootCmd.AddCommand(ecsCredentialProvider)
 }
 
