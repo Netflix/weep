@@ -100,14 +100,14 @@ weep ecs_credential_provider
 In your favorite IDE or shell, set the `AWS_CONTAINER_CREDENTIALS_FULL_URI` environment variable and run AWS commands.
 
 ```bash
-AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9090/ecs/consoleme_oss_1 aws sts get-caller-identity
+AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_1 aws sts get-caller-identity
 {
     "UserId": "AROA4JEFLERSKVPFT4INI:user@example.com",
     "Account": "123456789012",
     "Arn": "arn:aws:sts::123456789012:assumed-role/consoleme_oss_1_test_user/user@example.com"
 }
 
-AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9090/ecs/consoleme_oss_2 aws sts get-caller-identity
+AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_2 aws sts get-caller-identity
 {
     "UserId": "AROA6KW3MOV2F7J6AT4PC:user@example.com",
     "Account": "223456789012",

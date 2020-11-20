@@ -24,6 +24,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/spf13/viper"
+
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/handlers"
 	log "github.com/sirupsen/logrus"
@@ -32,7 +34,7 @@ import (
 
 func init() {
 	ecsCredentialProvider.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for the ECS credential provider to listen on")
-	ecsCredentialProvider.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9090, "port for the ECS credential provider service to listen on")
+	ecsCredentialProvider.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", viper.GetInt("server.ecs_credential_provider_port"), "port for the ECS credential provider service to listen on")
 	rootCmd.AddCommand(ecsCredentialProvider)
 }
 
