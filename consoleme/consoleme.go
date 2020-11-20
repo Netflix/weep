@@ -290,10 +290,11 @@ func getRoleArnFromCredentials(credentials AwsCredentials) (string, error) {
 }
 
 func defaultTransport() *http.Transport {
+	timeout := time.Duration(viper.GetInt("server.http_timeout")) * time.Second
 	return &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout:   20 * time.Second,
+			Timeout:   timeout,
 			KeepAlive: 30 * time.Second,
 		}).DialContext,
 		MaxIdleConns:          100,

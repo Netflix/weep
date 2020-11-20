@@ -24,6 +24,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/spf13/viper"
+
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/consoleme"
 	"github.com/netflix/weep/handlers"
@@ -35,7 +37,7 @@ import (
 func init() {
 	metadataCmd.PersistentFlags().StringVarP(&metadataRegion, "region", "r", "us-east-1", "region of metadata service")
 	metadataCmd.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for metadata service to listen on")
-	metadataCmd.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", 9090, "port for metadata service to listen on")
+	metadataCmd.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", viper.GetInt("server.metadata_port"), "port for metadata service to listen on")
 	rootCmd.AddCommand(metadataCmd)
 }
 
