@@ -23,6 +23,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/netflix/weep/util"
+
 	"github.com/mattn/go-isatty"
 
 	"github.com/mitchellh/go-homedir"
@@ -82,7 +84,7 @@ func initConfig() {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {
 			log.Debugf("no config file found, trying to use embedded config")
 		} else if isatty.IsTerminal(os.Stdout.Fd()) {
-			err = config.FirstRunPrompt()
+			err = util.FirstRunPrompt()
 			if err != nil {
 				log.Fatalf("config bootstrap failed: %v", err)
 			}

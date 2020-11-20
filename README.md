@@ -143,7 +143,8 @@ Then run `aws sts get-caller-identity` to confirm that your credentials work pro
 
 ### Credentials file
 
-Write retrieved credentials to an AWS credentials file (`~/.aws/credentials` by default with the profile name `consoleme`).
+Write retrieved credentials to an AWS credentials file (`~/.aws/credentials` by default).
+Weep will prompt for confirmation before overwriting existing credentials in the file.
 
 ```bash
 weep file exampleRole
@@ -152,11 +153,13 @@ weep file exampleRole
 weep file stagingRole --profile staging
 weep file prodRole --profile prod
 
+# don't prompt before overwriting existing creds
+weep file prodRole --profile prod -f
+
 # or you can save it to a different place
 weep file exampleRole -o /tmp/credentials
 ```
 
-Weep will do its best to preserve existing credentials in the file (but it will overwrite a conflicting profile name, so be careful!).
 
 ### Credentials Process
 The AWS CLI can source credentials from weep using the `credential_process` configuration which can be defined for a

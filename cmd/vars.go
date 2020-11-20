@@ -21,6 +21,7 @@ var (
 	profileName        string
 	destination        string
 	destinationConfig  string
+	force              bool
 	noIpRestrict       bool
 	metadataRegion     string
 	metadataListenAddr string
