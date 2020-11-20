@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package config
+package util
 
 import (
 	"errors"
@@ -24,17 +24,8 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/mitchellh/go-homedir"
-	"github.com/netflix/weep/util"
 	"github.com/spf13/viper"
 )
-
-func init() {
-	// Set default configuration values here
-	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")
-	viper.SetDefault("server.http_timeout", 20)
-	viper.SetDefault("server.metadata_port", 9090)
-	viper.SetDefault("server.ecs_credential_provider_port", 9091)
-}
 
 // FirstRunPrompt gets user input to bootstrap a bare-minimum configuration.
 func FirstRunPrompt() error {
@@ -55,31 +46,31 @@ func FirstRunPrompt() error {
 	viper.Set("authentication_method", authMethod)
 
 	if authMethod == "mtls" {
-		cert, err := promptFilePath("mTLS certificate path", "")
+		cert, err := PromptFilePath("mTLS certificate path", "")
 		if err != nil {
 			return err
 		}
 		viper.Set("mtls_settings.cert", cert)
 
-		key, err := promptFilePath("mTLS key path", "")
+		key, err := PromptFilePath("mTLS key path", "")
 		if err != nil {
 			return err
 		}
 		viper.Set("mtls_settings.key", key)
 
-		ca, err := promptFilePath("mTLS CA bundle path", "")
+		ca, err := PromptFilePath("mTLS CA bundle path", "")
 		if err != nil {
 			return err
 		}
 		viper.Set("mtls_settings.cafile", ca)
 
-		insecure, err := promptBool("Skip validation of mTLS hostname?")
+		insecure, err := PromptBool("Skip validation of mTLS hostname?")
 		if err != nil {
 			return err
 		}
 		viper.Set("mtls_settings.insecure", insecure)
 	} else if authMethod == "challenge" {
-		challengeUser, err := promptString("ConsoleMe username")
+		challengeUser, err := PromptString("ConsoleMe username")
 		if err != nil {
 			return err
 		}
@@ -91,7 +82,7 @@ func FirstRunPrompt() error {
 		return err
 	}
 	defaultConfig := path.Join(home, ".weep.yaml")
-	saveLocation, err := promptFilePathNoValidate("Config destination", defaultConfig)
+	saveLocation, err := PromptFilePathNoValidate("Config destination", defaultConfig)
 	if err != nil {
 		return err
 	}
@@ -140,9 +131,9 @@ func promptAuthMethod() (string, error) {
 	return result, nil
 }
 
-func promptFilePath(label, defaultValue string) (string, error) {
+func PromptFilePath(label, defaultValue string) (string, error) {
 	validateFile := func(input string) error {
-		if util.FileExists(input) {
+		if FileExists(input) {
 			return nil
 		} else {
 			return fmt.Errorf("file not found: %s", input)
@@ -163,7 +154,7 @@ func promptFilePath(label, defaultValue string) (string, error) {
 	return result, nil
 }
 
-func promptFilePathNoValidate(label, defaultValue string) (string, error) {
+func PromptFilePathNoValidate(label, defaultValue string) (string, error) {
 	prompt := promptui.Prompt{
 		Label:   label,
 		Default: defaultValue,
@@ -178,7 +169,7 @@ func promptFilePathNoValidate(label, defaultValue string) (string, error) {
 	return result, nil
 }
 
-func promptBool(label string) (bool, error) {
+func PromptBool(label string) (bool, error) {
 	prompt := promptui.Select{
 		Label: label,
 		Items: []string{"true", "false"},
@@ -193,7 +184,7 @@ func promptBool(label string) (bool, error) {
 	return index == 0, nil
 }
 
-func promptString(label string) (string, error) {
+func PromptString(label string) (string, error) {
 	prompt := promptui.Prompt{
 		Label: label,
 	}

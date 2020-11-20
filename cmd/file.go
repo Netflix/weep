@@ -29,10 +29,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var force bool
+
 func init() {
 	fileCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	fileCmd.PersistentFlags().StringVarP(&destination, "output", "o", getDefaultCredentialsFile(), "output file for credentials")
 	fileCmd.PersistentFlags().StringVarP(&profileName, "profile", "p", "default", "profile name")
+	fileCmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "overwrite existing profile without prompting")
 	rootCmd.AddCommand(fileCmd)
 }
 
@@ -78,6 +81,17 @@ func getDefaultAwsConfigFile() string {
 	return path.Join(home, ".aws", "config")
 }
 
+func shouldOverwriteCredentials() bool {
+	if force {
+		return true
+	}
+	userForce, err := util.PromptBool(fmt.Sprintf("Overwrite %s profile?", profileName))
+	if err != nil {
+		return false
+	}
+	return userForce
+}
+
 func writeCredentialsFile(credentials consoleme.AwsCredentials) error {
 	var credentialsINI *ini.File
 	var err error
@@ -93,6 +107,14 @@ func writeCredentialsFile(credentials consoleme.AwsCredentials) error {
 		}
 	} else {
 		credentialsINI = ini.Empty()
+	}
+
+	if _, err := credentialsINI.GetSection(profileName); err == nil {
+		// section already exists, should we overwrite?
+		if !shouldOverwriteCredentials() {
+			// user says no, so we'll just bail out
+			return fmt.Errorf("not overwriting %s profile", profileName)
+		}
 	}
 
 	credentialsINI.Section(profileName).Key("aws_access_key_id").SetValue(credentials.AccessKeyId)
