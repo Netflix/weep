@@ -29,58 +29,6 @@ In challenge mode, Weep will prompt the user for their username the first time t
 derive their username from their valid/expired jwt on subsequent attempts. You can also specify the desired username
 in weep's configuration under the `challenge_settings.user` setting as seen in  `example-config.yaml`.
 
-
-## Routing traffic
-
-### Mac
-
-```bash
-sudo ifconfig lo0 169.254.169.254 alias
-echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9090" | sudo pfctl -ef -
-```
-
-#### Persisting Changes
-
-You can look at the recommended plist files in [extras/com.user.lo0-loopback.plist](extras/com.user.lo0-loopback.plist) and [extras/com.user.weep.plist](extras/com.user.weep.plist)
-
-To persist the settings above on a Mac, download the plists, place them in `/Library/LaunchDaemons`, and load them
-using `launchctl`:
-
-> **Note:** Make sure you know what you're doing here -- these commands change system behavior.
-
-```bash
-curl https://raw.githubusercontent.com/Netflix/weep/master/extras/com.user.weep.plist -o com.user.weep.plist
-curl https://raw.githubusercontent.com/Netflix/weep/master/extras/com.user.lo0-loopback.plist -o com.user.lo0-loopback.plist
-sudo mv com.user.weep.plist com.user.lo0-loopback.plist /Library/LaunchDaemons/
-launchctl load /Library/LaunchDaemons/com.user.weep.plist
-launchctl load /Library/LaunchDaemons/com.user.lo0-loopback.plist
-```
-
-
-### Linux
-
-```bash
-# trap all output packets to metadata proxy and send them to localhost:9090
-iptables -t nat -A OUTPUT -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to 127.0.0.1:9090
-```
-
-To persist this, create a txt file at the location of your choosing with the 
-following contents:
-
-```
-*nat
-:PREROUTING ACCEPT [0:0]
-:INPUT ACCEPT [0:0]
-:OUTPUT ACCEPT [1:216]
-:POSTROUTING ACCEPT [1:216]
--A OUTPUT -d 169.254.169.254/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 127.0.0.1:9090
-COMMIT
-```
-
-Enable the rules by running the following:
-
-sudo /sbin/iptables-restore < <path_to_file>.txt
-
 ## Usage
 
 ### ECS Credential Provider (Recommended)
@@ -241,6 +189,57 @@ To load completions for each session, execute this command once:
 ```bash
 weep completion fish > ~/.config/fish/completions/weep.fish
 ```
+
+## Routing traffic (for Metadata Proxy mode)
+
+### Mac
+
+```bash
+sudo ifconfig lo0 169.254.169.254 alias
+echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9090" | sudo pfctl -ef -
+```
+
+#### Persisting Changes
+
+You can look at the recommended plist files in [extras/com.user.lo0-loopback.plist](extras/com.user.lo0-loopback.plist) and [extras/com.user.weep.plist](extras/com.user.weep.plist)
+
+To persist the settings above on a Mac, download the plists, place them in `/Library/LaunchDaemons`, and load them
+using `launchctl`:
+
+> **Note:** Make sure you know what you're doing here -- these commands change system behavior.
+
+```bash
+curl https://raw.githubusercontent.com/Netflix/weep/master/extras/com.user.weep.plist -o com.user.weep.plist
+curl https://raw.githubusercontent.com/Netflix/weep/master/extras/com.user.lo0-loopback.plist -o com.user.lo0-loopback.plist
+sudo mv com.user.weep.plist com.user.lo0-loopback.plist /Library/LaunchDaemons/
+launchctl load /Library/LaunchDaemons/com.user.weep.plist
+launchctl load /Library/LaunchDaemons/com.user.lo0-loopback.plist
+```
+
+
+### Linux
+
+```bash
+# trap all output packets to metadata proxy and send them to localhost:9090
+iptables -t nat -A OUTPUT -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to 127.0.0.1:9090
+```
+
+To persist this, create a txt file at the location of your choosing with the 
+following contents:
+
+```
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [1:216]
+:POSTROUTING ACCEPT [1:216]
+-A OUTPUT -d 169.254.169.254/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 127.0.0.1:9090
+COMMIT
+```
+
+Enable the rules by running the following:
+
+sudo /sbin/iptables-restore < <path_to_file>.txt
 
 ## Building
 
