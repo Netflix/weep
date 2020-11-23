@@ -65,8 +65,7 @@ AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_2 aws
 
 ### Metadata Proxy
 
-Weep supports emulating the instance metadata service. This requires that you have iptables DNAT rules configured, and
-it only serves one role per weep process.
+Weep supports emulating the instance metadata service. This requires that you have iptables DNAT rules configured (See the `Routing traffic (for Metadata Proxy mode)` section below for setting this up), and it only serves one role per weep process. We strongly suggest using ECS credential provider mode instead.
 
 ```bash
 # You can use a full ARN
