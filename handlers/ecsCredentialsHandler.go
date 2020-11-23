@@ -24,22 +24,22 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/metadata"
 	log "github.com/sirupsen/logrus"
 )
 
-var credentialMap = make(map[string]consoleme.AwsCredentials)
+var credentialMap = make(map[string]creds.AwsCredentials)
 
 func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request) {
-	var client, err = consoleme.GetClient()
+	var client, err = creds.GetClient()
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	vars := mux.Vars(r)
 	requestedRole := vars["role"]
-	var Credentials consoleme.AwsCredentials
+	var Credentials creds.AwsCredentials
 
 	val, ok := credentialMap[requestedRole]
 	if ok {

@@ -21,7 +21,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 	"github.com/spf13/cobra"
 )
 
@@ -39,11 +39,7 @@ var exportCmd = &cobra.Command{
 
 func runExport(cmd *cobra.Command, args []string) error {
 	role = args[0]
-	client, err := consoleme.GetClient()
-	if err != nil {
-		return err
-	}
-	creds, err := client.GetRoleCredentials(role, noIpRestrict)
+	creds, err := creds.GetCredentials(role, noIpRestrict, assumeRole...)
 	if err != nil {
 		return err
 	}
@@ -62,7 +58,7 @@ func isFish() bool {
 	}
 }
 
-func printExport(creds consoleme.AwsCredentials) {
+func printExport(creds *creds.AwsCredentials) {
 	if isFish() {
 		// fish has a different way of setting variables than bash/zsh and others
 		fmt.Printf("set -x AWS_ACCESS_KEY_ID %s && set -x AWS_SECRET_ACCESS_KEY %s && set -x AWS_SESSION_TOKEN %s\n",

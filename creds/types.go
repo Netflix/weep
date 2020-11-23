@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package consoleme
+package creds
 
 type AwsCredentials struct {
 	AccessKeyId     string `json:"AccessKeyId"`

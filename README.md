@@ -73,6 +73,12 @@ weep metadata arn:aws:iam::123456789012:role/exampleRole
 
 # ...or just the role name
 weep metadata exampleRole
+
+# And you can assume a role
+weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole
+
+# ...or a whole bunch of roles
+weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole -A arn:aws:iam::123456789012:role/andAnother -A arn:aws:iam::123456789012:role/andOneMore
 ```
 
 run `aws sts get-caller-identity` to confirm that your DNAT rules are correctly configured.
@@ -84,6 +90,9 @@ eval $(weep export arn:aws:iam::123456789012:role/fullOrPartialRoleName)
 
 # this one also works with just the role name!
 eval $(weep export fullOrPartialRoleName)
+
+# and with one or more role assumptions
+eval $(weep export fullOrPartialRoleName -A arn:aws:iam::123456789012:role/roleToAssume)
 ```
 
 Then run `aws sts get-caller-identity` to confirm that your credentials work properly.
@@ -99,6 +108,9 @@ weep file exampleRole
 # you can also specify a profile name
 weep file stagingRole --profile staging
 weep file prodRole --profile prod
+
+# and a role to assume
+weep file stagingRole -A arn:aws:iam::123456789012:role/otherRole --profile staging
 
 # don't prompt before overwriting existing creds
 weep file prodRole --profile prod -f
@@ -144,6 +156,26 @@ ECS credential provider to avoid this issue.
 # the rate of your AWS API calls.
 weep generate_credential_process_config
 ```
+
+## Assuming Roles
+
+For commands that support assuming a role, pass the `-A` flag with a role ARN. You can
+do this as many times as you'd like and the roles will be assumed in the order passed in.
+
+> **Note**: You must provide the whole ARN for the role(s) to be assumed
+
+```bash
+# Assume otherRole using credentials from exampleRole
+weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole
+
+# Assume otherRole then assume andAnother
+weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole -A arn:aws:iam::123456789012:role/andAnother
+
+# Roles to assume can also be passed as a comma-separated list. This will do the same thing as the previous example
+weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole,arn:aws:iam::123456789012:role/andAnother
+```
+
+
 ## Shell Completion
 
 ### Bash
