@@ -33,8 +33,8 @@ import (
 )
 
 func init() {
-	ecsCredentialProvider.PersistentFlags().StringVarP(&metadataListenAddr, "listen-address", "a", "127.0.0.1", "IP address for the ECS credential provider to listen on")
-	ecsCredentialProvider.PersistentFlags().IntVarP(&metadataListenPort, "port", "p", viper.GetInt("server.ecs_credential_provider_port"), "port for the ECS credential provider service to listen on")
+	ecsCredentialProvider.PersistentFlags().StringVarP(&ecsProviderListenAddr, "listen-address", "a", "127.0.0.1", "IP address for the ECS credential provider to listen on")
+	ecsCredentialProvider.PersistentFlags().IntVarP(&ecsProviderListenPort, "port", "p", viper.GetInt("server.ecs_credential_provider_port"), "port for the ECS credential provider service to listen on")
 	rootCmd.AddCommand(ecsCredentialProvider)
 }
 
@@ -45,14 +45,14 @@ var ecsCredentialProvider = &cobra.Command{
 }
 
 func runEcsMetadata(cmd *cobra.Command, args []string) error {
-	ipaddress := net.ParseIP(metadataListenAddr)
+	ipaddress := net.ParseIP(ecsProviderListenAddr)
 
 	if ipaddress == nil {
-		fmt.Println("Invalid IP: ", metadataListenAddr)
+		fmt.Println("Invalid IP: ", ecsProviderListenAddr)
 		os.Exit(1)
 	}
 
-	listenAddr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)
+	listenAddr := fmt.Sprintf("%s:%d", ipaddress, ecsProviderListenPort)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/ecs/{role:.*}", handlers.MetaDataServiceMiddleware(handlers.ECSMetadataServiceCredentialsHandler))

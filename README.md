@@ -175,6 +175,16 @@ weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole -A arn:aws
 weep metadata exampleRole -A arn:aws:iam::123456789012:role/otherRole,arn:aws:iam::123456789012:role/andAnother
 ```
 
+When using the ECS credential provider, pass the role(s) to be assumed as a comma-separated query-string with the key `assume`:
+
+```bash
+AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_1?assume=arn:aws:iam::123456789012:role/otherRole,arn:aws:iam::123456789012:role/andAnother aws sts get-caller-identity
+{
+    "UserId": "AROA4JEFLERSKVPFT4INI:user@example.com",
+    "Account": "123456789012",
+    "Arn": "arn:aws:sts::123456789012:assumed-role/andAnother/user@example.com"
+}
+```
 
 ## Shell Completion
 

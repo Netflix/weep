@@ -17,11 +17,14 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/netflix/weep/util"
 
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/creds"
@@ -29,7 +32,35 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var credentialMap = make(map[string]creds.AwsCredentials)
+var credentialMap = make(map[string]*creds.AwsCredentials)
+
+// parseAssumeRoleQuery extracts the assume query string argument, splits it on commas, validates that each element
+// is an ARN, and returns a slice of ARN strings.
+func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
+	assumeString := r.URL.Query().Get("assume")
+
+	// Return an empty slice if we don't have an assume query string
+	if assumeString == "" {
+		return make([]string, 0), nil
+	}
+
+	roles := strings.Split(assumeString, ",")
+
+	// Make sure we have valid ARNs
+	for _, role := range roles {
+		if !arn.IsARN(role) {
+			return nil, fmt.Errorf("invalid ARN in assume query string: %s", role)
+		}
+	}
+
+	return roles, nil
+}
+
+// getCacheSlug returns a string unique to a particular combination of a role and chain of roles to assume.
+func getCacheSlug(role string, assume []string) string {
+	elements := append([]string{role}, assume...)
+	return strings.Join(elements, "/")
+}
 
 func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request) {
 	var client, err = creds.GetClient()
@@ -37,49 +68,57 @@ func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request
 		log.Error(err)
 		return
 	}
+	assume, err := parseAssumeRoleQuery(r)
+	if err != nil {
+		log.Error(err)
+		util.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	vars := mux.Vars(r)
 	requestedRole := vars["role"]
-	var Credentials creds.AwsCredentials
+	cacheSlug := getCacheSlug(requestedRole, assume)
+	var credentials *creds.AwsCredentials
 
-	val, ok := credentialMap[requestedRole]
+	val, ok := credentialMap[cacheSlug]
 	if ok {
-		Credentials = val
+		credentials = val
 
-		// Refresh credentials on demand if expired or within 10 minutes of expiry
+		// Refresh credentialResponse on demand if expired or within 10 minutes of expiry
 		currentTime := time.Now()
-		tm := time.Unix(Credentials.Expiration, 0)
+		tm := time.Unix(credentials.Expiration, 0)
 		timeToRenew := tm.Add(-10 * time.Minute)
 		if currentTime.After(timeToRenew) {
-			Credentials, err = client.GetRoleCredentials(requestedRole, false)
+			credentials, err = creds.GetCredentialsC(client, requestedRole, false, assume)
 			if err != nil {
 				log.Error(err)
 				return
 			}
 		}
 	} else {
-		Credentials, err = client.GetRoleCredentials(requestedRole, false)
+		credentials, err = creds.GetCredentialsC(client, requestedRole, false, assume)
 		if err != nil {
 			log.Error(err)
 			return
 		}
-		credentialMap[requestedRole] = Credentials
+		credentialMap[cacheSlug] = credentials
 	}
 
-	tm := time.Unix(Credentials.Expiration, 0)
+	tm := time.Unix(credentials.Expiration, 0)
 
-	credentials := metadata.ECSMetaDataCredentialResponse{
-		AccessKeyId:     fmt.Sprintf("%s", Credentials.AccessKeyId),
+	credentialResponse := metadata.ECSMetaDataCredentialResponse{
+		AccessKeyId:     fmt.Sprintf("%s", credentials.AccessKeyId),
 		Expiration:      tm.UTC().Format("2006-01-02T15:04:05Z"),
-		RoleArn:         Credentials.RoleArn,
-		SecretAccessKey: fmt.Sprintf("%s", Credentials.SecretAccessKey),
-		Token:           fmt.Sprintf("%s", Credentials.SessionToken),
+		RoleArn:         credentials.RoleArn,
+		SecretAccessKey: fmt.Sprintf("%s", credentials.SecretAccessKey),
+		Token:           fmt.Sprintf("%s", credentials.SessionToken),
 	}
 
-	b, err := json.Marshal(credentials)
+	b, err := json.Marshal(credentialResponse)
 	if err != nil {
 		log.Error(err)
 	}
-	var out bytes.Buffer
-	json.Indent(&out, b, "", "  ")
-	fmt.Fprintln(w, out.String())
+	_, err = w.Write(b)
+	if err != nil {
+		log.Errorf("failed to write HTTP response: %s", err)
+	}
 }

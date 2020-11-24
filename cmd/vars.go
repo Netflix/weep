@@ -17,17 +17,19 @@
 package cmd
 
 var (
-	assumeRole         []string
-	role               string
-	profileName        string
-	destination        string
-	destinationConfig  string
-	force              bool
-	noIpRestrict       bool
-	metadataRegion     string
-	metadataListenAddr string
-	metadataListenPort int
-	cfgFile            string
-	logLevel           string
-	logFormat          string
+	assumeRole            []string
+	role                  string
+	profileName           string
+	destination           string
+	destinationConfig     string
+	force                 bool
+	noIpRestrict          bool
+	metadataRegion        string
+	metadataListenAddr    string
+	metadataListenPort    int
+	ecsProviderListenAddr string
+	ecsProviderListenPort int
+	cfgFile               string
+	logLevel              string
+	logFormat             string
 )

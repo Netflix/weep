@@ -39,7 +39,7 @@ var exportCmd = &cobra.Command{
 
 func runExport(cmd *cobra.Command, args []string) error {
 	role = args[0]
-	creds, err := creds.GetCredentials(role, noIpRestrict, assumeRole...)
+	creds, err := creds.GetCredentials(role, noIpRestrict, assumeRole)
 	if err != nil {
 		return err
 	}
