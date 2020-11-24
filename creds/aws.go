@@ -18,26 +18,44 @@ package creds
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	log "github.com/sirupsen/logrus"
 )
 
-func getAwsCredentials(role string, ipRestrict bool) (string, string, string, error) {
-	client, err := GetClient()
-	if err != nil {
-		return "", "", "", err
-	}
+// getAwsCredentials uses the provided Client to request credentials from ConsoleMe.
+func getAwsCredentials(client *Client, role string, ipRestrict bool) (string, string, string, int64, error) {
 	tempCreds, err := client.GetRoleCredentials(role, ipRestrict)
 	if err != nil {
-		return "", "", "", err
+		return "", "", "", 0, err
 	}
 
-	return tempCreds.AccessKeyId, tempCreds.SecretAccessKey, tempCreds.SessionToken, nil
+	return tempCreds.AccessKeyId, tempCreds.SecretAccessKey, tempCreds.SessionToken, tempCreds.Expiration, nil
 }
 
+// getSessionName returns the AWS session name, or defaults to weep if we can't find one.
+func getSessionName(session *sts.STS) string {
+	identity, err := session.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		log.Warnf("could not get user identity; defaulting to weep: %s", err)
+		return "weep"
+	}
+
+	// split identity.UserId on colon, which should give us a 2-element slice with the principal ID and session name
+	splitId := strings.Split(*identity.UserId, ":")
+	if len(splitId) < 2 {
+		log.Warnf("session name not found; defaulting to weep")
+		return "weep"
+	}
+
+	return splitId[1]
+}
+
+// getAssumeRoleCredentials uses the provided credentials to assume the role specified by roleArn.
 func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string, string, error) {
 	staticCreds := credentials.NewStaticCredentials(id, secret, token)
 	awsSession := session.Must(session.NewSessionWithOptions(session.Options{
@@ -47,10 +65,11 @@ func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string
 	}))
 
 	stsSession := sts.New(awsSession)
+	sessionName := getSessionName(stsSession)
 
 	stsParams := &sts.AssumeRoleInput{
 		RoleArn:         &roleArn,
-		RoleSessionName: aws.String("weep"),
+		RoleSessionName: &sessionName,
 		DurationSeconds: aws.Int64(3600),
 	}
 
@@ -61,8 +80,11 @@ func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string
 	return *stsCreds.Credentials.AccessKeyId, *stsCreds.Credentials.SecretAccessKey, *stsCreds.Credentials.SessionToken, nil
 }
 
-func GetCredentials(role string, ipRestrict bool, assumeRole ...string) (*AwsCredentials, error) {
-	id, secret, token, err := getAwsCredentials(role, ipRestrict)
+// GetCredentialsC uses the provided Client to request credentials from ConsoleMe then
+// follows the provided chain of roles to assume. Roles are assumed in the order in which
+// they appear in the assumeRole slice.
+func GetCredentialsC(client *Client, role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
+	id, secret, token, expiration, err := getAwsCredentials(client, role, ipRestrict)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +100,18 @@ func GetCredentials(role string, ipRestrict bool, assumeRole ...string) (*AwsCre
 		AccessKeyId:     id,
 		SecretAccessKey: secret,
 		SessionToken:    token,
+		Expiration:      expiration,
 	}
 	return finalCreds, nil
+}
+
+// GetCredentials requests credentials from ConsoleMe then follows the provided chain of roles to
+// assume. Roles are assumed in the order in which they appear in the assumeRole slice.
+func GetCredentials(role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
+	client, err := GetClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return GetCredentialsC(client, role, ipRestrict, assumeRole)
 }

@@ -17,8 +17,10 @@
 package util
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -34,6 +36,10 @@ type AwsArn struct {
 	ResourceType      string
 	Resource          string
 	ResourceDelimiter string
+}
+
+type ErrorResponse struct {
+	Error string
 }
 
 func validate(arn string, pieces []string) error {
@@ -88,4 +94,23 @@ func CheckError(err error) {
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// WriteError writes a status code and JSON-formatted error to the provided http.ResponseWriter.
+func WriteError(w http.ResponseWriter, status int, message string) {
+	log.Debugf("writing HTTP error response: %s", message)
+	resp := ErrorResponse{Error: message}
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		log.Errorf("could not marshal error response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(status)
+	_, err = w.Write(respBytes)
+	if err != nil {
+		log.Errorf("could not write error response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

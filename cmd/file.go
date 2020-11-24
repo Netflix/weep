@@ -46,7 +46,7 @@ var fileCmd = &cobra.Command{
 
 func runFile(cmd *cobra.Command, args []string) error {
 	role = args[0]
-	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole...)
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole)
 	if err != nil {
 		return err
 	}
