@@ -48,8 +48,9 @@ func init() {
 	cobra.OnInitialize(initLogging)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.weep.yaml)")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "log-format", "", "log format (json or tty)")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "log-level", "", "log level (debug, info, warn)")
+	rootCmd.PersistentFlags().StringSliceVarP(&assumeRole, "assume-role", "A", make([]string, 0), "one or more roles to assume after retrieving credentials")
+	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "log format (json or tty)")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
 
 }
 

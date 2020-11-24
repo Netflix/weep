@@ -24,7 +24,7 @@ import (
 	ini "gopkg.in/ini.v1"
 
 	"github.com/mitchellh/go-homedir"
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/util"
 	"github.com/spf13/cobra"
 )
@@ -46,11 +46,7 @@ var fileCmd = &cobra.Command{
 
 func runFile(cmd *cobra.Command, args []string) error {
 	role = args[0]
-	client, err := consoleme.GetClient()
-	if err != nil {
-		return err
-	}
-	credentials, err := client.GetRoleCredentials(role, noIpRestrict)
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole...)
 	if err != nil {
 		return err
 	}
@@ -90,7 +86,7 @@ func shouldOverwriteCredentials() bool {
 	return userForce
 }
 
-func writeCredentialsFile(credentials consoleme.AwsCredentials) error {
+func writeCredentialsFile(credentials *creds.AwsCredentials) error {
 	var credentialsINI *ini.File
 	var err error
 

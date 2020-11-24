@@ -22,18 +22,18 @@ import (
 	"github.com/netflix/weep/util"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 )
 
 var (
 	Role                string
 	NoIpRestrict        bool
-	MetaDataCredentials consoleme.AwsCredentials
+	MetaDataCredentials creds.AwsCredentials
 	MetadataRegion      string
 	LastRenewal         time.Time
 )
 
-func StartMetaDataRefresh(client *consoleme.Client) {
+func StartMetaDataRefresh(client *creds.Client) {
 	retryDelay := 5 * time.Second
 	retryCount := 10
 	var err error

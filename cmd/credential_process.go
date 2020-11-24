@@ -24,7 +24,7 @@ import (
 	"github.com/netflix/weep/util"
 	ini "gopkg.in/ini.v1"
 
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +80,7 @@ func writeConfigFile(roles []string) error {
 }
 
 func runGenerateCredentialProcessConfig(cmd *cobra.Command, args []string) error {
-	client, err := consoleme.GetClient()
+	client, err := creds.GetClient()
 	if err != nil {
 		return err
 	}
@@ -97,26 +97,22 @@ func runGenerateCredentialProcessConfig(cmd *cobra.Command, args []string) error
 
 func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	role = args[0]
-	client, err := consoleme.GetClient()
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole...)
 	if err != nil {
 		return err
 	}
-	creds, err := client.GetRoleCredentials(role, noIpRestrict)
-	if err != nil {
-		return err
-	}
-	printCredentialProcess(creds)
+	printCredentialProcess(credentials)
 	return nil
 }
 
-func printCredentialProcess(creds consoleme.AwsCredentials) {
-	expirationTimeFormat := time.Unix(creds.Expiration, 0).Format(time.RFC3339)
+func printCredentialProcess(credentials *creds.AwsCredentials) {
+	expirationTimeFormat := time.Unix(credentials.Expiration, 0).Format(time.RFC3339)
 
-	credentialProcessOutput := &consoleme.CredentialProcess{
+	credentialProcessOutput := &creds.CredentialProcess{
 		Version:         1,
-		AccessKeyId:     creds.AccessKeyId,
-		SecretAccessKey: creds.SecretAccessKey,
-		SessionToken:    creds.SessionToken,
+		AccessKeyId:     credentials.AccessKeyId,
+		SecretAccessKey: credentials.SecretAccessKey,
+		SessionToken:    credentials.SessionToken,
 		Expiration:      expirationTimeFormat,
 	}
 

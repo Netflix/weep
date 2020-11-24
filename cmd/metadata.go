@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/gorilla/mux"
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/handlers"
 	"github.com/netflix/weep/metadata"
 	log "github.com/sirupsen/logrus"
@@ -52,7 +52,7 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	role = args[0]
 	metadata.Role = role
 	metadata.MetadataRegion = metadataRegion
-	client, err := consoleme.GetClient()
+	client, err := creds.GetClient()
 	if err != nil {
 		return err
 	}

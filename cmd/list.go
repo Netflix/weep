@@ -19,7 +19,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/netflix/weep/consoleme"
+	"github.com/netflix/weep/creds"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,7 @@ var listCmd = &cobra.Command{
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	client, err := consoleme.GetClient()
+	client, err := creds.GetClient()
 	if err != nil {
 		return err
 	}

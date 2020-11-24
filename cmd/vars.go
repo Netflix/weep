@@ -17,6 +17,7 @@
 package cmd
 
 var (
+	assumeRole         []string
 	role               string
 	profileName        string
 	destination        string
