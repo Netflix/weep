@@ -39,6 +39,8 @@ no need for iptables or routing rules with this approach, and each different she
 credentials for different roles. Weep will cache the credentials you request in-memory, and will refresh them on-demand
 when they are within 10 minutes of expiring.
 
+![ECS Credential Provider Demo](./docs/img/weep_ecs.svg)
+
 In one shell, run weep:
 
 ```bash
@@ -67,6 +69,8 @@ AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_2 aws
 
 Weep supports emulating the instance metadata service. This requires that you have iptables DNAT rules configured (See the `Routing traffic (for Metadata Proxy mode)` section below for setting this up), and it only serves one role per weep process. We strongly suggest using ECS credential provider mode instead.
 
+![Metadata Proxy Demo](./docs/img/weep_metadata.svg)
+
 ```bash
 # You can use a full ARN
 weep metadata arn:aws:iam::123456789012:role/exampleRole
@@ -85,6 +89,8 @@ run `aws sts get-caller-identity` to confirm that your DNAT rules are correctly 
 
 ### Credential export
 
+![Credential Export Demo](./docs/img/weep_env_variable.svg)
+
 ```bash
 eval $(weep export arn:aws:iam::123456789012:role/fullOrPartialRoleName)
 
@@ -101,6 +107,8 @@ Then run `aws sts get-caller-identity` to confirm that your credentials work pro
 
 Write retrieved credentials to an AWS credentials file (`~/.aws/credentials` by default).
 Weep will prompt for confirmation before overwriting existing credentials in the file.
+
+![Credential File Demo](./docs/img/weep_file.svg)
 
 ```bash
 weep file exampleRole
@@ -121,8 +129,11 @@ weep file exampleRole -o /tmp/credentials
 
 
 ### Credentials Process
+
 The AWS CLI can source credentials from weep using the `credential_process` configuration which can be defined for a
 profile in the `~/.aws/config` file. Read more about this process [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sourcing-external.html).
+
+![Credential Process Demo](./docs/img/weep_credential_provider.svg)
 
 Here's an example of an `~/.aws/config` file:
 
