@@ -41,6 +41,11 @@ when they are within 10 minutes of expiring.
 
 ![ECS Credential Provider Demo](./docs/img/weep_ecs.svg)
 
+For the ECS credential provider mode, as well as most other modes in Weep, you can instruct weep to assume one or more roles, and serve the resulting credentials to your SDK:
+
+![ECS Credential Provider - Nested Assume Role Calls](./docs/img/weep-ecs-assume-role.svg)
+
+
 In one shell, run weep:
 
 ```bash
@@ -62,6 +67,17 @@ AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_2 aws
     "UserId": "AROA6KW3MOV2F7J6AT4PC:user@example.com",
     "Account": "223456789012",
     "Arn": "arn:aws:sts::223456789012:assumed-role/consoleme_oss_2_test_user/user@example.com"
+}
+```
+
+To assume one or more roles, add the `assume` query string arugment with a comma-separated list of role ARNs that you would like Weep to assume, in the order that you want to assume them:
+
+```bash
+AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/consoleme_oss_1?assume=arn:aws:iam::123456789012:role/role1,arn:aws:iam::123456789012:role/role2,arn:aws:iam::123456789012:role/role3 aws sts get-caller-identity
+{
+    "UserId": "AROA6KW3MOV2F7J6AT4PC:user@example.com",
+    "Account": "123456789012",
+    "Arn": "arn:aws:sts::123456789012:assumed-role/role3/user@example.com"
 }
 ```
 
