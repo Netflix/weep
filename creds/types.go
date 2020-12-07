@@ -16,12 +16,32 @@
 
 package creds
 
+import (
+	"sync"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws/credentials"
+)
+
 type AwsCredentials struct {
 	AccessKeyId     string `json:"AccessKeyId"`
 	SecretAccessKey string `json:"SecretAccessKey"`
 	SessionToken    string `json:"SessionToken"`
 	Expiration      int64  `json:"Expiration"`
 	RoleArn         string `json:"RoleArn"`
+}
+
+type RefreshableProvider struct {
+	value         credentials.Value
+	mu            sync.RWMutex
+	client        *Client
+	Expiration    time.Time
+	LastRefreshed time.Time
+	Region        string
+	Role          string
+	RoleArn       string
+	NoIpRestrict  bool
+	AssumeChain   []string
 }
 
 type CredentialProcess struct {
@@ -33,7 +53,7 @@ type CredentialProcess struct {
 }
 
 type ConsolemeCredentialResponseType struct {
-	Credentials AwsCredentials `json:"Credentials"`
+	Credentials *AwsCredentials `json:"Credentials"`
 }
 
 type ConsolemeCredentialRequestType struct {

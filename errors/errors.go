@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package metadata
+package errors
 
-import (
-	"time"
-)
+type Error string
 
-var (
-	Role           string
-	MetadataRegion string
-	LastRenewal    time.Time
+func (e Error) Error() string { return string(e) }
+
+const (
+	NoCredentialsFoundInCache  = Error("no credentials found in cache")
+	NoDefaultRoleSet           = Error("no default role set")
+	CredentialGenerationFailed = Error("credential generation failed")
 )

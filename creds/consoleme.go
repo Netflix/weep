@@ -32,7 +32,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	AwsSdkCredentials "github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/netflix/weep/util"
@@ -190,8 +190,8 @@ func (c *Client) Roles() ([]string, error) {
 	return roles, nil
 }
 
-func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (AwsCredentials, error) {
-	var credentials ConsolemeCredentialResponseType
+func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+	var credentialsResponse ConsolemeCredentialResponseType
 	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
 
 	cmCredRequest := ConsolemeCredentialRequestType{
@@ -204,12 +204,12 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (AwsCredential
 
 	req, err := c.buildRequest(http.MethodPost, "/get_credentials", b)
 	if err != nil {
-		return credentials.Credentials, errors.Wrap(err, "failed to build request")
+		return credentialsResponse.Credentials, errors.Wrap(err, "failed to build request")
 	}
 
 	resp, err := c.do(req)
 	if err != nil {
-		return credentials.Credentials, errors.Wrap(err, "failed to action request")
+		return credentialsResponse.Credentials, errors.Wrap(err, "failed to action request")
 	}
 
 	defer resp.Body.Close()
@@ -217,41 +217,39 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (AwsCredential
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 403 {
 			if err != nil {
-				return credentials.Credentials, errors.Wrap(err, "failed to read response body")
+				return credentialsResponse.Credentials, errors.Wrap(err, "failed to read response body")
 			}
 			if err := json.Unmarshal(document, &cmCredentialErrorMessageType); err != nil {
-				return credentials.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
+				return credentialsResponse.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
 			}
 			if cmCredentialErrorMessageType.Code == "905" {
-				return credentials.Credentials, fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
+				return credentialsResponse.Credentials, fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
 			}
 			if cmCredentialErrorMessageType.Code == "invalid_jwt" {
 				log.Errorf("Authentication has expired. Please restart weep to re-authenticate.")
 				syscall.Exit(1)
 			}
 		}
-		return credentials.Credentials, fmt.Errorf("unexpected HTTP status %s, want 200. Response: %s", resp.Status, string(document))
+		return credentialsResponse.Credentials, fmt.Errorf("unexpected HTTP status %s, want 200. Response: %s", resp.Status, string(document))
 	}
 
 	if err != nil {
-		return credentials.Credentials, errors.Wrap(err, "failed to read response body")
+		return credentialsResponse.Credentials, errors.Wrap(err, "failed to read response body")
 	}
 
-	if err := json.Unmarshal(document, &credentials); err != nil {
-		return credentials.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
+	if err := json.Unmarshal(document, &credentialsResponse); err != nil {
+		return credentialsResponse.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
 	}
 
-	credentials.Credentials.RoleArn, err = getRoleArnFromCredentials(credentials.Credentials)
-
-	return credentials.Credentials, nil
+	return credentialsResponse.Credentials, nil
 }
 
-func getRoleArnFromCredentials(credentials AwsCredentials) (string, error) {
+func getRoleArnFromCredentials(c *credentials.Value) (string, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Credentials: AwsSdkCredentials.NewStaticCredentials(
-			credentials.AccessKeyId,
-			credentials.SecretAccessKey,
-			credentials.SessionToken),
+		Credentials: credentials.NewStaticCredentials(
+			c.AccessKeyID,
+			c.SecretAccessKey,
+			c.SessionToken),
 	})
 	util.CheckError(err)
 	svc := sts.New(sess)

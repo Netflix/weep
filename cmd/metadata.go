@@ -24,12 +24,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/netflix/weep/cache"
+
 	"github.com/spf13/viper"
 
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/handlers"
-	"github.com/netflix/weep/metadata"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -50,9 +51,11 @@ var metadataCmd = &cobra.Command{
 
 func runMetadata(cmd *cobra.Command, args []string) error {
 	role = args[0]
-	metadata.Role = role
-	metadata.MetadataRegion = metadataRegion
 	client, err := creds.GetClient()
+	if err != nil {
+		return err
+	}
+	err = cache.GlobalCache.SetDefault(client, role, metadataRegion, make([]string, 0))
 	if err != nil {
 		return err
 	}
@@ -75,8 +78,6 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	router.HandleFunc("/{version}/meta-data/iam/security-credentials/{role}", handlers.MetaDataServiceMiddleware(handlers.CredentialsHandler))
 	router.HandleFunc("/{version}/dynamic/instance-identity/document", handlers.MetaDataServiceMiddleware(handlers.InstanceIdentityDocumentHandler))
 	router.HandleFunc("/{path:.*}", handlers.MetaDataServiceMiddleware(handlers.CustomHandler))
-
-	go metadata.StartMetaDataRefresh(client)
 
 	go func() {
 		log.Info("Starting weep meta-data service...")

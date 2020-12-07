@@ -16,7 +16,21 @@
 
 package metadata
 
-import "time"
+import (
+	"sync"
+	"time"
+
+	"github.com/netflix/weep/creds"
+)
+
+type Credentials struct {
+	Role                string
+	NoIpRestrict        bool
+	metaDataCredentials *creds.AwsCredentials
+	MetadataRegion      string
+	LastRenewal         time.Time
+	mu                  sync.Mutex
+}
 
 type MetaDataCredentialResponse struct {
 	Code            string
