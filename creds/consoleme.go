@@ -62,8 +62,8 @@ type HTTPClient interface {
 
 // Client represents a ConsoleMe client.
 type Client struct {
-	httpc HTTPClient
-	host  string
+	Httpc HTTPClient
+	Host  string
 }
 
 // GetClient creates an authenticated ConsoleMe client
@@ -113,8 +113,8 @@ func NewClientWithMtls(hostname string, httpc HTTPClient) (*Client, error) {
 	}
 
 	c := &Client{
-		httpc: httpc,
-		host:  hostname,
+		Httpc: httpc,
+		Host:  hostname,
 	}
 
 	return c, nil
@@ -132,15 +132,15 @@ func NewClientWithJwtAuth(hostname string, httpc HTTPClient) (*Client, error) {
 	}
 
 	c := &Client{
-		httpc: httpc,
-		host:  hostname,
+		Httpc: httpc,
+		Host:  hostname,
 	}
 
 	return c, nil
 }
 
 func (c *Client) buildRequest(method string, resource string, body io.Reader) (*http.Request, error) {
-	urlStr := c.host + "/api/v1" + resource
+	urlStr := c.Host + "/api/v1" + resource
 
 	return http.NewRequest(method, urlStr, body)
 }
@@ -151,7 +151,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 	req.Header.Set(("User-Agent"), userAgent)
 	req.Header.Add("Content-Type", "application/json")
 
-	return c.httpc.Do(req)
+	return c.Httpc.Do(req)
 }
 
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
@@ -200,7 +200,10 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 	}
 
 	b := new(bytes.Buffer)
-	json.NewEncoder(b).Encode(cmCredRequest)
+	err := json.NewEncoder(b).Encode(cmCredRequest)
+	if err != nil {
+		return credentialsResponse.Credentials, errors.Wrap(err, "failed to create request body")
+	}
 
 	req, err := c.buildRequest(http.MethodPost, "/get_credentials", b)
 	if err != nil {

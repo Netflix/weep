@@ -91,7 +91,7 @@ func (cc *CredentialCache) GetDefault() (*creds.RefreshableProvider, error) {
 	if ok {
 		return c, nil
 	}
-	return nil, fmt.Errorf("no credentials for %s found in cache", cc.DefaultRole)
+	return nil, errors.NoCredentialsFoundInCache
 }
 
 func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {

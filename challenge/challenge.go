@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/manifoldco/promptui"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -32,6 +31,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/manifoldco/promptui"
 
 	"github.com/spf13/viper"
 
