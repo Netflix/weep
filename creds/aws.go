@@ -32,7 +32,7 @@ import (
 func getAwsCredentials(client *Client, role string, ipRestrict bool) (string, string, string, string, time.Time, error) {
 	tempCreds, err := client.GetRoleCredentials(role, ipRestrict)
 	if err != nil {
-		return "", "", "", "", time.Unix(0, 0), err
+		return "", "", "", "", time.Time{}, err
 	}
 
 	return tempCreds.AccessKeyId, tempCreds.SecretAccessKey, tempCreds.SessionToken, tempCreds.RoleArn, tempCreds.Expiration, nil

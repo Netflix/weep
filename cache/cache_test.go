@@ -192,7 +192,7 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 			AccessKeyId:     "a",
 			SecretAccessKey: "b",
 			SessionToken:    "c",
-			Expiration:      time.Unix(1, 0),
+			Expiration:      time.Unix(1, 0).Round(0),
 			RoleArn:         "e",
 		},
 	})
@@ -206,7 +206,7 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 	if testCache.DefaultRole != "a" {
 		t.Errorf("got wrong default: expected %s, got %s", expectedRole, testCache.DefaultRole)
 	}
-	if testCache.RoleCredentials["a"].Expiration != time.Unix(1, 0) {
+	if testCache.RoleCredentials["a"].Expiration != time.Unix(1, 0).Round(0) {
 		t.Errorf("got wrong expiration: expected %s, got %s", expectedRole, testCache.RoleCredentials["a"].Expiration)
 	}
 }
@@ -262,7 +262,7 @@ func TestCredentialCache_GetOrSet(t *testing.T) {
 				AccessKeyId:     "a",
 				SecretAccessKey: "b",
 				SessionToken:    "c",
-				Expiration:      time.Unix(1, 0),
+				Expiration:      time.Unix(1, 0).Round(0),
 				RoleArn:         "e",
 			},
 		})

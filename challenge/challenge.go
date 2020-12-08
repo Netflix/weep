@@ -73,7 +73,7 @@ func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 		Secure:   challenge.WantSecure,
 		HttpOnly: challenge.WantHttpOnly,
 		SameSite: http.SameSite(challenge.SameSite),
-		Expires:  time.Unix(challenge.Expires, 0),
+		Expires:  time.Unix(challenge.Expires, 0).Round(0),
 	},
 	}
 	consoleMeUrlParsed, err := url.Parse(consolemeUrl)
@@ -190,7 +190,7 @@ func HasValidJwt(challenge *ConsolemeChallengeResponse) bool {
 		return false
 	}
 	now := time.Now()
-	expires := time.Unix(challenge.Expires, 0)
+	expires := time.Unix(challenge.Expires, 0).Round(0)
 	if now.After(expires) {
 		return false
 	}
