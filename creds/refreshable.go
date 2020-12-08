@@ -54,7 +54,7 @@ func (rp *RefreshableProvider) AutoRefresh() {
 		select {
 		case _ = <-ticker.C:
 			log.Debugf("checking credentials for %s", rp.Role)
-			err := rp.checkAndRefresh(10)
+			_, err := rp.checkAndRefresh(10)
 			if err != nil {
 				log.Error(err.Error())
 			}
@@ -62,7 +62,7 @@ func (rp *RefreshableProvider) AutoRefresh() {
 	}
 }
 
-func (rp *RefreshableProvider) checkAndRefresh(threshold int) error {
+func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
 	log.Debugf("checking credentials for %s", rp.Role)
 	// refresh creds if we're within 10 minutes of them expiring
 	diff := time.Duration(threshold*-1) * time.Minute
@@ -70,10 +70,10 @@ func (rp *RefreshableProvider) checkAndRefresh(threshold int) error {
 	if time.Now().After(thresh) {
 		err := rp.refresh()
 		if err != nil {
-			return err
+			return false, err
 		}
 	}
-	return nil
+	return true, nil
 }
 
 func (rp *RefreshableProvider) refresh() error {

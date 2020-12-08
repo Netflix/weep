@@ -20,6 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/credentials"
+
 	"github.com/netflix/weep/errors"
 )
 
@@ -30,7 +32,10 @@ var (
 	testRegion          = "d"
 	testRole            = "e"
 	testRoleArn         = "f"
-	testExpiration      = time.Unix(1, 0)
+	testProviderName    = "g"
+	testExpiration      = time.Now().Add(60 * time.Minute).Round(0)
+	testSoonExpiration  = time.Now().Add(5 * time.Minute).Round(0)
+	testPastExpiration  = time.Now().Add(-5 * time.Minute).Round(0)
 	testCredentials     = &AwsCredentials{
 		AccessKeyId:     testAccessKeyId,
 		SecretAccessKey: testSecretAccessKey,
@@ -90,19 +95,6 @@ func TestNewRefreshableProvider(t *testing.T) {
 				AssumeChain:   make([]string, 0),
 			},
 		},
-		//{
-		//	Description:  "bad credential response to check error handling",
-		//	Role:         testRole,
-		//	Region:       testRegion,
-		//	AssumeChain:  make([]string, 0),
-		//	NoIpRestrict: true,
-		//	CredentialResponse: ConsolemeCredentialErrorMessageType{
-		//		Code:    "403",
-		//		Message: "Nope",
-		//	},
-		//	ExpectedError:  errors.CredentialRetrievalError,
-		//	ExpectedResult: nil,
-		//},
 	}
 
 	for i, tc := range cases {
@@ -178,7 +170,7 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 			Region:       testRegion,
 			AssumeChain:  make([]string, 0),
 			NoIpRestrict: false,
-			Retries:      1,
+			Retries:      2,
 			RetryDelay:   1,
 			CredentialResponse: ConsolemeCredentialErrorMessageType{
 				Code:    "403",
@@ -233,5 +225,107 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 		if rp.LastRefreshed == zeroTime {
 			t.Errorf("%s failed: LastRefreshed should be set, got %v", tc.Description, rp.Expiration)
 		}
+	}
+}
+
+func TestRefreshableProvider_checkAndRefresh(t *testing.T) {
+	cases := []struct {
+		Description        string
+		Expiration         time.Time
+		ExpectedExpiration time.Time
+		CredentialResponse interface{}
+		ShouldRefresh      bool
+		ExpectedError      error
+	}{
+		{
+			Description:        "not ready to refresh",
+			Expiration:         testExpiration,
+			ExpectedExpiration: testExpiration,
+			CredentialResponse: testCredentialResponse,
+			ShouldRefresh:      false,
+			ExpectedError:      nil,
+		},
+		{
+			Description:        "ready to refresh",
+			Expiration:         testSoonExpiration,
+			ExpectedExpiration: testExpiration,
+			CredentialResponse: testCredentialResponse,
+			ShouldRefresh:      true,
+			ExpectedError:      nil,
+		},
+		{
+			Description:        "ready to refresh",
+			Expiration:         testPastExpiration,
+			ExpectedExpiration: testExpiration,
+			CredentialResponse: testCredentialResponse,
+			ShouldRefresh:      true,
+			ExpectedError:      nil,
+		},
+	}
+
+	for i, tc := range cases {
+		t.Logf("test case %d: %s", i, tc.Description)
+		client, err := GetTestClient(tc.CredentialResponse)
+		if err != nil {
+			t.Errorf("test setup failure: %e", err)
+			continue
+		}
+		rp := RefreshableProvider{
+			client:     client,
+			Expiration: tc.Expiration,
+			retries:    1,
+		}
+		refreshed, err := rp.checkAndRefresh(10)
+		if err != tc.ExpectedError {
+			t.Errorf("%s failed: expected %v error, got %v", tc.Description, tc.ExpectedError, err)
+		} else {
+			continue
+		}
+		if refreshed != tc.ShouldRefresh {
+			t.Errorf("%s failed: expected %v, got %v", tc.Description, tc.ShouldRefresh, refreshed)
+		}
+		if rp.Expiration != tc.Expiration {
+			t.Errorf("%s failed: expected expiration %v, got %v", tc.Description, tc.Expiration, rp.Expiration)
+		}
+	}
+}
+
+func TestRefreshableProvider_IsExpired(t *testing.T) {
+	t.Logf("test case: check IsExpired is always false")
+	client, err := GetTestClient(testCredentialResponse)
+	if err != nil {
+		t.Errorf("test setup failure: %e", err)
+		t.Fail()
+	}
+
+	rp := RefreshableProvider{
+		client: client,
+	}
+
+	if rp.IsExpired() {
+		t.Errorf("failed: IsExpired returned true")
+	}
+}
+
+func TestRefreshableProvider_Retrieve(t *testing.T) {
+	t.Logf("test case: retrieve credentials")
+
+	expected := credentials.Value{
+		AccessKeyID:     testAccessKeyId,
+		SecretAccessKey: testSecretAccessKey,
+		SessionToken:    testSessionToken,
+		ProviderName:    testProviderName,
+	}
+
+	rp := RefreshableProvider{
+		value: expected,
+	}
+
+	result, err := rp.Retrieve()
+	if err != nil {
+		t.Errorf("failed: expected nil error, got %v", err)
+	}
+	if result != expected {
+		t.Errorf("failed: expected %v, got %v", expected, result)
 	}
 }
