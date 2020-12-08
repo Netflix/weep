@@ -24,4 +24,5 @@ const (
 	NoCredentialsFoundInCache  = Error("no credentials found in cache")
 	NoDefaultRoleSet           = Error("no default role set")
 	CredentialGenerationFailed = Error("credential generation failed")
+	CredentialRetrievalError   = Error("failed to retrieve credentials from broker")
 )

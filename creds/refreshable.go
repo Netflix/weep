@@ -17,13 +17,16 @@
 package creds
 
 import (
-	"os"
 	"time"
+
+	"github.com/netflix/weep/errors"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	log "github.com/sirupsen/logrus"
 )
 
+// NewRefreshableProvider creates an AWS credential provider that will automatically refresh credentials
+// when they are close to expiring
 func NewRefreshableProvider(client *Client, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
 	rp := &RefreshableProvider{
 		Role:         role,
@@ -31,14 +34,19 @@ func NewRefreshableProvider(client *Client, role, region string, assumeChain []s
 		NoIpRestrict: noIpRestrict,
 		AssumeChain:  assumeChain,
 		client:       client,
+		retries:      5,
+		retryDelay:   5,
 	}
-	rp.refresh()
+	err := rp.refresh()
+	if err != nil {
+		return nil, err
+	}
 	// kick off a goroutine to automatically refresh creds
-	go AutoRefresh(rp)
+	go rp.AutoRefresh()
 	return rp, nil
 }
 
-func AutoRefresh(rp *RefreshableProvider) {
+func (rp *RefreshableProvider) AutoRefresh() {
 	// we'll check the creds every minute to see if they're close to expiring
 	ticker := time.NewTicker(time.Minute)
 
@@ -46,39 +54,55 @@ func AutoRefresh(rp *RefreshableProvider) {
 		select {
 		case _ = <-ticker.C:
 			log.Debugf("checking credentials for %s", rp.Role)
-			// refresh creds if we're within 10 minutes of them expiring
-			thresh := rp.Expiration.Add(-10 * time.Minute)
-			if time.Now().After(thresh) {
-				rp.refresh()
+			err := rp.checkAndRefresh(10)
+			if err != nil {
+				log.Error(err.Error())
 			}
 		}
 	}
 }
 
-func (rp *RefreshableProvider) refresh() {
+func (rp *RefreshableProvider) checkAndRefresh(threshold int) error {
+	log.Debugf("checking credentials for %s", rp.Role)
+	// refresh creds if we're within 10 minutes of them expiring
+	diff := time.Duration(threshold*-1) * time.Minute
+	thresh := rp.Expiration.Add(diff)
+	if time.Now().After(thresh) {
+		err := rp.refresh()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (rp *RefreshableProvider) refresh() error {
 	log.Debugf("refreshing credentials for %s", rp.Role)
 	var err error
 	var newCreds *AwsCredentials
-	retryDelay := 5 * time.Second
+	retryDelay := time.Duration(rp.retryDelay) * time.Second
 
 	rp.mu.Lock()
 	defer rp.mu.Unlock()
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < rp.retries; i++ {
 		newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
 		if err != nil {
 			log.Errorf("failed to get refreshed credentials: %s", err.Error())
-			time.Sleep(retryDelay)
+			if i != rp.retries-1 {
+				// only sleep if we have remaining retries
+				time.Sleep(retryDelay)
+			}
 		} else {
 			break
 		}
 	}
 	if newCreds == nil {
-		log.Fatal("Unable to retrieve credentials from ConsoleMe")
-		os.Exit(1)
+		log.Error("Unable to retrieve credentials from ConsoleMe")
+		return errors.CredentialRetrievalError
 	}
 
-	rp.Expiration = time.Unix(newCreds.Expiration, 0)
+	rp.Expiration = newCreds.Expiration
 	rp.value.AccessKeyID = newCreds.AccessKeyId
 	rp.value.SessionToken = newCreds.SessionToken
 	rp.value.SecretAccessKey = newCreds.SecretAccessKey
@@ -89,15 +113,17 @@ func (rp *RefreshableProvider) refresh() {
 		rp.value.ProviderName = "WeepRefreshableProvider"
 	}
 	log.Debugf("successfully refreshed credentials for %s", rp.Role)
+	return nil
 }
 
+// Retrieve returns the AWS credentials from the provider
 func (rp *RefreshableProvider) Retrieve() (credentials.Value, error) {
 	rp.mu.RLock()
 	defer rp.mu.RUnlock()
 	return rp.value, nil
 }
 
+// IsExpired always returns false because we should never have expired credentials
 func (rp *RefreshableProvider) IsExpired() bool {
-	// we always return false because we should never have expired creds
 	return false
 }

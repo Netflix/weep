@@ -24,17 +24,19 @@ import (
 )
 
 type AwsCredentials struct {
-	AccessKeyId     string `json:"AccessKeyId"`
-	SecretAccessKey string `json:"SecretAccessKey"`
-	SessionToken    string `json:"SessionToken"`
-	Expiration      int64  `json:"Expiration"`
-	RoleArn         string `json:"RoleArn"`
+	AccessKeyId     string    `json:"AccessKeyId"`
+	SecretAccessKey string    `json:"SecretAccessKey"`
+	SessionToken    string    `json:"SessionToken"`
+	Expiration      time.Time `json:"Expiration"`
+	RoleArn         string    `json:"RoleArn"`
 }
 
 type RefreshableProvider struct {
 	value         credentials.Value
 	mu            sync.RWMutex
 	client        *Client
+	retries       int
+	retryDelay    int
 	Expiration    time.Time
 	LastRefreshed time.Time
 	Region        string

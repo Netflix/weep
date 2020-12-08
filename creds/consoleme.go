@@ -35,6 +35,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	werrors "github.com/netflix/weep/errors"
 	"github.com/netflix/weep/util"
 
 	"github.com/spf13/viper"
@@ -242,6 +243,10 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 
 	if err := json.Unmarshal(document, &credentialsResponse); err != nil {
 		return credentialsResponse.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
+	}
+
+	if credentialsResponse.Credentials == nil {
+		return nil, werrors.CredentialRetrievalError
 	}
 
 	return credentialsResponse.Credentials, nil

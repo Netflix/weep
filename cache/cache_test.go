@@ -17,10 +17,6 @@
 package cache
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"testing"
 	"time"
 
@@ -186,44 +182,17 @@ func TestCredentialCache_GetDefault(t *testing.T) {
 	}
 }
 
-type ClientMock struct {
-	DoFunc func(req *http.Request) (*http.Response, error)
-}
-
-func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
-	return c.DoFunc(req)
-}
-
-func GetTestClient(responseBody interface{}) (*creds.Client, error) {
-	resp, err := json.Marshal(responseBody)
-	if err != nil {
-		return nil, err
-	}
-	client := &creds.Client{
-		Httpc: &ClientMock{
-			DoFunc: func(*http.Request) (*http.Response, error) {
-				r := ioutil.NopCloser(bytes.NewReader(resp))
-				return &http.Response{
-					StatusCode: 200,
-					Body:       r,
-				}, nil
-			},
-		},
-	}
-	return client, nil
-}
-
 func TestCredentialCache_SetDefault(t *testing.T) {
 	testCache := CredentialCache{
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
 	expectedRole := "a"
-	testClient, err := GetTestClient(creds.ConsolemeCredentialResponseType{
+	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
 		Credentials: &creds.AwsCredentials{
 			AccessKeyId:     "a",
 			SecretAccessKey: "b",
 			SessionToken:    "c",
-			Expiration:      1,
+			Expiration:      time.Unix(1, 0),
 			RoleArn:         "e",
 		},
 	})
@@ -288,12 +257,12 @@ func TestCredentialCache_GetOrSet(t *testing.T) {
 		testCache := CredentialCache{
 			RoleCredentials: tc.CacheContents,
 		}
-		client, err := GetTestClient(creds.ConsolemeCredentialResponseType{
+		client, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
 			Credentials: &creds.AwsCredentials{
 				AccessKeyId:     "a",
 				SecretAccessKey: "b",
 				SessionToken:    "c",
-				Expiration:      1,
+				Expiration:      time.Unix(1, 0),
 				RoleArn:         "e",
 			},
 		})
