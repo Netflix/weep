@@ -187,6 +187,7 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
 	expectedRole := "a"
+	expectedExpiration := time.Unix(1, 0).Round(0)
 	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
 		Credentials: &creds.AwsCredentials{
 			AccessKeyId:     "a",
@@ -206,8 +207,8 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 	if testCache.DefaultRole != "a" {
 		t.Errorf("got wrong default: expected %s, got %s", expectedRole, testCache.DefaultRole)
 	}
-	if testCache.RoleCredentials["a"].Expiration != time.Unix(1, 0).Round(0) {
-		t.Errorf("got wrong expiration: expected %s, got %s", expectedRole, testCache.RoleCredentials["a"].Expiration)
+	if testCache.RoleCredentials["a"].Expiration.Unix() != expectedExpiration.Unix() {
+		t.Errorf("got wrong expiration: expected %s, got %s", expectedExpiration, testCache.RoleCredentials["a"].Expiration)
 	}
 }
 

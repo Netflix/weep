@@ -112,7 +112,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 			t.Errorf("%s failed: got nil result, expected %v", tc.Description, tc.ExpectedResult)
 			continue
 		}
-		if actualResult != nil && actualResult.Expiration != tc.ExpectedResult.Expiration {
+		if actualResult != nil && actualResult.Expiration.Unix() != tc.ExpectedResult.Expiration.Unix() {
 			t.Errorf("%s failed: got %v expiration, expected %v", tc.Description, actualResult.Expiration, tc.ExpectedResult.Expiration)
 			continue
 		}
