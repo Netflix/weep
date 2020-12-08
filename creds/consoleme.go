@@ -310,3 +310,30 @@ func defaultTransport() *http.Transport {
 		MaxIdleConnsPerHost:   runtime.GOMAXPROCS(0) + 1,
 	}
 }
+
+type ClientMock struct {
+	DoFunc func(req *http.Request) (*http.Response, error)
+}
+
+func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
+	return c.DoFunc(req)
+}
+
+func GetTestClient(responseBody interface{}) (*Client, error) {
+	resp, err := json.Marshal(responseBody)
+	if err != nil {
+		return nil, err
+	}
+	client := &Client{
+		Httpc: &ClientMock{
+			DoFunc: func(*http.Request) (*http.Response, error) {
+				r := ioutil.NopCloser(bytes.NewReader(resp))
+				return &http.Response{
+					StatusCode: 200,
+					Body:       r,
+				}, nil
+			},
+		},
+	}
+	return client, nil
+}
