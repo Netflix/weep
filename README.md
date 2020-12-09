@@ -1,4 +1,5 @@
 [![](https://img.shields.io/badge/docs-gitbook-blue?style=flat-square)](https://hawkins.gitbook.io/consoleme/weep-cli/)
+[![Discord Chat](https://img.shields.io/discord/730908778299523072?label=Chat&logo=discord&style=flat-square)](https://discord.gg/tZ8S7Yg)
 
 # weep
 
