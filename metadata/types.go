@@ -16,7 +16,20 @@
 
 package metadata
 
-import "time"
+import (
+	"sync"
+
+	"github.com/netflix/weep/creds"
+)
+
+type Credentials struct {
+	Role                string
+	NoIpRestrict        bool
+	metaDataCredentials *creds.AwsCredentials
+	MetadataRegion      string
+	LastRenewal         creds.Time
+	mu                  sync.Mutex
+}
 
 type MetaDataCredentialResponse struct {
 	Code            string
@@ -44,19 +57,19 @@ type MetaDataIamInfoResponse struct {
 }
 
 type MetaDataInstanceIdentityDocumentResponse struct {
-	DevpayProductCodes      []string  `json:"devpayProductCodes"`
-	MarkerplaceProductCodes []string  `json:"marketplaceProductCodes"`
-	PrivateIP               string    `json:"privateIp"`
-	Version                 string    `json:"version"`
-	InstanceID              string    `json:"instanceId"`
-	BillingProductCodes     []string  `json:"billingProducts"`
-	InstanceType            string    `json:"instanceType"`
-	AvailabilityZone        string    `json:"availabilityZone"`
-	KernelID                string    `json:"kernelId"`
-	RamdiskID               string    `json:"ramdiskId"`
-	AccountID               string    `json:"accountId"`
-	Architecture            string    `json:"architecture"`
-	ImageID                 string    `json:"imageId"`
-	PendingTime             time.Time `json:"pendingTime"`
-	Region                  string    `json:"region"`
+	DevpayProductCodes      []string   `json:"devpayProductCodes"`
+	MarkerplaceProductCodes []string   `json:"marketplaceProductCodes"`
+	PrivateIP               string     `json:"privateIp"`
+	Version                 string     `json:"version"`
+	InstanceID              string     `json:"instanceId"`
+	BillingProductCodes     []string   `json:"billingProducts"`
+	InstanceType            string     `json:"instanceType"`
+	AvailabilityZone        string     `json:"availabilityZone"`
+	KernelID                string     `json:"kernelId"`
+	RamdiskID               string     `json:"ramdiskId"`
+	AccountID               string     `json:"accountId"`
+	Architecture            string     `json:"architecture"`
+	ImageID                 string     `json:"imageId"`
+	PendingTime             creds.Time `json:"pendingTime"`
+	Region                  string     `json:"region"`
 }

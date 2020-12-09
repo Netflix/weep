@@ -106,7 +106,7 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 }
 
 func printCredentialProcess(credentials *creds.AwsCredentials) {
-	expirationTimeFormat := time.Unix(credentials.Expiration, 0).Format(time.RFC3339)
+	expirationTimeFormat := credentials.Expiration.Format(time.RFC3339)
 
 	credentialProcessOutput := &creds.CredentialProcess{
 		Version:         1,

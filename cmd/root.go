@@ -78,7 +78,7 @@ func initConfig() {
 	}
 
 	if err := config.ReadEmbeddedConfig(); err != nil {
-		log.Errorf("unable to read embedded config: %v; falling back to config file", err)
+		log.Debugf("unable to read embedded config: %v; falling back to config file", err)
 	}
 
 	if err := viper.ReadInConfig(); err != nil {

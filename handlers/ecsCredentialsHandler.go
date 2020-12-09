@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/netflix/weep/cache"
 	"github.com/netflix/weep/util"
 
 	"github.com/gorilla/mux"
@@ -76,41 +76,26 @@ func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request
 	}
 	vars := mux.Vars(r)
 	requestedRole := vars["role"]
-	cacheSlug := getCacheSlug(requestedRole, assume)
-	var credentials *creds.AwsCredentials
 
-	val, ok := credentialMap[cacheSlug]
-	if ok {
-		credentials = val
-
-		// Refresh credentialResponse on demand if expired or within 10 minutes of expiry
-		currentTime := time.Now()
-		tm := time.Unix(credentials.Expiration, 0)
-		timeToRenew := tm.Add(-10 * time.Minute)
-		if currentTime.After(timeToRenew) {
-			credentials, err = creds.GetCredentialsC(client, requestedRole, false, assume)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-		}
-	} else {
-		credentials, err = creds.GetCredentialsC(client, requestedRole, false, assume)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-		credentialMap[cacheSlug] = credentials
+	cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, "", assume)
+	if err != nil {
+		// TODO: handle error better and return a helpful response/status
+		log.Errorf("failed to get credentials: %s", err.Error())
+		return
+	}
+	cachedCredentials, err := cached.Retrieve()
+	if err != nil {
+		// TODO: handle error better and return a helpful response/status
+		log.Errorf("failed to get credentials: %s", err.Error())
+		return
 	}
 
-	tm := time.Unix(credentials.Expiration, 0)
-
 	credentialResponse := metadata.ECSMetaDataCredentialResponse{
-		AccessKeyId:     fmt.Sprintf("%s", credentials.AccessKeyId),
-		Expiration:      tm.UTC().Format("2006-01-02T15:04:05Z"),
-		RoleArn:         credentials.RoleArn,
-		SecretAccessKey: fmt.Sprintf("%s", credentials.SecretAccessKey),
-		Token:           fmt.Sprintf("%s", credentials.SessionToken),
+		AccessKeyId:     fmt.Sprintf("%s", cachedCredentials.AccessKeyID),
+		Expiration:      cached.Expiration.UTC().Format("2006-01-02T15:04:05Z"),
+		RoleArn:         cached.RoleArn,
+		SecretAccessKey: fmt.Sprintf("%s", cachedCredentials.SecretAccessKey),
+		Token:           fmt.Sprintf("%s", cachedCredentials.SessionToken),
 	}
 
 	b, err := json.Marshal(credentialResponse)

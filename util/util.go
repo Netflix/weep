@@ -18,7 +18,6 @@ package util
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -44,7 +43,7 @@ type ErrorResponse struct {
 
 func validate(arn string, pieces []string) error {
 	if len(pieces) < 6 {
-		return errors.New("Malformed ARN")
+		return fmt.Errorf("malformed ARN: %s", arn)
 	}
 	return nil
 }

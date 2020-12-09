@@ -21,37 +21,43 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+	"os"
 
+	"github.com/netflix/weep/cache"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netflix/weep/metadata"
-	"github.com/netflix/weep/util"
 )
 
 func RoleHandler(w http.ResponseWriter, r *http.Request) {
-
-	arn, _ := util.ArnParse(metadata.Role)
-	if arn != nil {
-		fmt.Fprint(w, arn.Resource)
-	}
+	// I think this works as long as there's a response?
+	fmt.Fprint(w, "hi")
 }
 
 func CredentialsHandler(w http.ResponseWriter, r *http.Request) {
 
-	tm := time.Unix(metadata.MetaDataCredentials.Expiration, 0)
-
-	credentials := metadata.MetaDataCredentialResponse{
-		Code:            "Success",
-		LastUpdated:     metadata.LastRenewal.UTC().Format("2006-01-02T15:04:05Z"),
-		Type:            "AWS-HMAC",
-		AccessKeyId:     fmt.Sprintf("%s", metadata.MetaDataCredentials.AccessKeyId),
-		SecretAccessKey: fmt.Sprintf("%s", metadata.MetaDataCredentials.SecretAccessKey),
-		Token:           fmt.Sprintf("%s", metadata.MetaDataCredentials.SessionToken),
-		Expiration:      tm.UTC().Format("2006-01-02T15:04:05Z"),
+	c, err := cache.GlobalCache.GetDefault()
+	if err != nil {
+		log.Fatalf("could not get credentials from cache: %e", err)
+		os.Exit(1)
+	}
+	credentials, err := c.Retrieve()
+	if err != nil {
+		log.Fatalf("could not get credentials: %e", err)
+		os.Exit(1)
 	}
 
-	b, err := json.Marshal(credentials)
+	credentialResponse := metadata.MetaDataCredentialResponse{
+		Code:            "Success",
+		LastUpdated:     c.LastRefreshed.UTC().Format("2006-01-02T15:04:05Z"),
+		Type:            "AWS-HMAC",
+		AccessKeyId:     fmt.Sprintf("%s", credentials.AccessKeyID),
+		SecretAccessKey: fmt.Sprintf("%s", credentials.SecretAccessKey),
+		Token:           fmt.Sprintf("%s", credentials.SessionToken),
+		Expiration:      c.Expiration.UTC().Format("2006-01-02T15:04:05Z"),
+	}
+
+	b, err := json.Marshal(credentialResponse)
 	if err != nil {
 		log.Error(err)
 	}
