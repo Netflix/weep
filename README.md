@@ -35,6 +35,38 @@ In challenge mode, Weep will prompt the user for their username the first time t
 derive their username from their valid/expired jwt on subsequent attempts. You can also specify the desired username
 in weep's configuration under the `challenge_settings.user` setting as seen in  `example-config.yaml`.
 
+### Pre-Commit Setup
+Weep uses pre-commit to run unit tests and Go linting.  Pre-commit documentation can be found on [pre-commit](https://pre-commit.com/)
+
+#### Installation
+You can install pre-commit using the following steps:
+
+Using pip:
+```
+pip install pre-commit
+```
+Using [homebrew](https://brew.sh/):
+```
+brew install pre-commit
+```
+Using [Conda](https://conda.io/):
+```
+conda install -c conda-forge pre-commit
+```
+
+Validate your installation with the following:
+```
+$ pre-commit --version
+pre-commit 2.9.3
+```
+
+#### Configuration
+Set up the git hook scripts to run automatically with git commit
+```
+$ pre-commit install
+pre-commit installed at .git/hooks/pre-commit
+```
+
 ## Building
 
 In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires
