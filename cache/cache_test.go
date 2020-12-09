@@ -193,7 +193,7 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 			AccessKeyId:     "a",
 			SecretAccessKey: "b",
 			SessionToken:    "c",
-			Expiration:      time.Unix(1, 0).Round(0),
+			Expiration:      creds.Time(time.Unix(1, 0)),
 			RoleArn:         "e",
 		},
 	})
@@ -263,7 +263,7 @@ func TestCredentialCache_GetOrSet(t *testing.T) {
 				AccessKeyId:     "a",
 				SecretAccessKey: "b",
 				SessionToken:    "c",
-				Expiration:      time.Unix(1, 0).Round(0),
+				Expiration:      creds.Time(time.Unix(1, 0)),
 				RoleArn:         "e",
 			},
 		})

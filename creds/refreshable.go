@@ -107,7 +107,7 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.value.SessionToken = newCreds.SessionToken
 	rp.value.SecretAccessKey = newCreds.SecretAccessKey
 	rp.value.AccessKeyID = newCreds.AccessKeyId
-	rp.LastRefreshed = time.Now()
+	rp.LastRefreshed = Time(time.Now())
 	rp.RoleArn = newCreds.RoleArn
 	if rp.value.ProviderName == "" {
 		rp.value.ProviderName = "WeepRefreshableProvider"

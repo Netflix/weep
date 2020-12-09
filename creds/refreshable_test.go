@@ -33,9 +33,9 @@ var (
 	testRole            = "e"
 	testRoleArn         = "f"
 	testProviderName    = "g"
-	testExpiration      = time.Now().Add(60 * time.Minute).Round(0)
-	testSoonExpiration  = time.Now().Add(5 * time.Minute).Round(0)
-	testPastExpiration  = time.Now().Add(-5 * time.Minute).Round(0)
+	testExpiration      = Time(time.Now().Add(60 * time.Minute).Round(0))
+	testSoonExpiration  = Time(time.Now().Add(5 * time.Minute).Round(0))
+	testPastExpiration  = Time(time.Now().Add(-5 * time.Minute).Round(0))
 	testCredentials     = &AwsCredentials{
 		AccessKeyId:     testAccessKeyId,
 		SecretAccessKey: testSecretAccessKey,
@@ -69,7 +69,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 			ExpectedError:      nil,
 			ExpectedResult: &RefreshableProvider{
 				Expiration:    testExpiration,
-				LastRefreshed: time.Time{},
+				LastRefreshed: Time{},
 				Region:        testRegion,
 				Role:          testRole,
 				RoleArn:       testRoleArn,
@@ -87,7 +87,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 			ExpectedError:      nil,
 			ExpectedResult: &RefreshableProvider{
 				Expiration:    testExpiration,
-				LastRefreshed: time.Time{},
+				LastRefreshed: Time{},
 				Region:        testRegion,
 				Role:          testRole,
 				RoleArn:       testRoleArn,
@@ -181,7 +181,7 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 		},
 	}
 
-	zeroTime := time.Time{}
+	zeroTime := Time{}
 	for i, tc := range cases {
 		t.Logf("test case %d: %s", i, tc.Description)
 		client, err := GetTestClient(tc.CredentialResponse)
@@ -231,8 +231,8 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 func TestRefreshableProvider_checkAndRefresh(t *testing.T) {
 	cases := []struct {
 		Description        string
-		Expiration         time.Time
-		ExpectedExpiration time.Time
+		Expiration         Time
+		ExpectedExpiration Time
 		CredentialResponse interface{}
 		ShouldRefresh      bool
 		ExpectedError      error

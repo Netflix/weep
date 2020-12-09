@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/netflix/weep/creds"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/netflix/weep/metadata"
@@ -56,7 +58,7 @@ func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		AccountID:               accountID,
 		Architecture:            "x86_64",
 		ImageID:                 "ami-12345",
-		PendingTime:             metadata.LastRenewal.UTC(), //.Format("2006-01-02T15:04:05Z"),
+		PendingTime:             creds.Time(metadata.LastRenewal.UTC()), //.Format("2006-01-02T15:04:05Z"),
 		Region:                  metadata.MetadataRegion,
 	}
 

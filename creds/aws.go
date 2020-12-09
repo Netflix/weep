@@ -19,7 +19,6 @@ package creds
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -29,10 +28,10 @@ import (
 )
 
 // getAwsCredentials uses the provided Client to request credentials from ConsoleMe.
-func getAwsCredentials(client *Client, role string, ipRestrict bool) (string, string, string, string, time.Time, error) {
+func getAwsCredentials(client *Client, role string, ipRestrict bool) (string, string, string, string, Time, error) {
 	tempCreds, err := client.GetRoleCredentials(role, ipRestrict)
 	if err != nil {
-		return "", "", "", "", time.Time{}, err
+		return "", "", "", "", Time{}, err
 	}
 
 	return tempCreds.AccessKeyId, tempCreds.SecretAccessKey, tempCreds.SessionToken, tempCreds.RoleArn, tempCreds.Expiration, nil

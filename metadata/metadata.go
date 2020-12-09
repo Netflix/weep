@@ -16,12 +16,10 @@
 
 package metadata
 
-import (
-	"time"
-)
+import "github.com/netflix/weep/creds"
 
 var (
 	Role           string
 	MetadataRegion string
-	LastRenewal    time.Time
+	LastRenewal    creds.Time
 )
