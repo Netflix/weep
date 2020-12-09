@@ -1,4 +1,4 @@
-[![](https://img.shields.io/badge/docs-gitbook-blue?style=flat-square)](https://app.gitbook.com/@hawkins/s/consoleme/weep-cli/)
+[![](https://img.shields.io/badge/docs-gitbook-blue?style=flat-square)](https://hawkins.gitbook.io/consoleme/weep-cli/)
 
 # weep
 
@@ -8,7 +8,7 @@ variables for your AWS needs.
 
 ## Documentation
 
-This README contains developer documentation. Weep user documentation can be found on [GitBook](https://app.gitbook.com/@hawkins/s/consoleme/weep-cli/).
+This README contains developer documentation. Weep user documentation can be found on [GitBook](https://hawkins.gitbook.io/consoleme/weep-cli/).
 
 ## Configuration
 
