@@ -42,7 +42,7 @@ func init() {
 
 var metadataCmd = &cobra.Command{
 	Use:   "metadata [role_name]",
-	Short: "Run a local Instance Metadata Service (IMDS) endpoint that serves credentials",
+	Short: "RunService a local Instance Metadata Service (IMDS) endpoint that serves credentials",
 	Args:  cobra.ExactArgs(1),
 	RunE:  runMetadata,
 }
@@ -86,8 +86,6 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
 	log.Print("Shutdown signal received, exiting weep meta-data service...")
-	// Send a signal to show that we're done shutting down
-	done <- 0
 
 	return nil
 }

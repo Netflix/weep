@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package run
+package cmd
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/kardianos/service"
-	"github.com/netflix/weep/cmd"
 	log "github.com/sirupsen/logrus"
 )
 
 var svcLogger service.Logger
-var done chan int
 
 type program struct{}
 
@@ -37,10 +31,8 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
-	shutdown := make(chan os.Signal, 1)
-	done = make(chan int, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-	cmd.Execute(shutdown, done)
+	_ = rootCmd.Execute()
+	done <- 0
 }
 
 func (p *program) Stop(s service.Service) error {
@@ -48,7 +40,7 @@ func (p *program) Stop(s service.Service) error {
 	return nil
 }
 
-func Run() {
+func RunService() {
 	svcConfig := &service.Config{
 		Name:        "Weep",
 		DisplayName: "Weep",
@@ -68,4 +60,5 @@ func Run() {
 	if err != nil {
 		_ = svcLogger.Error(err)
 	}
+	done <- 0
 }

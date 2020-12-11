@@ -16,6 +16,8 @@
 
 package cmd
 
+import "os"
+
 var (
 	assumeRole            []string
 	role                  string
@@ -32,4 +34,7 @@ var (
 	cfgFile               string
 	logLevel              string
 	logFormat             string
+	runAsService          bool
+	shutdown              chan os.Signal
+	done                  chan int
 )

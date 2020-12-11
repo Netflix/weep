@@ -38,7 +38,7 @@ func init() {
 
 var ecsCredentialProvider = &cobra.Command{
 	Use:   "ecs_credential_provider",
-	Short: "Run a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand",
+	Short: "RunService a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand",
 	RunE:  runEcsMetadata,
 }
 
@@ -65,8 +65,6 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
 	log.Print("Shutdown signal received, exiting weep...")
-	// Send a signal to show that we're done shutting down
-	done <- 0
 
 	return nil
 }

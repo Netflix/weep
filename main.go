@@ -19,7 +19,8 @@ package main
 import (
 	"os"
 
-	"github.com/netflix/weep/run"
+	"github.com/netflix/weep/cmd"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,5 +30,5 @@ func init() {
 }
 
 func main() {
-	run.Run()
+	cmd.Execute()
 }
