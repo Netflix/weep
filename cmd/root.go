@@ -41,6 +41,8 @@ var (
 		Long:              "Weep is a CLI tool that manages AWS access via ConsoleMe for local development.",
 		DisableAutoGenTag: true,
 	}
+	shutdown chan os.Signal
+	done     chan int
 )
 
 func init() {
@@ -54,7 +56,9 @@ func init() {
 
 }
 
-func Execute() {
+func Execute(shutdownSignal chan os.Signal, doneSignal chan int) {
+	shutdown = shutdownSignal
+	done = doneSignal
 	if err := rootCmd.Execute(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

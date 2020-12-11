@@ -21,8 +21,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/netflix/weep/cache"
 
@@ -86,10 +84,10 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	}()
 
 	// Check for interrupt signal and exit cleanly
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	<-shutdown
 	log.Print("Shutdown signal received, exiting weep meta-data service...")
+	// Send a signal to show that we're done shutting down
+	done <- 0
 
 	return nil
 }
