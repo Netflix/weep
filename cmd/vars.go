@@ -34,7 +34,8 @@ var (
 	cfgFile               string
 	logLevel              string
 	logFormat             string
-	runAsService          bool
+	serviceCommand        string
+	serviceArgs           string
 	shutdown              chan os.Signal
 	done                  chan int
 )

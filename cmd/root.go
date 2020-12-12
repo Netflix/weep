@@ -53,20 +53,15 @@ func init() {
 	rootCmd.PersistentFlags().StringSliceVarP(&assumeRole, "assume-role", "A", make([]string, 0), "one or more roles to assume after retrieving credentials")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "log format (json or tty)")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
-	rootCmd.PersistentFlags().BoolVarP(&runAsService, "svc", "s", false, "run weep as a service")
 }
 
 func Execute() {
 	shutdown = make(chan os.Signal, 1)
 	done = make(chan int, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-	if runAsService {
-		RunService()
-	} else {
-		if err := rootCmd.Execute(); err != nil {
-			_, _ = fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
+	if err := rootCmd.Execute(); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
 
