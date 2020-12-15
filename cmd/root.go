@@ -57,7 +57,7 @@ func init() {
 }
 
 func Execute() {
-	shutdown := make(chan os.Signal, 1)
+	shutdown = make(chan os.Signal, 1)
 	done = make(chan int, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	if runAsService {
