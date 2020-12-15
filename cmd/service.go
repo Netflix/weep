@@ -17,8 +17,6 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/kardianos/service"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -29,27 +27,30 @@ var svcLogger service.Logger
 type program struct{}
 
 func init() {
-	weepService.PersistentFlags().StringVarP(&serviceCommand, "command", "C", "metadata", "weep command to run as service")
-	weepService.PersistentFlags().StringVarP(&serviceArgs, "args", "a", "metadata", "arguments to be passed to weep command")
-	weepService.Args = cobra.ExactValidArgs(1)
-	weepService.ValidArgs = []string{"start", "stop", "restart", "install", "uninstall"}
+	weepService.Args = cobra.MinimumNArgs(1)
 	rootCmd.AddCommand(weepService)
 }
 
 var weepService = &cobra.Command{
-	Use:   "service [start|stop|restart|install|uninstall]",
+	Use:   "service [start|stop|restart|install|uninstall] [subcommand] [flags]",
 	Short: "Install or control weep as a system service",
 	RunE:  runWeepService,
 }
 
-func runWeepService(cmd *cobra.Command, args []string) error {
-	arguments := append([]string{serviceCommand}, strings.Split(serviceArgs, " ")...)
+//func getServiceArgsFromConfig() ([]string, error) {
+//	serviceCommand := viper.GetString("service.command")
+//	serviceRole := viper.GetString("service.role")
+//	serviceAssume := viper.GetStringSlice("service.assume_role_chain")
+//
+//	return args, nil
+//}
 
+func runWeepService(cmd *cobra.Command, args []string) error {
 	svcConfig := &service.Config{
 		Name:        "weep",
 		DisplayName: "Weep",
 		Description: "The ConsoleMe CLI",
-		Arguments:   arguments,
+		Arguments:   args[1:],
 	}
 
 	prg := &program{}

@@ -20,10 +20,14 @@ import "github.com/spf13/viper"
 
 func init() {
 	// Set default configuration values here
+	viper.SetTypeByDefaultValue(true)
 	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")
 	viper.SetDefault("server.http_timeout", 20)
 	viper.SetDefault("server.metadata_port", 9090)
 	viper.SetDefault("server.ecs_credential_provider_port", 9091)
+	viper.SetDefault("service.command", "ecs_metadata_service")
+	viper.SetDefault("service.role", "")
+	viper.SetDefault("service.assume_role_chain", []string{})
 }
 
 var (
