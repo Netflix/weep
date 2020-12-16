@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path"
 
 	ini "gopkg.in/ini.v1"
@@ -26,6 +25,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/util"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -60,8 +60,7 @@ func runFile(cmd *cobra.Command, args []string) error {
 func getDefaultCredentialsFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		fmt.Printf("couldn't get default directory!")
-		os.Exit(1)
+		log.Fatal("couldn't get default directory")
 	}
 	return path.Join(home, ".aws", "credentials")
 }
@@ -69,8 +68,7 @@ func getDefaultCredentialsFile() string {
 func getDefaultAwsConfigFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		fmt.Printf("couldn't get default directory!")
-		os.Exit(1)
+		log.Fatal("couldn't get default directory")
 	}
 	return path.Join(home, ".aws", "config")
 }

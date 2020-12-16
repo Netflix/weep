@@ -25,6 +25,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/kardianos/service"
+
 	"github.com/netflix/weep/util"
 
 	"github.com/mattn/go-isatty"
@@ -59,9 +61,30 @@ func Execute() {
 	shutdown = make(chan os.Signal, 1)
 	done = make(chan int, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-	if err := rootCmd.Execute(); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+
+	svcProgram = &program{}
+	weepService, err := service.New(svcProgram, svcConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	errs := make(chan error, 5)
+	svcLogger, err = weepService.Logger(errs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		for {
+			err := <-errs
+			if err != nil {
+				log.Error(err)
+			}
+		}
+	}()
+
+	if err := weepService.Run(); err != nil {
+		_ = svcLogger.Error(err)
 	}
 }
 
@@ -71,8 +94,7 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".weep")
@@ -135,4 +157,32 @@ func initLogging() {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
+}
+
+var svcLogger service.Logger
+var svcConfig *service.Config
+var svcProgram *program
+var weepService service.Service
+
+type program struct{}
+
+func (p *program) Start(s service.Service) error {
+	go p.run()
+	return nil
+}
+
+func (p *program) run() {
+	exitCode := 0
+	if err := rootCmd.Execute(); err != nil {
+		log.Error(err)
+		exitCode = 1
+	}
+	log.Debug("sending done signal")
+	done <- exitCode
+}
+
+func (p *program) Stop(s service.Service) error {
+	log.Debug("waiting for done signal")
+	os.Exit(<-done)
+	return nil
 }

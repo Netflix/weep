@@ -221,10 +221,7 @@ func RefreshChallenge() error {
 		}
 	}
 	if user == "" {
-		log.Fatalf(
-			"Invalid configuration. You must define challenge_settings.user as the user you wish to authenticate" +
-				" as.",
-		)
+		return fmt.Errorf("invalid configuration: challenge_settings.user must be set")
 	}
 	var consoleMeChallengeGeneratorEndpoint = fmt.Sprintf(
 		"%s/noauth/v1/challenge_generator/%s",

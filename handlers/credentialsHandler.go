@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/netflix/weep/cache"
 	log "github.com/sirupsen/logrus"
@@ -38,13 +37,11 @@ func CredentialsHandler(w http.ResponseWriter, r *http.Request) {
 
 	c, err := cache.GlobalCache.GetDefault()
 	if err != nil {
-		log.Fatalf("could not get credentials from cache: %e", err)
-		os.Exit(1)
+		log.Errorf("could not get credentials from cache: %e", err)
 	}
 	credentials, err := c.Retrieve()
 	if err != nil {
-		log.Fatalf("could not get credentials: %e", err)
-		os.Exit(1)
+		log.Errorf("could not get credentials: %e", err)
 	}
 
 	credentialResponse := metadata.MetaDataCredentialResponse{

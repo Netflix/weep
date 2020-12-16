@@ -22,17 +22,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var svcLogger service.Logger
-
-type program struct{}
-
 func init() {
-	weepService.Args = cobra.MinimumNArgs(1)
-	rootCmd.AddCommand(weepService)
+	weepServiceControl.Args = cobra.MinimumNArgs(1)
+	rootCmd.AddCommand(weepServiceControl)
+
+	svcConfig = &service.Config{
+		Name:        "weep",
+		DisplayName: "Weep",
+		Description: "The ConsoleMe CLI",
+		//Arguments:   args[1:],
+		Arguments: []string{"ecs_credential_provider"},
+	}
 }
 
-var weepService = &cobra.Command{
-	Use:   "service [start|stop|restart|install|uninstall] [subcommand] [flags]",
+var weepServiceControl = &cobra.Command{
+	Use:   "service [start|stop|restart|install|uninstall]",
 	Short: "Install or control weep as a system service",
 	RunE:  runWeepService,
 }
@@ -46,62 +50,13 @@ var weepService = &cobra.Command{
 //}
 
 func runWeepService(cmd *cobra.Command, args []string) error {
-	svcConfig := &service.Config{
-		Name:        "weep",
-		DisplayName: "Weep",
-		Description: "The ConsoleMe CLI",
-		Arguments:   args[1:],
-	}
-
-	prg := &program{}
-	s, err := service.New(prg, svcConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-	errs := make(chan error, 5)
-	svcLogger, err = s.Logger(errs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go func() {
-		for {
-			err := <-errs
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}()
-
 	if len(args[0]) > 0 {
-		err := service.Control(s, args[0])
+		err := service.Control(weepService, args[0])
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-		done <- 0
-		return nil
 	}
-
-	err = s.Run()
-	if err != nil {
-		_ = svcLogger.Error(err)
-	}
+	log.Debug("sending done signal")
 	done <- 0
-
-	return nil
-}
-
-func (p *program) Start(s service.Service) error {
-	go p.run()
-	return nil
-}
-
-func (p *program) run() {
-	_ = rootCmd.Execute()
-	done <- 0
-}
-
-func (p *program) Stop(s service.Service) error {
-	<-done
 	return nil
 }
