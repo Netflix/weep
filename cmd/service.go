@@ -39,7 +39,7 @@ func init() {
 }
 
 var weepServiceControl = &cobra.Command{
-	Use:   "service [start|stop|restart|install|uninstall]",
+	Use:   "service [start|stop|restart|install|uninstall|run]",
 	Short: "Install or control weep as a system service",
 	RunE:  runWeepServiceControl,
 }
@@ -62,13 +62,6 @@ func runWeepServiceControl(cmd *cobra.Command, args []string) error {
 	log.Debug("sending done signal")
 	done <- 0
 	return nil
-}
-
-func (p *program) serviceShutdown(shutdown chan os.Signal) {
-	<-shutdown
-	if err := p.Stop(weepService); err != nil {
-		log.Error(err)
-	}
 }
 
 type program struct{}
