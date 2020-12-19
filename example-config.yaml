@@ -1,19 +1,20 @@
 consoleme_url: https://path_to_consoleme:port
 authentication_method: mtls # challenge or mtls
+log_level: info
+log_file: /path/to/log/file
 server:
   http_timeout: 20
   metadata_port: 9090
   ecs_credential_provider_port: 9091
 service:
-  command: metadata
-  role: example_role
-  assume_role_chain:
-    - role1
-    - role2
+  command: ecs_credential_provider
+  args:
+    - --log-level
+    - debug
 #challenge_settings: # (Optional) Username can be provided. If it is not provided, user will be prompted on first authentication attempt
 #  user: you@example.com
 mtls_settings: # only needed if authentication_method is mtls
-  old_cert_message: Metatron certificate is too old, please run [refresh command]
+  old_cert_message: mTLS certificate is too old, please run [refresh command]
   cert: mtls.crt
   key: mtls.key
   cafile: mtlsCA.pem

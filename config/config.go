@@ -16,18 +16,37 @@
 
 package config
 
-import "github.com/spf13/viper"
+import (
+	"path/filepath"
+	"runtime"
+
+	"github.com/spf13/viper"
+)
 
 func init() {
 	// Set default configuration values here
 	viper.SetTypeByDefaultValue(true)
+	viper.SetDefault("log_file", getDefaultLogFile())
 	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")
 	viper.SetDefault("server.http_timeout", 20)
 	viper.SetDefault("server.metadata_port", 9090)
 	viper.SetDefault("server.ecs_credential_provider_port", 9091)
-	viper.SetDefault("service.command", "ecs_metadata_service")
-	viper.SetDefault("service.role", "")
-	viper.SetDefault("service.assume_role_chain", []string{})
+	viper.SetDefault("service.command", "ecs_credential_provider")
+	viper.SetDefault("service.args", []string{})
+}
+
+func getDefaultLogFile() string {
+	switch os := runtime.GOOS; os {
+	case "darwin":
+		return filepath.Join("tmp", "weep.log")
+	case "linux":
+		return filepath.Join("tmp", "weep.log")
+	case "windows":
+		path, _ := filepath.Abs(filepath.FromSlash("/programdata/weep/weep.log"))
+		return path
+	default:
+		return ""
+	}
 }
 
 var (

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"path"
 
-	ini "gopkg.in/ini.v1"
+	"gopkg.in/ini.v1"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/creds"

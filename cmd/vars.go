@@ -33,6 +33,7 @@ var (
 	ecsProviderListenPort int
 	cfgFile               string
 	logLevel              string
+	logFile               string
 	logFormat             string
 	shutdown              chan os.Signal
 	done                  chan int

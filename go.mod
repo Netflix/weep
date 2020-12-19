@@ -14,7 +14,6 @@ require (
 	github.com/manifoldco/promptui v0.8.0
 	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-colorable v0.1.8 // indirect
-	github.com/mattn/go-isatty v0.0.12
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.0 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect

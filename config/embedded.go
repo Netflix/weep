@@ -37,9 +37,13 @@ func ReadEmbeddedConfig() error {
 	}
 	defer f.Close()
 
+	v := viper.New()
 	err = viper.ReadConfig(f)
 	if err != nil {
 		return errors.Wrap(err, "could not read embedded config")
+	}
+	if err := viper.MergeConfigMap(v.AllSettings()); err != nil {
+		return errors.Wrap(err, "could not merge embedded config")
 	}
 	return nil
 }
