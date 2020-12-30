@@ -23,10 +23,10 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/netflix/weep/config"
-
 	"github.com/kardianos/service"
 
+	"github.com/mitchellh/go-homedir"
+	"github.com/netflix/weep/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -62,9 +62,72 @@ func Execute() {
 	}
 }
 
+// initConfig reads in configs by precedence, with later configs overriding earlier:
+//   - embedded
+//   - /etc/weep/weep.yaml
+//   - ~/.config/weep/weep.yaml
+//   - ~/.weep.yaml
+//   - ./weep.yaml
+// If a config file is specified via CLI arg, it will be read exclusively and not merged with other
+// configuration.
 func initConfig() {
-	if err := config.InitConfig(cfgFile); err != nil {
-		log.Fatalf("failed to initialize config: %v", err)
+	home, err := homedir.Dir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	viper.SetConfigType("yaml")
+
+	// Read in explicitly defined config file
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+		err = viper.ReadInConfig()
+		if err != nil {
+			log.Fatalf("could not open config file %s: %v", cfgFile, err)
+		}
+		return
+	}
+
+	// Read embedded config if available
+	if err := config.ReadEmbeddedConfig(); err != nil {
+		log.Debugf("unable to read embedded config: %v; falling back to config file", err)
+	}
+
+	// Read in config from etc
+	viper.SetConfigName("weep")
+	viper.AddConfigPath("/etc/weep/")
+	_ = viper.MergeInConfig()
+
+	// Read in config from config dir
+	viper.SetConfigName("weep")
+	viper.AddConfigPath(home + "/.config/weep/")
+	_ = viper.MergeInConfig()
+
+	// Read in config from home dir
+	viper.SetConfigName(".weep")
+	viper.AddConfigPath(home)
+	_ = viper.MergeInConfig()
+
+	// Read in config from current directory
+	viper.SetConfigName("weep")
+	viper.AddConfigPath(".")
+	_ = viper.MergeInConfig()
+
+	// TODO: revisit first-run setup
+	//if err := viper.MergeInConfig(); err != nil {
+	//	if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {
+	//		log.Debugf("no config file found, trying to use embedded config")
+	//	} else if isatty.IsTerminal(os.Stdout.Fd()) {
+	//		err = util.FirstRunPrompt()
+	//		if err != nil {
+	//			log.Fatalf("config bootstrap failed: %v", err)
+	//		}
+	//	} else {
+	//		log.Debugf("unable to read config file: %v", err)
+	//	}
+	//}
+
+	if err := viper.Unmarshal(&config.Config); err != nil {
+		log.Fatalf("unable to decode config into struct: %v", err)
 	}
 }
 
