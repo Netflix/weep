@@ -25,6 +25,7 @@ var (
 	destination           string
 	destinationConfig     string
 	force                 bool
+	autoRefresh           bool
 	noIpRestrict          bool
 	metadataRegion        string
 	metadataListenAddr    string
