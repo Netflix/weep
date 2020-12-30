@@ -158,6 +158,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
 // like: /accounts/service/support
 func (c *Client) Roles() ([]string, error) {
+	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
 	req, err := c.buildRequest(http.MethodGet, "/get_roles?all=true", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
@@ -175,6 +176,20 @@ func (c *Client) Roles() ([]string, error) {
 
 	defer resp.Body.Close()
 	document, err := ioutil.ReadAll(resp.Body)
+	// Handle invalid_jwt error from ConsoleMe by deleting local credentials and asking user to retry
+	if resp.StatusCode == 403 {
+		if err := json.Unmarshal(document, &cmCredentialErrorMessageType); err != nil {
+			return nil, err
+		}
+		if cmCredentialErrorMessageType.Code == "invalid_jwt" {
+			log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
+			err = challenge.DeleteLocalWeepCredentials()
+			if err != nil {
+				return nil, errors.Wrap(err, "Failed to delete invalid Weep jwt")
+			}
+		}
+	}
+	// Handle non-200 errors
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("unexpected HTTP status %s, want 200. Body: %s", resp.Status, string(document))
 	}
@@ -230,7 +245,11 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 				return credentialsResponse.Credentials, fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
 			}
 			if cmCredentialErrorMessageType.Code == "invalid_jwt" {
-				log.Errorf("Authentication has expired. Please restart weep to re-authenticate.")
+				log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
+				err = challenge.DeleteLocalWeepCredentials()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
 				syscall.Exit(1)
 			}
 		}
