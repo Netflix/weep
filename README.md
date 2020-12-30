@@ -19,11 +19,10 @@ Weep searches for a configuration in the following locations:
 
 - embedded configuration (see below)
 - `/etc/weep/weep.yaml`
-- `~/.config/weep/weep.yaml`
-- `~/.weep.yaml`
+- `~/.weep/weep.yaml`
 - `./weep.yaml`
 
-Multiple configurations in these locations **will be merged**.
+Multiple configurations in these locations **will be merged** in the order listed above (e.g. entries in `./weep.yaml` will take precedence over `~/.weep/weep.yaml`.
 
 You can also specify a config file as a CLI arg. This configuration will be used exclusively and will not be merged with other configurations:
 
