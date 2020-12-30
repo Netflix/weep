@@ -185,12 +185,11 @@ func (c *Client) Roles() ([]string, error) {
 			log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
 			err = challenge.DeleteLocalWeepCredentials()
 			if err != nil {
-				fmt.Println(err.Error())
+				return nil, errors.Wrap(err, "Failed to delete invalid Weep jwt")
 			}
-			syscall.Exit(1)
 		}
 	}
-	// Handle other non-200 errors
+	// Handle non-200 errors
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("unexpected HTTP status %s, want 200. Body: %s", resp.Status, string(document))
 	}
