@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/spf13/viper"
 
@@ -46,8 +45,7 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	ipaddress := net.ParseIP(ecsProviderListenAddr)
 
 	if ipaddress == nil {
-		fmt.Println("Invalid IP: ", ecsProviderListenAddr)
-		os.Exit(1)
+		return fmt.Errorf("invalid IP: %s", ecsProviderListenAddr)
 	}
 
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, ecsProviderListenPort)
@@ -64,7 +62,6 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
-	log.Print("Shutdown signal received, exiting weep...")
-
+	log.Print("Shutdown signal received, stopping server...")
 	return nil
 }

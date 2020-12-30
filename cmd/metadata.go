@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/netflix/weep/cache"
 
@@ -60,8 +59,7 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	ipaddress := net.ParseIP(metadataListenAddr)
 
 	if ipaddress == nil {
-		fmt.Println("Invalid IP: ", metadataListenAddr)
-		os.Exit(1)
+		return fmt.Errorf("Invalid IP: %s", metadataListenAddr)
 	}
 
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)

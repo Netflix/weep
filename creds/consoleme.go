@@ -26,18 +26,10 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
 	werrors "github.com/netflix/weep/errors"
-	"github.com/netflix/weep/util"
-
 	"github.com/spf13/viper"
 
 	"github.com/netflix/weep/challenge"
@@ -96,7 +88,7 @@ func GetClient() (*Client, error) {
 			return client, err
 		}
 	} else {
-		log.Fatal("Authentication method unsupported or not provided.")
+		return nil, fmt.Errorf("Authentication method unsupported or not provided.")
 	}
 
 	return client, nil
@@ -269,49 +261,6 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 	}
 
 	return credentialsResponse.Credentials, nil
-}
-
-func getRoleArnFromCredentials(c *credentials.Value) (string, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Credentials: credentials.NewStaticCredentials(
-			c.AccessKeyID,
-			c.SecretAccessKey,
-			c.SessionToken),
-	})
-	util.CheckError(err)
-	svc := sts.New(sess)
-	input := &sts.GetCallerIdentityInput{}
-
-	result, err := svc.GetCallerIdentity(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
-		return "", err
-	}
-	// Replace assumed role ARN with role ARN, if possible
-	// arn:aws:sts::123456789012:assumed-role/exampleInstanceProfile/user@example.com ->
-	// arn:aws:iam::123456789012:role/exampleInstanceProfile
-	Role := strings.Replace(*result.Arn, ":sts:", ":iam:", 1)
-	Role = strings.Replace(Role, ":assumed-role/", ":role/", 1)
-	// result.UserId looks like AROAIEBAVBLAH:user@example.com
-	splittedUserId := strings.Split(*result.UserId, ":")
-	if len(splittedUserId) > 1 {
-		sessionName := splittedUserId[1]
-		Role = strings.Replace(
-			Role,
-			fmt.Sprintf("/%s", sessionName),
-			"",
-			1)
-	}
-	return Role, nil
 }
 
 func defaultTransport() *http.Transport {

@@ -32,8 +32,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var credentialMap = make(map[string]*creds.AwsCredentials)
-
 // parseAssumeRoleQuery extracts the assume query string argument, splits it on commas, validates that each element
 // is an ARN, and returns a slice of ARN strings.
 func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
@@ -54,12 +52,6 @@ func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
 	}
 
 	return roles, nil
-}
-
-// getCacheSlug returns a string unique to a particular combination of a role and chain of roles to assume.
-func getCacheSlug(role string, assume []string) string {
-	elements := append([]string{role}, assume...)
-	return strings.Join(elements, "/")
 }
 
 func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request) {

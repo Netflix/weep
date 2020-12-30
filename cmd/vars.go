@@ -33,8 +33,8 @@ var (
 	ecsProviderListenPort int
 	cfgFile               string
 	logLevel              string
+	logFile               string
 	logFormat             string
-	runAsService          bool
 	shutdown              chan os.Signal
 	done                  chan int
 )
