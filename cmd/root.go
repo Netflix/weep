@@ -68,13 +68,24 @@ func Execute() {
 //   - ~/.config/weep/weep.yaml
 //   - ~/.weep.yaml
 //   - ./weep.yaml
-//   - CLI arg-specified file
+// If a config file is specified via CLI arg, it will be read exclusively and not merged with other
+// configuration.
 func initConfig() {
 	home, err := homedir.Dir()
 	if err != nil {
 		log.Fatal(err)
 	}
 	viper.SetConfigType("yaml")
+
+	// Read in explicitly defined config file
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+		err = viper.ReadInConfig()
+		if err != nil {
+			log.Fatalf("could not open config file %s: %v", cfgFile, err)
+		}
+		return
+	}
 
 	// Read embedded config if available
 	if err := config.ReadEmbeddedConfig(); err != nil {
@@ -101,14 +112,6 @@ func initConfig() {
 	viper.AddConfigPath(".")
 	_ = viper.MergeInConfig()
 
-	// Read in explicitly defined config file
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-		err = viper.MergeInConfig()
-		if err != nil {
-			log.Fatalf("could not open config file %s: %v", cfgFile, err)
-		}
-	}
 	// TODO: revisit first-run setup
 	//if err := viper.MergeInConfig(); err != nil {
 	//	if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {

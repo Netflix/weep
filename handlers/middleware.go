@@ -33,15 +33,15 @@ func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Server", "EC2ws")
 		w.Header().Set("Content-Type", "text/plain")
 
-		ua := string(r.Header.Get("User-Agent"))
+		ua := r.Header.Get("User-Agent")
 		metadataVersion := 1
-		token_ttl := r.Header.Get("X-Aws-Ec2-Metadata-Token-Ttl-Seconds")
+		tokenTtl := r.Header.Get("X-Aws-Ec2-Metadata-Token-Ttl-Seconds")
 		token := r.Header.Get("X-aws-ec2-metadata-token")
 		// If either of these request headers exist, we can be reasonably confident that the request is for IMDSv2.
 		// `X-Aws-Ec2-Metadata-Token-Ttl-Seconds` is used when requesting a token
 		// `X-aws-ec2-metadata-token` is used to pass the token to the metadata service
 		// Weep uses a static token, and does not perform any token validation.
-		if token != "" || token_ttl != "" {
+		if token != "" || tokenTtl != "" {
 			metadataVersion = 2
 		}
 

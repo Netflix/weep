@@ -15,15 +15,19 @@ This README contains developer documentation. Weep user documentation can be fou
 Weep can be compiled with an embedded configuration (See the Building section below), or it can get its configuration 
 from a YAML-formatted file. We've included an example config file in [example-config.yaml](example-config.yaml).
 
-Weep searches for a configuration file in the following locations:
+Weep searches for a configuration in the following locations:
 
-- `./.weep.yaml`
+- embedded configuration (see below)
+- `/etc/weep/weep.yaml`
+- `~/.config/weep/weep.yaml`
 - `~/.weep.yaml`
-- `~/.config/weep/.weep.yaml`
+- `./weep.yaml`
 
-You can also specify a config file as a CLI arg:
+Multiple configurations in these locations **will be merged**.
 
-```
+You can also specify a config file as a CLI arg. This configuration will be used exclusively and will not be merged with other configurations:
+
+```bash
 weep --config somethingdifferent.yaml list
 ```
 
