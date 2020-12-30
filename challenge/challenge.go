@@ -310,3 +310,23 @@ func RefreshChallenge() error {
 	}
 	return nil
 }
+
+func DeleteLocalWeepCredentials() error {
+	credentialsPath, err := getCredentialsPath()
+	if err != nil {
+		return err
+	}
+	_, err = os.Stat(credentialsPath)
+	if err != nil {
+		// Return error unless it is because the file doesn't exist
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		err = os.Remove(credentialsPath)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
