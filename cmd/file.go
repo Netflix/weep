@@ -73,13 +73,13 @@ func updateCredentialsFile(role, profile, filename string, noIpRestrict bool, as
 }
 
 func fileRefresher(role, profile, filename string, noIpRestrict bool, assumeRole []string) {
-	ticker := time.NewTicker(time.Second * 45)
+	ticker := time.NewTicker(time.Minute)
 
 	for {
 		select {
 		case _ = <-ticker.C:
 			log.Debug("checking credentials")
-			expiring, err := isExpiring(filename, profile, 59)
+			expiring, err := isExpiring(filename, profile, 10)
 			if err != nil {
 				log.Errorf("error checking credential expiration: %v", err)
 			}
