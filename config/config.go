@@ -88,9 +88,7 @@ func InitConfig(filename string) error {
 	for _, dir := range configLocations {
 		viper.SetConfigName("weep")
 		viper.AddConfigPath(dir)
-		if err := viper.MergeInConfig(); err != nil {
-			return errors.Wrapf(err, "failed to read config from %s", viper.ConfigFileUsed())
-		}
+		_ = viper.MergeInConfig()
 	}
 
 	// TODO: revisit first-run setup
