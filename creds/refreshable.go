@@ -62,6 +62,11 @@ func (rp *RefreshableProvider) AutoRefresh() {
 	}
 }
 
+func (rp *RefreshableProvider) EnsureRefreshed() error {
+	_, err := rp.checkAndRefresh(10)
+	return err
+}
+
 func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
 	log.Debugf("checking credentials for %s", rp.Role)
 	// refresh creds if we're within 10 minutes of them expiring
@@ -103,14 +108,14 @@ func (rp *RefreshableProvider) refresh() error {
 	}
 
 	rp.Expiration = newCreds.Expiration
-	rp.value.AccessKeyID = newCreds.AccessKeyId
-	rp.value.SessionToken = newCreds.SessionToken
-	rp.value.SecretAccessKey = newCreds.SecretAccessKey
-	rp.value.AccessKeyID = newCreds.AccessKeyId
+	rp.Value.AccessKeyID = newCreds.AccessKeyId
+	rp.Value.SessionToken = newCreds.SessionToken
+	rp.Value.SecretAccessKey = newCreds.SecretAccessKey
+	rp.Value.AccessKeyID = newCreds.AccessKeyId
 	rp.LastRefreshed = Time(time.Now())
 	rp.RoleArn = newCreds.RoleArn
-	if rp.value.ProviderName == "" {
-		rp.value.ProviderName = "WeepRefreshableProvider"
+	if rp.Value.ProviderName == "" {
+		rp.Value.ProviderName = "WeepRefreshableProvider"
 	}
 	log.Debugf("successfully refreshed credentials for %s", rp.Role)
 	return nil
@@ -120,7 +125,7 @@ func (rp *RefreshableProvider) refresh() error {
 func (rp *RefreshableProvider) Retrieve() (credentials.Value, error) {
 	rp.mu.RLock()
 	defer rp.mu.RUnlock()
-	return rp.value, nil
+	return rp.Value, nil
 }
 
 // IsExpired always returns false because we should never have expired credentials

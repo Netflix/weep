@@ -15,10 +15,6 @@ type InMemory struct {
 	mu              sync.RWMutex
 }
 
-func init() {
-	GlobalCache = NewMemoryCache()
-}
-
 func NewMemoryCache() *InMemory {
 	return &InMemory{
 		RoleCredentials: make(map[string]*creds.RefreshableProvider),

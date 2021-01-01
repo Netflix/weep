@@ -11,11 +11,17 @@ import (
 var GlobalCache WeepCache
 
 func init() {
-	switch cacheType := viper.GetString("cache.type"); cacheType {
+	var err error
+	cacheType := viper.GetString("cache.type")
+	log.Debugf("initializing %s cache", cacheType)
+	switch cacheType {
 	case "memory":
 		GlobalCache = NewMemoryCache()
 	case "file":
-		// TODO
+		GlobalCache, err = NewFileCache()
+		if err != nil {
+			log.Fatalf("failed to initialize file cache: %v", err)
+		}
 	default:
 		log.Fatal("invalid cache type specified")
 	}
