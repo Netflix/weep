@@ -16,6 +16,8 @@
 
 package cmd
 
+import "os"
+
 var (
 	assumeRole            []string
 	role                  string
@@ -23,6 +25,7 @@ var (
 	destination           string
 	destinationConfig     string
 	force                 bool
+	autoRefresh           bool
 	noIpRestrict          bool
 	metadataRegion        string
 	metadataListenAddr    string
@@ -31,5 +34,8 @@ var (
 	ecsProviderListenPort int
 	cfgFile               string
 	logLevel              string
+	logFile               string
 	logFormat             string
+	shutdown              chan os.Signal
+	done                  chan int
 )

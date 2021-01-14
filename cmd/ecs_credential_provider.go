@@ -20,9 +20,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/spf13/viper"
 
@@ -40,7 +37,7 @@ func init() {
 
 var ecsCredentialProvider = &cobra.Command{
 	Use:   "ecs_credential_provider",
-	Short: "Run a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand",
+	Short: "RunService a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand",
 	RunE:  runEcsMetadata,
 }
 
@@ -48,8 +45,7 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	ipaddress := net.ParseIP(ecsProviderListenAddr)
 
 	if ipaddress == nil {
-		fmt.Println("Invalid IP: ", ecsProviderListenAddr)
-		os.Exit(1)
+		return fmt.Errorf("invalid IP: %s", ecsProviderListenAddr)
 	}
 
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, ecsProviderListenPort)
@@ -65,10 +61,7 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	}()
 
 	// Check for interrupt signal and exit cleanly
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Print("Shutdown signal received, exiting weep...")
-
+	<-shutdown
+	log.Print("Shutdown signal received, stopping server...")
 	return nil
 }

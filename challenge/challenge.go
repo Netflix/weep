@@ -26,11 +26,16 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"os/user"
-	"path/filepath"
+	"os/signal"
+	"path"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
+
+	"github.com/mitchellh/go-homedir"
+
+	"github.com/netflix/weep/config"
 
 	"github.com/manifoldco/promptui"
 
@@ -102,6 +107,8 @@ func isWSL() bool {
 func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
 	timeout := time.After(2 * time.Minute)
 	tick := time.Tick(3 * time.Second)
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	req, err := http.NewRequest("GET", pollingUrl, nil)
 	if err != nil {
 		return nil, err
@@ -121,6 +128,8 @@ func poll(pollingUrl string) (*ConsolemeChallengeResponse, error) {
 			if pollResponse.Status == "success" {
 				return pollResponse, nil
 			}
+		case <-interrupt:
+			return nil, errors.New("interrupt received")
 		}
 	}
 }
@@ -139,18 +148,18 @@ func pollRequest(c *http.Client, r *http.Request) (*ConsolemeChallengeResponse, 
 }
 
 func getCredentialsPath() (string, error) {
-	currentUser, err := user.Current()
+	home, err := homedir.Dir()
 	if err != nil {
 		return "", err
 	}
-	weepDir := filepath.Join(currentUser.HomeDir, ".weep")
+	weepDir := path.Join(home, ".weep")
 	// Setup the directories where we will be writing credentials
 	if _, err := os.Stat(weepDir); os.IsNotExist(err) {
 		_ = os.Mkdir(weepDir, 0700)
 	} else {
 		_ = os.Chmod(weepDir, 0700)
 	}
-	credentialsPath := filepath.Join(weepDir, ".credentials")
+	credentialsPath := path.Join(weepDir, "credentials")
 	return credentialsPath, nil
 }
 
@@ -177,8 +186,11 @@ func promptUser() (string, error) {
 	}
 
 	result, err := prompt.Run()
-
 	if err != nil {
+		return "", err
+	}
+
+	if err := config.SetUser(result); err != nil {
 		return "", err
 	}
 
@@ -199,7 +211,7 @@ func HasValidJwt(challenge *ConsolemeChallengeResponse) bool {
 
 func RefreshChallenge() error {
 	existingChallengeBody, err := getChallenge()
-	var user = viper.GetString("challenge_settings.user")
+	var userName = viper.GetString("challenge_settings.user")
 	if err != nil {
 		log.Debugf("unable to read existing challenge file: %v", err)
 
@@ -210,26 +222,23 @@ func RefreshChallenge() error {
 	}
 	// Step 1: Make unauthed request to ConsoleMe challenge endpoint and get a challenge challenge
 	// Check Config for username
-	if user == "" && existingChallengeBody != nil {
+	if userName == "" && existingChallengeBody != nil {
 		// Find user from old jwt
-		user = existingChallengeBody.User
+		userName = existingChallengeBody.User
 	}
-	if user == "" {
-		user, err = promptUser()
+	if userName == "" {
+		userName, err = promptUser()
 		if err != nil {
 			return err
 		}
 	}
-	if user == "" {
-		log.Fatalf(
-			"Invalid configuration. You must define challenge_settings.user as the user you wish to authenticate" +
-				" as.",
-		)
+	if userName == "" {
+		return fmt.Errorf("invalid configuration: challenge_settings.user must be set")
 	}
 	var consoleMeChallengeGeneratorEndpoint = fmt.Sprintf(
 		"%s/noauth/v1/challenge_generator/%s",
 		viper.GetString("consoleme_url"),
-		user,
+		userName,
 	)
 	var challenge ConsolemeChallenge
 	req, err := http.NewRequest("GET", consoleMeChallengeGeneratorEndpoint, nil)
@@ -307,6 +316,26 @@ func RefreshChallenge() error {
 	err = ioutil.WriteFile(credentialsPath, jsonPollResponse, 0600)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func DeleteLocalWeepCredentials() error {
+	credentialsPath, err := getCredentialsPath()
+	if err != nil {
+		return err
+	}
+	_, err = os.Stat(credentialsPath)
+	if err != nil {
+		// Return error unless it is because the file doesn't exist
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		err = os.Remove(credentialsPath)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

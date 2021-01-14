@@ -20,9 +20,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/netflix/weep/cache"
 
@@ -44,7 +41,7 @@ func init() {
 
 var metadataCmd = &cobra.Command{
 	Use:   "metadata [role_name]",
-	Short: "Run a local Instance Metadata Service (IMDS) endpoint that serves credentials",
+	Short: "RunService a local Instance Metadata Service (IMDS) endpoint that serves credentials",
 	Args:  cobra.ExactArgs(1),
 	RunE:  runMetadata,
 }
@@ -62,8 +59,7 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	ipaddress := net.ParseIP(metadataListenAddr)
 
 	if ipaddress == nil {
-		fmt.Println("Invalid IP: ", metadataListenAddr)
-		os.Exit(1)
+		return fmt.Errorf("Invalid IP: %s", metadataListenAddr)
 	}
 
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)
@@ -86,9 +82,7 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	}()
 
 	// Check for interrupt signal and exit cleanly
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	<-shutdown
 	log.Print("Shutdown signal received, exiting weep meta-data service...")
 
 	return nil

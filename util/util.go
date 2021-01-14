@@ -84,12 +84,6 @@ func (a AwsArn) ArnString() string {
 	return fmt.Sprintf("%s:%s:%s:%s:%s:%s/%s", a.Arn, a.Partition, a.Service, a.Region, a.AccountId, a.ResourceType, a.Resource)
 }
 
-func CheckError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil

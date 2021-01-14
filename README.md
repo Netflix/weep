@@ -3,9 +3,8 @@
 
 # weep
 
-Weep is a CLI utility for retreiving AWS credentials from ConsoleMe. Weep can run
-a local instance metadata service proxy, or export credentials as environmental
-variables for your AWS needs. 
+Weep is a CLI utility for retreiving AWS credentials from [ConsoleMe](https://github.com/Netflix/consoleme). Weep can run
+a local instance metadata service proxy, or export credentials as environment variables for your AWS needs. 
 
 ## Documentation
 
@@ -16,15 +15,18 @@ This README contains developer documentation. Weep user documentation can be fou
 Weep can be compiled with an embedded configuration (See the Building section below), or it can get its configuration 
 from a YAML-formatted file. We've included an example config file in [example-config.yaml](example-config.yaml).
 
-Weep searches for a configuration file in the following locations:
+Weep searches for a configuration in the following locations:
 
-- `./.weep.yaml`
-- `~/.weep.yaml`
-- `~/.config/weep/.weep.yaml`
+- embedded configuration (see below)
+- `/etc/weep/weep.yaml`
+- `~/.weep/weep.yaml`
+- `./weep.yaml`
 
-You can also specify a config file as a CLI arg:
+Multiple configurations in these locations **will be merged** in the order listed above (e.g. entries in `./weep.yaml` will take precedence over `~/.weep/weep.yaml`.
 
-```
+You can also specify a config file as a CLI arg. This configuration will be used exclusively and will not be merged with other configurations:
+
+```bash
 weep --config somethingdifferent.yaml list
 ```
 

@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/netflix/weep/util"
-	ini "gopkg.in/ini.v1"
+	"gopkg.in/ini.v1"
 
 	"github.com/netflix/weep/creds"
 	log "github.com/sirupsen/logrus"

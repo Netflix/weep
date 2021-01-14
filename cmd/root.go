@@ -17,18 +17,16 @@
 package cmd
 
 import (
-	"fmt"
+	"io"
 	"os"
-	"path"
-	"runtime"
-	"strings"
+	"os/signal"
+	"path/filepath"
+	"syscall"
 
-	"github.com/netflix/weep/util"
-
-	"github.com/mattn/go-isatty"
-
-	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/config"
+
+	"github.com/kardianos/service"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,76 +48,27 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.weep.yaml)")
 	rootCmd.PersistentFlags().StringSliceVarP(&assumeRole, "assume-role", "A", make([]string, 0), "one or more roles to assume after retrieving credentials")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "log format (json or tty)")
+	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", viper.GetString("log_file"), "log file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
-
 }
 
 func Execute() {
+	shutdown = make(chan os.Signal, 1)
+	done = make(chan int, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+
 	if err := rootCmd.Execute(); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		rootCmd.PrintErr(err)
 	}
 }
 
 func initConfig() {
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".weep")
-		viper.AddConfigPath(".")
-		viper.AddConfigPath(home)
-		viper.AddConfigPath(home + "/.config/weep/")
-	}
-
-	if err := config.ReadEmbeddedConfig(); err != nil {
-		log.Debugf("unable to read embedded config: %v; falling back to config file", err)
-	}
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {
-			log.Debugf("no config file found, trying to use embedded config")
-		} else if isatty.IsTerminal(os.Stdout.Fd()) {
-			err = util.FirstRunPrompt()
-			if err != nil {
-				log.Fatalf("config bootstrap failed: %v", err)
-			}
-		} else {
-			log.Debugf("unable to read config file: %v", err)
-		}
-	}
-
-	log.Debugf("found config at %s", viper.ConfigFileUsed())
-	if err := viper.Unmarshal(&config.Config); err != nil {
-		log.Fatalf("unable to decode config into struct: %v", err)
+	if err := config.InitConfig(cfgFile); err != nil {
+		log.Fatalf("failed to initialize config: %v", err)
 	}
 }
 
 func initLogging() {
-	// Set the log format.  Default to Text
-	if logFormat == "json" {
-		log.SetFormatter(&log.JSONFormatter{
-			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-				s := strings.Split(f.Function, ".")
-				funcName := s[len(s)-1]
-				return funcName, fmt.Sprintf("%s:%d", path.Base(f.File), f.Line)
-			},
-		})
-	} else {
-		log.SetFormatter(&log.TextFormatter{
-			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-				s := strings.Split(f.Function, ".")
-				funcName := s[len(s)-1]
-				return funcName, fmt.Sprintf("%s:%d", path.Base(f.File), f.Line)
-			},
-		})
-	}
-
 	// Set the log level and default to INFO
 	switch logLevel {
 	case "error":
@@ -131,4 +80,36 @@ func initLogging() {
 	default:
 		log.SetLevel(log.InfoLevel)
 	}
+
+	log.Debug("configuring logging")
+
+	// Set the log format.  Default to Text
+	if logFormat == "json" {
+		log.SetFormatter(&log.JSONFormatter{})
+	} else {
+		log.SetFormatter(&log.TextFormatter{})
+	}
+
+	logDir := filepath.Dir(logFile)
+	if _, err := os.Stat(logDir); os.IsNotExist(err) {
+		log.Debugf("attempting to create log directory %s", logDir)
+		err := os.MkdirAll(logDir, os.ModePerm)
+		if err != nil {
+			log.Errorf("could not create log directory")
+		}
+	}
+
+	var w io.Writer
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Errorf("could not open %s for logging, defaulting to stderr: %v", logFile, err)
+		log.SetOutput(os.Stderr)
+		w = os.Stderr
+	} else if service.Interactive() {
+		w = io.MultiWriter(os.Stderr, file)
+	} else {
+		w = file
+	}
+	log.SetOutput(w)
+	log.Debug("logging configured")
 }

@@ -26,18 +26,10 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sts"
 	werrors "github.com/netflix/weep/errors"
-	"github.com/netflix/weep/util"
-
 	"github.com/spf13/viper"
 
 	"github.com/netflix/weep/challenge"
@@ -96,7 +88,7 @@ func GetClient() (*Client, error) {
 			return client, err
 		}
 	} else {
-		log.Fatal("Authentication method unsupported or not provided.")
+		return nil, fmt.Errorf("Authentication method unsupported or not provided.")
 	}
 
 	return client, nil
@@ -158,6 +150,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
 // like: /accounts/service/support
 func (c *Client) Roles() ([]string, error) {
+	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
 	req, err := c.buildRequest(http.MethodGet, "/get_roles?all=true", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
@@ -175,6 +168,20 @@ func (c *Client) Roles() ([]string, error) {
 
 	defer resp.Body.Close()
 	document, err := ioutil.ReadAll(resp.Body)
+	// Handle invalid_jwt error from ConsoleMe by deleting local credentials and asking user to retry
+	if resp.StatusCode == 403 {
+		if err := json.Unmarshal(document, &cmCredentialErrorMessageType); err != nil {
+			return nil, err
+		}
+		if cmCredentialErrorMessageType.Code == "invalid_jwt" {
+			log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
+			err = challenge.DeleteLocalWeepCredentials()
+			if err != nil {
+				return nil, errors.Wrap(err, "Failed to delete invalid Weep jwt")
+			}
+		}
+	}
+	// Handle non-200 errors
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("unexpected HTTP status %s, want 200. Body: %s", resp.Status, string(document))
 	}
@@ -230,7 +237,11 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 				return credentialsResponse.Credentials, fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
 			}
 			if cmCredentialErrorMessageType.Code == "invalid_jwt" {
-				log.Errorf("Authentication has expired. Please restart weep to re-authenticate.")
+				log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
+				err = challenge.DeleteLocalWeepCredentials()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
 				syscall.Exit(1)
 			}
 		}
@@ -250,49 +261,6 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 	}
 
 	return credentialsResponse.Credentials, nil
-}
-
-func getRoleArnFromCredentials(c *credentials.Value) (string, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Credentials: credentials.NewStaticCredentials(
-			c.AccessKeyID,
-			c.SecretAccessKey,
-			c.SessionToken),
-	})
-	util.CheckError(err)
-	svc := sts.New(sess)
-	input := &sts.GetCallerIdentityInput{}
-
-	result, err := svc.GetCallerIdentity(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
-		return "", err
-	}
-	// Replace assumed role ARN with role ARN, if possible
-	// arn:aws:sts::123456789012:assumed-role/exampleInstanceProfile/user@example.com ->
-	// arn:aws:iam::123456789012:role/exampleInstanceProfile
-	Role := strings.Replace(*result.Arn, ":sts:", ":iam:", 1)
-	Role = strings.Replace(Role, ":assumed-role/", ":role/", 1)
-	// result.UserId looks like AROAIEBAVBLAH:user@example.com
-	splittedUserId := strings.Split(*result.UserId, ":")
-	if len(splittedUserId) > 1 {
-		sessionName := splittedUserId[1]
-		Role = strings.Replace(
-			Role,
-			fmt.Sprintf("/%s", sessionName),
-			"",
-			1)
-	}
-	return Role, nil
 }
 
 func defaultTransport() *http.Transport {
