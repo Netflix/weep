@@ -106,19 +106,28 @@ If you don't have a PowerShell profile, or would like to make a new one:
 
 Create a $PROFILE file if needed
 
-$ if(!(Test-Path -Path $PROFILE)) {
+PS> if(!(Test-Path -Path $PROFILE)) {
 	New-Item -ItemType File -Path $PROFILE -Force
 }
 
-If you want to use an existing PowerShell profile:
+If you want to use an existing PowerShell $PROFILE file:
 
-Open your profile with an editor (notepad used for example)
+Open your $PROFILE file with an editor (notepad used for example)
 
-$ notepad $PROFILE
+PS> notepad $PROFILE
 
 Add the navigable menu of the available options when you hit Tab
 
-$ Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+
+Now, you can utilise completion for weep:
+
+PS> weep completion powershell | Out-String | Invoke-Expression
+
+To load completions for every new session, execute once and source this file from your 
+PowerShell profile:
+
+PS> weep completion powershell > weep.ps1
 
 You will need to start a new shell for this setup to take effect.
 `,
