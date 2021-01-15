@@ -100,11 +100,36 @@ var powershellCompletionCmd = &cobra.Command{
 	Short: "Generate Powershell completion",
 	Long: `To load completions:
 
-We don't really know how Powershell works. 🙈
+You will need PowerShell >= version 5.0 to make this work, in order to use PSReadLine.
 
-This doc has a little more context: https://github.com/spf13/cobra/blob/master/powershell_completions.md
+If you don't have a PowerShell profile, or would like to make a new one:
 
-Want to improve this help text? Check out this issue: https://github.com/Netflix/weep/issues/17
+Create a $PROFILE file if needed
+
+PS> if(!(Test-Path -Path $PROFILE)) {
+	New-Item -ItemType File -Path $PROFILE -Force
+}
+
+If you want to use an existing PowerShell $PROFILE file:
+
+Open your $PROFILE file with an editor (notepad used for example)
+
+PS> notepad $PROFILE
+
+Add the navigable menu of the available options when you hit Tab
+
+Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+
+Now, you can utilise completion for weep:
+
+PS> weep completion powershell | Out-String | Invoke-Expression
+
+To load completions for every new session, execute once and source this file from your 
+PowerShell profile:
+
+PS> weep completion powershell > weep.ps1
+
+You will need to start a new shell for this setup to take effect.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Root().GenPowerShellCompletion(os.Stdout); err != nil {
