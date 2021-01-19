@@ -62,7 +62,7 @@ func FirstRunPrompt() error {
 		if err != nil {
 			return err
 		}
-		viper.Set("mtls_settings.cafile", ca)
+		viper.Set("mtls_settings.catrust", ca)
 
 		insecure, err := PromptBool("Skip validation of mTLS hostname?")
 		if err != nil {
