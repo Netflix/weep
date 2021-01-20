@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"path"
+	"strconv"
 	"time"
 
 	"gopkg.in/ini.v1"
@@ -136,10 +137,11 @@ func isExpiring(filename, profile string, thresholdMinutes int) (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	expirationTime, err := expiration.Time()
+	expirationInt, err := expiration.Int64()
 	if err != nil {
 		return true, err
 	}
+	expirationTime := time.Unix(expirationInt, 0)
 	diff := time.Duration(thresholdMinutes) * time.Minute
 	timeUntilExpiration := expirationTime.Sub(time.Now()).Round(0)
 	log.Debugf("%s until expiration, refresh threshold is %s", timeUntilExpiration, diff)
@@ -179,7 +181,7 @@ func writeCredentialsFile(credentials *creds.AwsCredentials, profile, filename s
 	credentialsINI.Section(profile).Key("aws_access_key_id").SetValue(credentials.AccessKeyId)
 	credentialsINI.Section(profile).Key("aws_secret_access_key").SetValue(credentials.SecretAccessKey)
 	credentialsINI.Section(profile).Key("aws_session_token").SetValue(credentials.SessionToken)
-	credentialsINI.Section(profile).Key("expiration").SetValue(credentials.Expiration.Format("2006-01-02T15:04:05Z07:00"))
+	credentialsINI.Section(profile).Key("expiration").SetValue(strconv.FormatInt(credentials.Expiration.Unix(), 10))
 	err = credentialsINI.SaveTo(filename)
 	if err != nil {
 		return err
