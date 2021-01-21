@@ -81,8 +81,6 @@ func initLogging() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	log.Debug("configuring logging")
-
 	// Set the log format.  Default to Text
 	if logFormat == "json" {
 		log.SetFormatter(&log.JSONFormatter{})
