@@ -51,6 +51,7 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, ecsProviderListenPort)
 
 	router := mux.NewRouter()
+	router.HandleFunc("/healthcheck", handlers.HealthcheckHandler)
 	router.HandleFunc("/ecs/{role:.*}", handlers.MetaDataServiceMiddleware(handlers.ECSMetadataServiceCredentialsHandler))
 	router.HandleFunc("/{path:.*}", handlers.MetaDataServiceMiddleware(handlers.CustomHandler))
 
