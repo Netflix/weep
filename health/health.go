@@ -24,9 +24,16 @@ func (s *status) Get() (bool, string) {
 	return s.healthy, s.reason
 }
 
-func (s *status) Set(healthy bool, reason string) {
+func (s *status) SetUnhealthy(reason string) {
 	s.m.Lock()
 	defer s.m.Unlock()
-	s.healthy = healthy
+	s.healthy = false
 	s.reason = reason
+}
+
+func (s *status) SetHealthy() {
+	s.m.Lock()
+	defer s.m.Unlock()
+	s.healthy = true
+	s.reason = "healthy"
 }
