@@ -34,8 +34,8 @@ import (
 	werrors "github.com/netflix/weep/errors"
 	"github.com/spf13/viper"
 
-	"github.com/netflix/weep/challenge"
-	"github.com/netflix/weep/mtls"
+	"github.com/netflix/weep/httpAuth/challenge"
+	"github.com/netflix/weep/httpAuth/mtls"
 
 	"github.com/pkg/errors"
 
@@ -72,7 +72,7 @@ func GetClient() (*Client, error) {
 		if err != nil {
 			return client, err
 		}
-		client, err = NewClientWithMtls(consoleMeUrl, mtlsClient)
+		client, err = NewClient(consoleMeUrl, mtlsClient)
 		if err != nil {
 			return client, err
 		}
@@ -85,7 +85,7 @@ func GetClient() (*Client, error) {
 		if err != nil {
 			return client, err
 		}
-		client, err = NewClientWithJwtAuth(consoleMeUrl, httpClient)
+		client, err = NewClient(consoleMeUrl, httpClient)
 		if err != nil {
 			return client, err
 		}
@@ -96,28 +96,9 @@ func GetClient() (*Client, error) {
 	return client, nil
 }
 
-// NewClientWithMtls takes a ConsoleMe hostname and *http.Client, and returns a
+// NewClient takes a ConsoleMe hostname and *http.Client, and returns a
 // ConsoleMe client that will talk to that ConsoleMe instance for AWS Credentials.
-func NewClientWithMtls(hostname string, httpc HTTPClient) (*Client, error) {
-	if len(hostname) == 0 {
-		return nil, errors.New("hostname cannot be empty string")
-	}
-
-	if httpc == nil {
-		httpc = &http.Client{Transport: defaultTransport()}
-	}
-
-	c := &Client{
-		Httpc: httpc,
-		Host:  hostname,
-	}
-
-	return c, nil
-}
-
-// NewClientWithJwtAuth takes a ConsoleMe hostname and *http.Client, and returns a
-// ConsoleMe client that will talk to that ConsoleMe instance
-func NewClientWithJwtAuth(hostname string, httpc HTTPClient) (*Client, error) {
+func NewClient(hostname string, httpc HTTPClient) (*Client, error) {
 	if len(hostname) == 0 {
 		return nil, errors.New("hostname cannot be empty string")
 	}

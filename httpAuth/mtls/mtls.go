@@ -64,15 +64,14 @@ func makeTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	wrappedCert, err := newWrappedCertificate(certFile, keyFile)
 	if err != nil {
 		return nil, err
 	}
-
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: insecure,
-		RootCAs:            caCertPool,
-		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify:   insecure,
+		RootCAs:              caCertPool,
+		GetClientCertificate: wrappedCert.getCertificate,
 		VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
 			// Based on the golang verification code. See https://golang.org/src/crypto/tls/handshake_client.go
 			certs := make([]*x509.Certificate, len(rawCerts))

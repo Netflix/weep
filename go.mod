@@ -4,7 +4,8 @@ go 1.15
 
 require (
 	github.com/aws/aws-sdk-go v1.36.7
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/bep/debounce v1.2.0
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/gorilla/mux v1.8.0
