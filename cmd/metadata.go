@@ -65,6 +65,7 @@ func runMetadata(cmd *cobra.Command, args []string) error {
 	listenAddr := fmt.Sprintf("%s:%d", ipaddress, metadataListenPort)
 
 	router := mux.NewRouter()
+	router.HandleFunc("/healthcheck", handlers.HealthcheckHandler)
 	router.HandleFunc("/{version}/", handlers.MetaDataServiceMiddleware(handlers.BaseVersionHandler))
 	router.HandleFunc("/{version}/api/token", handlers.MetaDataServiceMiddleware(handlers.TokenHandler)).Methods("PUT")
 	router.HandleFunc("/{version}/meta-data", handlers.MetaDataServiceMiddleware(handlers.BaseHandler))
