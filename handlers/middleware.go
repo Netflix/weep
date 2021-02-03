@@ -28,6 +28,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// MetaDataServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
 func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return BrowserFilterMiddleware(AWSHeaderMiddleware(next))
 }
@@ -61,6 +62,16 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// allowedHosts is a map used to look up Host headers for the purpose of rejecting requests
+// for hosts that are not allowed
+var allowedHosts = map[string]bool{
+	"":                true, // Empty or no host header, could be curl or similar
+	"127.0.0.1":       true, // localhost
+	"169.254.169.254": true, // IMDS IP
+}
+
+// BrowserFilterMiddleware is a middleware designed mitigate risks related to DNS rebinding,
+// cross site request forgery, and any other traffic from a well behaved modern web browser
 func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check User-Agent
@@ -88,12 +99,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		// Check host header
 		// This should only be 127.0.0.1, 169.254.169.254, or nothing
-		validHosts := map[string]bool{
-			"":                true, // Empty or no host header, could be curl or similar
-			"127.0.0.1":       true, // localhost
-			"169.254.169.254": true, // IMDS IP
-		}
-		if host := r.Header.Get("Host"); !validHosts[host] {
+		if host := r.Header.Get("Host"); !allowedHosts[host] {
 			log.Warn("bad host detected")
 			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
