@@ -38,7 +38,7 @@ type AwsArn struct {
 }
 
 type ErrorResponse struct {
-	Error string
+	Error string `json:"error"`
 }
 
 func validate(arn string, pieces []string) error {
