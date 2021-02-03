@@ -28,8 +28,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// MetaDataServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
-func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
+// CredentialServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
+func CredentialServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return BrowserFilterMiddleware(AWSHeaderMiddleware(next))
 }
 

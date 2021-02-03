@@ -88,7 +88,7 @@ func TestAWSHeaderMiddleware(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 	t.Logf("test case: %s", description)
-	bfmHandler := MetaDataServiceMiddleware(nextHandler)
+	bfmHandler := CredentialServiceMiddleware(nextHandler)
 	req := httptest.NewRequest("GET", "http://localhost", nil)
 	rec := httptest.NewRecorder()
 	bfmHandler.ServeHTTP(rec, req)
@@ -109,9 +109,9 @@ func TestAWSHeaderMiddleware(t *testing.T) {
 	}
 }
 
-// TestMetaDataServiceMiddleware is a superset of TestBrowserFilterMiddleware and TestAWSHeaderMiddleware
-// since MetaDataServiceMiddleware is a chain of BrowserFilterMiddleware and AWSHeaderMiddleware
-func TestMetaDataServiceMiddleware(t *testing.T) {
+// TestCredentialServiceMiddleware is a superset of TestBrowserFilterMiddleware and TestAWSHeaderMiddleware
+// since CredentialServiceMiddleware is a chain of BrowserFilterMiddleware and AWSHeaderMiddleware
+func TestCredentialServiceMiddleware(t *testing.T) {
 	cases := []struct {
 		Description    string
 		HeaderName     string
@@ -172,7 +172,7 @@ func TestMetaDataServiceMiddleware(t *testing.T) {
 	})
 	for i, tc := range cases {
 		t.Logf("test case %d: %s", i, tc.Description)
-		bfmHandler := MetaDataServiceMiddleware(nextHandler)
+		bfmHandler := CredentialServiceMiddleware(nextHandler)
 		req := httptest.NewRequest("GET", "http://localhost", nil)
 		req.Header.Add(tc.HeaderName, tc.HeaderValue)
 		rec := httptest.NewRecorder()

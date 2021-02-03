@@ -52,8 +52,8 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/healthcheck", handlers.HealthcheckHandler)
-	router.HandleFunc("/ecs/{role:.*}", handlers.MetaDataServiceMiddleware(handlers.ECSMetadataServiceCredentialsHandler))
-	router.HandleFunc("/{path:.*}", handlers.MetaDataServiceMiddleware(handlers.CustomHandler))
+	router.HandleFunc("/ecs/{role:.*}", handlers.CredentialServiceMiddleware(handlers.ECSMetadataServiceCredentialsHandler))
+	router.HandleFunc("/{path:.*}", handlers.CredentialServiceMiddleware(handlers.CustomHandler))
 
 	go func() {
 		log.Info("Starting weep ECS meta-data service...")
