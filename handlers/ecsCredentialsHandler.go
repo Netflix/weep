@@ -63,7 +63,7 @@ func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request
 	assume, err := parseAssumeRoleQuery(r)
 	if err != nil {
 		log.Error(err)
-		util.WriteError(w, http.StatusBadRequest, err.Error())
+		util.WriteError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	vars := mux.Vars(r)

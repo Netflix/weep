@@ -69,7 +69,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		userAgent = strings.ToLower(userAgent)
 		if strings.Contains(userAgent, "mozilla") {
 			log.Warn("bad user-agent detected")
-			util.WriteError(w, http.StatusForbidden, "forbidden")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
 		}
 
@@ -77,12 +77,12 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// These also indicate a likely browser request
 		if referrer := r.Header.Get("Referrer"); referrer != "" {
 			log.Warn("referrer detected")
-			util.WriteError(w, http.StatusForbidden, "forbidden")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
 		}
 		if origin := r.Header.Get("Origin"); origin != "" {
 			log.Warn("origin detected")
-			util.WriteError(w, http.StatusForbidden, "forbidden")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
 		}
 
@@ -95,7 +95,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 		if host := r.Header.Get("Host"); !validHosts[host] {
 			log.Warn("bad host detected")
-			util.WriteError(w, http.StatusForbidden, "forbidden")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
 		}
 		next.ServeHTTP(w, r)
