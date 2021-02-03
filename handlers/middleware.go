@@ -20,12 +20,20 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/netflix/weep/util"
 
 	"github.com/netflix/weep/metadata"
 	log "github.com/sirupsen/logrus"
 )
 
-func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
+// CredentialServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
+func CredentialServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return BrowserFilterMiddleware(AWSHeaderMiddleware(next))
+}
+
+func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("ETag", strconv.FormatInt(rand.Int63n(10000000000), 10))
@@ -50,6 +58,52 @@ func MetaDataServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			"path":             r.URL.Path,
 			"metadata_version": metadataVersion,
 		}).Info()
+		next.ServeHTTP(w, r)
+	}
+}
+
+// allowedHosts is a map used to look up Host headers for the purpose of rejecting requests
+// for hosts that are not allowed
+var allowedHosts = map[string]bool{
+	"":                true, // Empty or no host header, could be curl or similar
+	"127.0.0.1":       true, // localhost
+	"169.254.169.254": true, // IMDS IP
+}
+
+// BrowserFilterMiddleware is a middleware designed mitigate risks related to DNS rebinding,
+// cross site request forgery, and any other traffic from a well behaved modern web browser
+func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Check User-Agent
+		// If User-Agent has Mozilla in it, this is almost certainly a browser request
+		userAgent := r.Header.Get("User-Agent")
+		userAgent = strings.ToLower(userAgent)
+		if strings.Contains(userAgent, "mozilla") {
+			log.Warn("bad user-agent detected")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		// Check for Referrer or Origin header
+		// These also indicate a likely browser request
+		if referrer := r.Header.Get("Referrer"); referrer != "" {
+			log.Warn("referrer detected")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		if origin := r.Header.Get("Origin"); origin != "" {
+			log.Warn("origin detected")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
+		// Check host header
+		// This should only be 127.0.0.1, 169.254.169.254, or nothing
+		if host := r.Header.Get("Host"); !allowedHosts[host] {
+			log.Warn("bad host detected")
+			util.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
 		next.ServeHTTP(w, r)
 	}
 }

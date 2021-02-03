@@ -38,7 +38,7 @@ type AwsArn struct {
 }
 
 type ErrorResponse struct {
-	Error string
+	Error string `json:"error"`
 }
 
 func validate(arn string, pieces []string) error {
@@ -90,7 +90,7 @@ func FileExists(path string) bool {
 }
 
 // WriteError writes a status code and JSON-formatted error to the provided http.ResponseWriter.
-func WriteError(w http.ResponseWriter, status int, message string) {
+func WriteError(w http.ResponseWriter, message string, status int) {
 	log.Debugf("writing HTTP error response: %s", message)
 	resp := ErrorResponse{Error: message}
 	respBytes, err := json.Marshal(resp)
