@@ -65,9 +65,17 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 // allowedHosts is a map used to look up Host headers for the purpose of rejecting requests
 // for hosts that are not allowed
 var allowedHosts = map[string]bool{
-	"":                true, // Empty or no host header, could be curl or similar
+	"localhost":       true, // localhost
 	"127.0.0.1":       true, // localhost
 	"169.254.169.254": true, // IMDS IP
+}
+
+// deniedHeaders is a list of headers that will cause a 403 if present at all
+var deniedHeaders = []string{
+	"Referrer",
+	"referrer",
+	"Origin",
+	"origin",
 }
 
 // BrowserFilterMiddleware is a middleware designed mitigate risks related to DNS rebinding,
@@ -84,22 +92,20 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Check for Referrer or Origin header
+		// Check for presence of deniedHeaders
 		// These also indicate a likely browser request
-		if referrer := r.Header.Get("Referrer"); referrer != "" {
-			log.Warn("referrer detected")
-			util.WriteError(w, "forbidden", http.StatusForbidden)
-			return
-		}
-		if origin := r.Header.Get("Origin"); origin != "" {
-			log.Warn("origin detected")
-			util.WriteError(w, "forbidden", http.StatusForbidden)
-			return
+		headers := r.Header
+		for _, h := range deniedHeaders {
+			if _, ok := headers[h]; ok {
+				log.Warnf("%s detected", h)
+				util.WriteError(w, "forbidden", http.StatusForbidden)
+				return
+			}
 		}
 
 		// Check host header
-		// This should only be 127.0.0.1, 169.254.169.254, or nothing
-		if host := r.Header.Get("Host"); !allowedHosts[host] {
+		// This should only be 127.0.0.1 or 169.254.169.254
+		if host := r.Header.Get("Host"); host != "" && !allowedHosts[host] {
 			log.Warn("bad host detected")
 			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
