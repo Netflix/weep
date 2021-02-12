@@ -1,3 +1,4 @@
+# Weep configuration for the ConsoleMe OSS demo site
 authentication_method: challenge
 consoleme_url: https://demo.consolemeoss.com
 mtls_settings:
