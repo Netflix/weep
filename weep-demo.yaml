@@ -1,0 +1,8 @@
+authentication_method: challenge
+consoleme_url: https://demo.consolemeoss.com
+mtls_settings:
+  old_cert_message: mTLS certificate is too old, please refresh mtls certificate
+server:
+  ecs_credential_provider_port: 9091
+  http_timeout: 20
+  metadata_port: 9090
