@@ -20,6 +20,13 @@ jobs:
         with:
           go-version: 1.15
       -
+        name: Login to Public ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+      -
         name: Login to Docker Registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \

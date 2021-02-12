@@ -78,6 +78,4 @@ blobs:
     provider: s3
     bucket: consolemeoss
     region: us-west-2
-    ids:
-    - demo
     folder: "consolemeoss_deploy/weep_binaries/{{.Version}}/"
