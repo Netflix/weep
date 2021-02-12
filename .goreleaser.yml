@@ -58,8 +58,6 @@ dockers:
     goarch: amd64
     ids:
       - default
-    binaries:
-      - weep
     image_templates:
       - "docker.pkg.github.com/netflix/{{.ProjectName}}/{{.ProjectName}}:latest"
       - "docker.pkg.github.com/netflix/{{.ProjectName}}/{{.ProjectName}}:{{ .Tag }}"
@@ -79,6 +77,7 @@ blobs:
   -
     provider: s3
     bucket: consolemeoss
+    region: us-west-2
     ids:
     - demo
     folder: "consolemeoss_deploy/weep_binaries/{{.Version}}/"
