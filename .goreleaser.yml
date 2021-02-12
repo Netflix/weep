@@ -83,7 +83,6 @@ dockers:
       - "--label=org.opencontainers.image.version={{.Version}}"
 blobs:
   -
-    id: demo
     provider: s3
     ids:
       - demo
@@ -91,7 +90,6 @@ blobs:
     region: us-west-2
     folder: "consolemeoss_deploy/weep_binaries/{{.Version}}/"
   -
-    id: demo-latest
     provider: s3
     ids:
       - demo
