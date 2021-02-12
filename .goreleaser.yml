@@ -32,10 +32,18 @@ archives:
   -
     builds:
       - default
+    id: default
+    format: tar.gz
     replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
+      386: i386
+      amd64: x86_64
+  -
+    builds:
+      - demo
+    id: demo
+    format: binary
+    name_template: "{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}/{{ .Binary }}"
+    replacements:
       386: i386
       amd64: x86_64
 checksum:
@@ -76,6 +84,8 @@ dockers:
 blobs:
   -
     provider: s3
+    ids:
+      - demo
     bucket: consolemeoss
     region: us-west-2
     folder: "consolemeoss_deploy/weep_binaries/{{.Version}}/"
