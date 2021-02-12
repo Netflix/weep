@@ -29,7 +29,10 @@ builds:
       - -s -w -extldflags "-static" -X github.com/netflix/weep/config.EmbeddedConfigFile=/weep-demo.yaml -X github.com/netflix/weep/version.Version={{.Version}} -X github.com/netflix/weep/version.Commit={{.CommitDate}} -X github.com/netflix/weep/version.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
 archives:
-  - replacements:
+  -
+    builds:
+      - default
+    replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
