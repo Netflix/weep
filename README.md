@@ -71,6 +71,8 @@ pre-commit installed at .git/hooks/pre-commit
 
 ## Building
 
+Weep is created with `pkger`. Install it with `go get github.com/markbates/pkger/cmd/pkger`.
+
 In most cases, `weep` can be built by running the `make` command in the repository root. `make release` (requires
 [`upx`](https://upx.github.io/)) will build and compress the binary for distribution.
 
