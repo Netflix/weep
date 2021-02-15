@@ -200,8 +200,8 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 			AssumeChain:  tc.AssumeChain,
 		}
 		// pre-refresh checks
-		if rp.value.SessionToken != "" || rp.value.AccessKeyID != "" || rp.value.SecretAccessKey != "" || rp.value.ProviderName != "" {
-			t.Errorf("%s failed: credential values should not exist: %v", tc.Description, rp.value)
+		if rp.Value.SessionToken != "" || rp.Value.AccessKeyID != "" || rp.Value.SecretAccessKey != "" || rp.Value.ProviderName != "" {
+			t.Errorf("%s failed: credential values should not exist: %v", tc.Description, rp.Value)
 			continue
 		}
 		if rp.Expiration != zeroTime {
@@ -216,8 +216,8 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 		} else {
 			continue
 		}
-		if rp.value.SessionToken == "" || rp.value.AccessKeyID == "" || rp.value.SecretAccessKey == "" || rp.value.ProviderName == "" {
-			t.Errorf("%s failed: credential values should not be empty: %v", tc.Description, rp.value)
+		if rp.Value.SessionToken == "" || rp.Value.AccessKeyID == "" || rp.Value.SecretAccessKey == "" || rp.Value.ProviderName == "" {
+			t.Errorf("%s failed: credential values should not be empty: %v", tc.Description, rp.Value)
 		}
 		if rp.Expiration == zeroTime {
 			t.Errorf("%s failed: Expiration should be set, got %v", tc.Description, rp.Expiration)
@@ -318,7 +318,7 @@ func TestRefreshableProvider_Retrieve(t *testing.T) {
 	}
 
 	rp := RefreshableProvider{
-		value: expected,
+		Value: expected,
 	}
 
 	result, err := rp.Retrieve()

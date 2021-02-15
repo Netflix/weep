@@ -87,7 +87,7 @@ func TestCredentialCache_Get(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Logf("test case %d: %s", i, tc.Description)
-		testCache := CredentialCache{
+		testCache := InMemory{
 			RoleCredentials: tc.CacheContents,
 		}
 		actualResult, actualError := testCache.Get(tc.Role, tc.AssumeChain)
@@ -167,7 +167,7 @@ func TestCredentialCache_GetDefault(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Logf("test case %d: %s", i, tc.Description)
-		testCache := CredentialCache{
+		testCache := InMemory{
 			RoleCredentials: tc.CacheContents,
 			DefaultRole:     tc.DefaultRole,
 		}
@@ -183,7 +183,7 @@ func TestCredentialCache_GetDefault(t *testing.T) {
 }
 
 func TestCredentialCache_SetDefault(t *testing.T) {
-	testCache := CredentialCache{
+	testCache := InMemory{
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
 	expectedRole := "a"
@@ -255,7 +255,7 @@ func TestCredentialCache_GetOrSet(t *testing.T) {
 
 	for i, tc := range cases {
 		t.Logf("test case %d: %s", i, tc.Description)
-		testCache := CredentialCache{
+		testCache := InMemory{
 			RoleCredentials: tc.CacheContents,
 		}
 		client, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{

@@ -31,6 +31,7 @@ import (
 func init() {
 	// Set default configuration values here
 	viper.SetTypeByDefaultValue(true)
+	viper.SetDefault("cache.type", "memory")
 	viper.SetDefault("log_file", getDefaultLogFile())
 	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")
 	viper.SetDefault("server.http_timeout", 20)
