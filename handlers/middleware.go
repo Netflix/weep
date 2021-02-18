@@ -22,10 +22,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/util"
 
 	"github.com/netflix/weep/metadata"
-	log "github.com/sirupsen/logrus"
 )
 
 // CredentialServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
@@ -53,7 +54,7 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			metadataVersion = 2
 		}
 
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"user-agent":       ua,
 			"path":             r.URL.Path,
 			"metadata_version": metadataVersion,

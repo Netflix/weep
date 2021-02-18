@@ -24,8 +24,6 @@ import (
 
 	"github.com/netflix/weep/creds"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/netflix/weep/metadata"
 	"github.com/netflix/weep/util"
 )

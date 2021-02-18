@@ -25,7 +25,6 @@ import (
 	"gopkg.in/ini.v1"
 
 	"github.com/netflix/weep/creds"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

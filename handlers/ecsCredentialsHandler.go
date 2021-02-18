@@ -29,7 +29,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/metadata"
-	log "github.com/sirupsen/logrus"
 )
 
 // parseAssumeRoleQuery extracts the assume query string argument, splits it on commas, validates that each element

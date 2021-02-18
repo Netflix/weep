@@ -23,6 +23,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/netflix/weep/logging"
+
 	"github.com/spf13/viper"
 
 	"path/filepath"
@@ -32,8 +34,9 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/config"
 	"github.com/netflix/weep/util"
-	log "github.com/sirupsen/logrus"
 )
+
+var log = logging.GetLogger()
 
 // getTLSConfig makes and returns a pointer to a tls.Config
 func getTLSConfig() (*tls.Config, error) {

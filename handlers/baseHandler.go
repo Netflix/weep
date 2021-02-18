@@ -19,7 +19,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/netflix/weep/logging"
 )
+
+var log = logging.GetLogger()
 
 func BaseHandler(w http.ResponseWriter, r *http.Request) {
 

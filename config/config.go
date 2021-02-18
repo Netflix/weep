@@ -21,12 +21,15 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/netflix/weep/logging"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
 )
+
+var log = logging.GetLogger()
 
 func init() {
 	// Set default configuration values here

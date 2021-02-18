@@ -29,18 +29,20 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/netflix/weep/logging"
+
 	werrors "github.com/netflix/weep/errors"
 	"github.com/spf13/viper"
 
 	"github.com/netflix/weep/challenge"
 	"github.com/netflix/weep/mtls"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 
 	"github.com/netflix/weep/version"
 )
 
+var log = logging.GetLogger()
 var clientVersion = fmt.Sprintf("%s", version.Version)
 
 var userAgent = "weep/" + clientVersion + " Go-http-client/1.1"

@@ -23,8 +23,10 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/netflix/weep/logging"
 )
+
+var log = logging.GetLogger()
 
 type AwsArn struct {
 	Arn               string

@@ -27,7 +27,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/util"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
