@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/netflix/weep/health"
-	log "github.com/sirupsen/logrus"
 )
 
 type healthcheckResponse struct {

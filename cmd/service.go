@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/kardianos/service"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

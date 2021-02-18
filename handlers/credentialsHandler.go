@@ -23,7 +23,6 @@ import (
 	"net/http"
 
 	"github.com/netflix/weep/cache"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/netflix/weep/metadata"
 )

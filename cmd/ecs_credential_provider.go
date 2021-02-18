@@ -25,7 +25,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/handlers"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 

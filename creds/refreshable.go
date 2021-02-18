@@ -22,7 +22,6 @@ import (
 	"github.com/netflix/weep/errors"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewRefreshableProvider creates an AWS credential provider that will automatically refresh credentials
