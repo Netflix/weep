@@ -51,18 +51,18 @@ func (c *VersionInfo) String() string {
 	var versionString bytes.Buffer
 
 	if Version == "" {
-		fmt.Fprintf(&versionString, "weep (version unknown)")
+		_, _ = fmt.Fprintf(&versionString, "weep (version unknown)")
 	}
-	fmt.Fprintf(&versionString, "weep %s", c.Version)
+	_, _ = fmt.Fprintf(&versionString, "weep %s", c.Version)
 
 	if c.Revision != "" {
-		fmt.Fprintf(&versionString, " (%s)", c.Revision)
+		_, _ = fmt.Fprintf(&versionString, " (%s)", c.Revision)
 	}
 
-	fmt.Fprintf(&versionString, " Built on: %s", Date)
+	_, _ = fmt.Fprintf(&versionString, " Built on: %s", Date)
 
 	if config.EmbeddedConfigFile != "" {
-		fmt.Fprintf(&versionString, " with embedded mTLS config %s", config.EmbeddedConfigFile)
+		_, _ = fmt.Fprintf(&versionString, " with embedded config %s", config.EmbeddedConfigFile)
 	}
 
 	return versionString.String()
