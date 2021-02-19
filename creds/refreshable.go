@@ -81,8 +81,8 @@ func (rp *RefreshableProvider) refresh() error {
 	var newCreds *AwsCredentials
 	retryDelay := time.Duration(rp.retryDelay) * time.Second
 
-	rp.mu.Lock()
-	defer rp.mu.Unlock()
+	rp.Lock()
+	defer rp.Unlock()
 
 	for i := 0; i < rp.retries; i++ {
 		newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
@@ -117,8 +117,8 @@ func (rp *RefreshableProvider) refresh() error {
 
 // Retrieve returns the AWS credentials from the provider
 func (rp *RefreshableProvider) Retrieve() (credentials.Value, error) {
-	rp.mu.RLock()
-	defer rp.mu.RUnlock()
+	rp.RLock()
+	defer rp.RUnlock()
 	return rp.value, nil
 }
 

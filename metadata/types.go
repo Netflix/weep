@@ -23,12 +23,12 @@ import (
 )
 
 type Credentials struct {
+	sync.Mutex
 	Role                string
 	NoIpRestrict        bool
 	metaDataCredentials *creds.AwsCredentials
 	MetadataRegion      string
 	LastRenewal         creds.Time
-	mu                  sync.Mutex
 }
 
 type MetaDataCredentialResponse struct {

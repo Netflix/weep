@@ -29,9 +29,9 @@ import (
 var GlobalCache CredentialCache
 
 type CredentialCache struct {
+	sync.RWMutex
 	RoleCredentials map[string]*creds.RefreshableProvider
 	DefaultRole     string
-	mu              sync.RWMutex
 }
 
 func init() {
@@ -95,8 +95,8 @@ func (cc *CredentialCache) GetDefault() (*creds.RefreshableProvider, error) {
 }
 
 func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {
-	cc.mu.RLock()
-	defer cc.mu.RUnlock()
+	cc.RLock()
+	defer cc.RUnlock()
 	c, ok := cc.RoleCredentials[slug]
 	return c, ok
 }
@@ -106,8 +106,8 @@ func (cc *CredentialCache) set(client *creds.Client, role, region string, assume
 	if err != nil {
 		return nil, fmt.Errorf("could not generate creds: %w", err)
 	}
-	cc.mu.Lock()
-	defer cc.mu.Unlock()
+	cc.Lock()
+	defer cc.Unlock()
 	cc.RoleCredentials[getCacheSlug(role, assumeChain)] = c
 	return c, nil
 }

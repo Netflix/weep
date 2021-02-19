@@ -33,8 +33,8 @@ type AwsCredentials struct {
 }
 
 type RefreshableProvider struct {
+	sync.RWMutex
 	value         credentials.Value
-	mu            sync.RWMutex
 	client        *Client
 	retries       int
 	retryDelay    int
