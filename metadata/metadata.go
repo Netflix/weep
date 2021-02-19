@@ -16,10 +16,57 @@
 
 package metadata
 
-import "github.com/netflix/weep/creds"
+import (
+	"os"
+	"os/user"
+	"time"
+
+	"github.com/netflix/weep/logging"
+)
 
 var (
-	Role           string
-	MetadataRegion string
-	LastRenewal    creds.Time
+	certCreationTime time.Time
+	certFingerprint  string
+	log              = logging.GetLogger()
 )
+
+func GetInstanceInfo() *InstanceInfo {
+	currentInstanceInfo := &InstanceInfo{
+		Hostname:        getHostname(),
+		Username:        getUsername(),
+		CertAgeSeconds:  getCertAge(certCreationTime),
+		CertFingerprint: certFingerprint,
+		WeepVersion:     Version,
+		WeepMethod:      "",
+	}
+	return currentInstanceInfo
+}
+
+func getCertAge(creationTime time.Time) int {
+	if creationTime.IsZero() {
+		return 0
+	}
+	diff := time.Now().Sub(creationTime)
+	return int(diff)
+}
+
+func SetCertInfo(creationTime time.Time, fingerprint string) {
+	certCreationTime = creationTime
+	certFingerprint = fingerprint
+}
+
+func getHostname() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Errorf("failed to get hostname: %v", err)
+	}
+	return hostname
+}
+
+func getUsername() string {
+	u, err := user.Current()
+	if err != nil {
+		log.Errorf("failed to get username: %v", err)
+	}
+	return u.Username
+}

@@ -29,6 +29,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/netflix/weep/metadata"
+
 	"github.com/netflix/weep/logging"
 
 	werrors "github.com/netflix/weep/errors"
@@ -38,12 +40,10 @@ import (
 	"github.com/netflix/weep/httpAuth/mtls"
 
 	"github.com/pkg/errors"
-
-	"github.com/netflix/weep/version"
 )
 
 var log = logging.GetLogger()
-var clientVersion = fmt.Sprintf("%s", version.Version)
+var clientVersion = fmt.Sprintf("%s", metadata.Version)
 
 var userAgent = "weep/" + clientVersion + " Go-http-client/1.1"
 
@@ -186,8 +186,9 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
 
 	cmCredRequest := ConsolemeCredentialRequestType{
-		RequestedRole:   role,
-		NoIpRestriciton: ipRestrict,
+		RequestedRole:  role,
+		NoIpRestricton: ipRestrict,
+		Metadata:       metadata.GetInstanceInfo(),
 	}
 
 	b := new(bytes.Buffer)

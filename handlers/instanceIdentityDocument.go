@@ -21,10 +21,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/netflix/weep/creds"
 
-	"github.com/netflix/weep/metadata"
 	"github.com/netflix/weep/util"
 )
 
@@ -33,8 +33,8 @@ var (
 )
 
 func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
-
-	awsArn, err := util.ArnParse(metadata.Role)
+	// TODO: this was crashing because of a nil pointer dereference. Fix it!
+	awsArn, err := util.ArnParse("")
 
 	if err != nil {
 		accountID = "123456789012"
@@ -42,7 +42,7 @@ func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		accountID = awsArn.AccountId
 	}
 
-	identityDocument := metadata.MetaDataInstanceIdentityDocumentResponse{
+	identityDocument := MetaDataInstanceIdentityDocumentResponse{
 		DevpayProductCodes:      []string{},
 		MarkerplaceProductCodes: []string{},
 		PrivateIP:               "100.1.2.3",
@@ -56,8 +56,9 @@ func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		AccountID:               accountID,
 		Architecture:            "x86_64",
 		ImageID:                 "ami-12345",
-		PendingTime:             creds.Time(metadata.LastRenewal.UTC()), //.Format("2006-01-02T15:04:05Z"),
-		Region:                  metadata.MetadataRegion,
+		//PendingTime:             creds.Time(metadata.LastRenewal.UTC()), //.Format("2006-01-02T15:04:05Z"),
+		PendingTime: creds.Time(time.Now()), // TODO: fix this
+		Region:      "",                     // TODO: set this based on config
 	}
 
 	b, err := json.Marshal(identityDocument)

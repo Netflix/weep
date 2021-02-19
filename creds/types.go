@@ -21,6 +21,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/netflix/weep/metadata"
+
 	"github.com/aws/aws-sdk-go/aws/credentials"
 )
 
@@ -60,8 +62,12 @@ type ConsolemeCredentialResponseType struct {
 }
 
 type ConsolemeCredentialRequestType struct {
-	RequestedRole   string `json:"requested_role"`
-	NoIpRestriciton bool   `json:"no_ip_restrictions"`
+	RequestedRole  string                 `json:"requested_role"`
+	NoIpRestricton bool                   `json:"no_ip_restrictions"`
+	Metadata       *metadata.InstanceInfo `json:"metadata"`
+}
+
+type ConsoleMeCredentialRequestMetadata struct {
 }
 
 type ConsolemeCredentialErrorMessageType struct {
@@ -119,4 +125,13 @@ func (t Time) Time() time.Time {
 // String returns t as a formatted string
 func (t Time) String() string {
 	return t.Time().String()
+}
+
+type Credentials struct {
+	Role                string
+	NoIpRestrict        bool
+	metaDataCredentials *AwsCredentials
+	MetadataRegion      string
+	LastRenewal         Time
+	mu                  sync.Mutex
 }
