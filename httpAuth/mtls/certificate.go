@@ -22,7 +22,7 @@ import (
 // wrappedCertificate is a wrapper for a tls.Certificate that supports automatically
 // reloading the certificate when a file change is detected.
 type wrappedCertificate struct {
-	sync.Mutex
+	sync.RWMutex
 	certificate *tls.Certificate
 	certFile    string
 	keyFile     string
@@ -47,8 +47,8 @@ func newWrappedCertificate(certFile, keyFile string) (*wrappedCertificate, error
 
 // getCertificate is a function to be used as the GetClientCertificate member of a tls.Config
 func (wc *wrappedCertificate) getCertificate(clientHello *tls.CertificateRequestInfo) (*tls.Certificate, error) {
-	wc.Lock()
-	defer wc.Unlock()
+	wc.RLock()
+	defer wc.RUnlock()
 
 	return wc.certificate, nil
 }
@@ -122,11 +122,15 @@ func (wc *wrappedCertificate) autoRefresh() {
 }
 
 func (wc *wrappedCertificate) Fingerprint() string {
+	wc.RLock()
+	defer wc.RUnlock()
 	fingerprintBytes := sha256.Sum256(wc.certificate.Certificate[0])
 	return fmt.Sprintf("%x", fingerprintBytes)
 }
 
 func (wc *wrappedCertificate) CreateTime() time.Time {
+	wc.RLock()
+	defer wc.RUnlock()
 	var createTime time.Time
 	x509cert, err := x509.ParseCertificate(wc.certificate.Certificate[0])
 	if err != nil {
