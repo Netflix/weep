@@ -8,9 +8,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/bep/debounce"
 	"github.com/fsnotify/fsnotify"
-	log "github.com/sirupsen/logrus"
 )
 
 // wrappedCertificate is a wrapper for a tls.Certificate that supports automatically
@@ -25,7 +26,7 @@ type wrappedCertificate struct {
 // newWrappedCertificate initializes and returns a wrappedCertificate that will auto-
 // refresh on cert/key file changes.
 func newWrappedCertificate(certFile, keyFile string) (*wrappedCertificate, error) {
-	log.WithFields(log.Fields{
+	log.WithFields(logrus.Fields{
 		"certFile": certFile,
 		"keyFile":  keyFile,
 	}).Debug("creating wrapped certificate")
