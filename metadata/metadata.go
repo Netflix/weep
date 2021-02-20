@@ -27,6 +27,7 @@ import (
 var (
 	certCreationTime time.Time
 	certFingerprint  string
+	weepMethod       string
 	log              = logging.GetLogger()
 )
 
@@ -40,7 +41,7 @@ func GetInstanceInfo() *InstanceInfo {
 		CertAgeSeconds:  elapsedSeconds(certCreationTime, currentTime),
 		CertFingerprint: certFingerprint,
 		WeepVersion:     Version,
-		WeepMethod:      "",
+		WeepMethod:      weepMethod,
 	}
 	return currentInstanceInfo
 }
@@ -57,6 +58,10 @@ func elapsedSeconds(startTime, endTime time.Time) int {
 func SetCertInfo(creationTime time.Time, fingerprint string) {
 	certCreationTime = creationTime
 	certFingerprint = fingerprint
+}
+
+func SetWeepMethod(command string) {
+	weepMethod = command
 }
 
 func hostname() string {

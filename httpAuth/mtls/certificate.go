@@ -122,15 +122,11 @@ func (wc *wrappedCertificate) autoRefresh() {
 }
 
 func (wc *wrappedCertificate) Fingerprint() string {
-	wc.RLock()
-	defer wc.RUnlock()
 	fingerprintBytes := sha256.Sum256(wc.certificate.Certificate[0])
 	return fmt.Sprintf("%x", fingerprintBytes)
 }
 
 func (wc *wrappedCertificate) CreateTime() time.Time {
-	wc.RLock()
-	defer wc.RUnlock()
 	var createTime time.Time
 	x509cert, err := x509.ParseCertificate(wc.certificate.Certificate[0])
 	if err != nil {

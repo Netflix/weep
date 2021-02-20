@@ -21,6 +21,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/netflix/weep/metadata"
+
 	"github.com/netflix/weep/config"
 	"github.com/netflix/weep/logging"
 
@@ -34,6 +36,11 @@ var (
 		Short:             "weep helps you get the most out of ConsoleMe credentials",
 		Long:              "Weep is a CLI tool that manages AWS access via ConsoleMe for local development.",
 		DisableAutoGenTag: true,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// This runs before any subcommand, and cmd.CalledAs() returns the subcommand
+			// that was called. We want to use this for the weep method in the instance info.
+			metadata.SetWeepMethod(cmd.CalledAs())
+		},
 	}
 	log = logging.GetLogger()
 )
