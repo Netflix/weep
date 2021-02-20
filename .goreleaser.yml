@@ -13,7 +13,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -extldflags "-static" -X github.com/netflix/weep/version.Version={{.Version}} -X github.com/netflix/weep/version.Commit={{.CommitDate}} -X github.com/netflix/weep/version.Date={{.Date}}
+      - -s -w -extldflags "-static" -X github.com/netflix/weep/metadata.Version={{.Version}} -X github.com/netflix/weep/metadata.Commit={{.CommitDate}} -X github.com/netflix/weep/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
   -
     id: demo
@@ -26,7 +26,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -extldflags "-static" -X github.com/netflix/weep/config.EmbeddedConfigFile=/weep-demo.yaml -X github.com/netflix/weep/version.Version={{.Version}} -X github.com/netflix/weep/version.Commit={{.CommitDate}} -X github.com/netflix/weep/version.Date={{.Date}}
+      - -s -w -extldflags "-static" -X github.com/netflix/weep/config.EmbeddedConfigFile=/weep-demo.yaml -X github.com/netflix/weep/metadata.Version={{.Version}} -X github.com/netflix/weep/metadata.Commit={{.CommitDate}} -X github.com/netflix/weep/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
     hooks:
       pre: pkger -include /weep-demo.yaml
