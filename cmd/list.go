@@ -24,12 +24,14 @@ import (
 )
 
 func init() {
+	listCmd.PersistentFlags().BoolVarP(&showAll, "all", "a", false, "include all roles (console and application)")
 	rootCmd.AddCommand(listCmd)
 }
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List available roles",
+	Short: listShortHelp,
+	Long:  listLongHelp,
 	RunE:  runList,
 }
 
@@ -38,7 +40,7 @@ func runList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	roles, err := client.Roles()
+	roles, err := client.Roles(showAll)
 	if err != nil {
 		return err
 	}

@@ -39,14 +39,15 @@ func init() {
 }
 
 var metadataCmd = &cobra.Command{
-	Use:   "metadata [role_name]",
-	Short: "RunService a local Instance Metadata Service (IMDS) endpoint that serves credentials",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runMetadata,
+	Use:     "imds [role_name]",
+	Aliases: []string{"metadata"},
+	Short:   "Run a local Instance Metadata Service (IMDS) endpoint that serves credentials",
+	Args:    cobra.ExactArgs(1),
+	RunE:    runMetadata,
 }
 
 func runMetadata(cmd *cobra.Command, args []string) error {
-	role = args[0]
+	role := args[0]
 	client, err := creds.GetClient()
 	if err != nil {
 		return err

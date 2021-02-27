@@ -22,9 +22,11 @@ func init() {
 }
 
 var weepServiceControl = &cobra.Command{
-	Use:   "service [start|stop|restart|install|uninstall|run]",
-	Short: "Install or control weep as a system service",
-	RunE:  runWeepServiceControl,
+	Use:    "service [start|stop|restart|install|uninstall|run]",
+	Short:  serviceShortHelp,
+	Long:   serviceLongHelp,
+	RunE:   runWeepServiceControl,
+	Hidden: true,
 }
 
 func runWeepServiceControl(cmd *cobra.Command, args []string) error {
