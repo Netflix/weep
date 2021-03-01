@@ -188,7 +188,10 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 	cmCredRequest := ConsolemeCredentialRequestType{
 		RequestedRole:  role,
 		NoIpRestricton: ipRestrict,
-		Metadata:       metadata.GetInstanceInfo(),
+	}
+
+	if metadataEnabled := viper.GetBool("feature_flags.consoleme_metadata"); metadataEnabled == true {
+		cmCredRequest.Metadata = metadata.GetInstanceInfo()
 	}
 
 	b := new(bytes.Buffer)
