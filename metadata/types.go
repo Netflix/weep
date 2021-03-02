@@ -16,60 +16,11 @@
 
 package metadata
 
-import (
-	"sync"
-
-	"github.com/netflix/weep/creds"
-)
-
-type Credentials struct {
-	sync.Mutex
-	Role                string
-	NoIpRestrict        bool
-	metaDataCredentials *creds.AwsCredentials
-	MetadataRegion      string
-	LastRenewal         creds.Time
-}
-
-type MetaDataCredentialResponse struct {
-	Code            string
-	LastUpdated     string
-	Type            string
-	AccessKeyId     string
-	SecretAccessKey string
-	Token           string
-	Expiration      string
-}
-
-type ECSMetaDataCredentialResponse struct {
-	AccessKeyId     string
-	SecretAccessKey string
-	Token           string
-	Expiration      string
-	RoleArn         string
-}
-
-type MetaDataIamInfoResponse struct {
-	Code               string `json:"Code"`
-	LastUpdated        string `json:"LastUpdated"`
-	InstanceProfileARN string `json:"InstanceProfileArn"`
-	InstanceProfileID  string `json:"InstanceProfileId"`
-}
-
-type MetaDataInstanceIdentityDocumentResponse struct {
-	DevpayProductCodes      []string   `json:"devpayProductCodes"`
-	MarkerplaceProductCodes []string   `json:"marketplaceProductCodes"`
-	PrivateIP               string     `json:"privateIp"`
-	Version                 string     `json:"version"`
-	InstanceID              string     `json:"instanceId"`
-	BillingProductCodes     []string   `json:"billingProducts"`
-	InstanceType            string     `json:"instanceType"`
-	AvailabilityZone        string     `json:"availabilityZone"`
-	KernelID                string     `json:"kernelId"`
-	RamdiskID               string     `json:"ramdiskId"`
-	AccountID               string     `json:"accountId"`
-	Architecture            string     `json:"architecture"`
-	ImageID                 string     `json:"imageId"`
-	PendingTime             creds.Time `json:"pendingTime"`
-	Region                  string     `json:"region"`
+type InstanceInfo struct {
+	Hostname        string `json:"hostname"`
+	Username        string `json:"username"`
+	CertAgeSeconds  int    `json:"cert_age,omitempty"`
+	CertFingerprint string `json:"cert_fingerprint,omitempty"`
+	WeepVersion     string `json:"weep_version"`
+	WeepMethod      string `json:"weep_method"`
 }

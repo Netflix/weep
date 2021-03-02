@@ -23,8 +23,6 @@ import (
 	"net/http"
 
 	"github.com/netflix/weep/cache"
-
-	"github.com/netflix/weep/metadata"
 )
 
 func RoleHandler(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +41,7 @@ func CredentialsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("could not get credentials: %e", err)
 	}
 
-	credentialResponse := metadata.MetaDataCredentialResponse{
+	credentialResponse := MetaDataCredentialResponse{
 		Code:            "Success",
 		LastUpdated:     c.LastRefreshed.UTC().Format("2006-01-02T15:04:05Z"),
 		Type:            "AWS-HMAC",

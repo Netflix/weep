@@ -28,7 +28,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/creds"
-	"github.com/netflix/weep/metadata"
 )
 
 // parseAssumeRoleQuery extracts the assume query string argument, splits it on commas, validates that each element
@@ -81,7 +80,7 @@ func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	credentialResponse := metadata.ECSMetaDataCredentialResponse{
+	credentialResponse := ECSMetaDataCredentialResponse{
 		AccessKeyId:     fmt.Sprintf("%s", cachedCredentials.AccessKeyID),
 		Expiration:      cached.Expiration.UTC().Format("2006-01-02T15:04:05Z"),
 		RoleArn:         cached.RoleArn,

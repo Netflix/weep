@@ -22,19 +22,19 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netflix/weep/metadata"
 	"github.com/netflix/weep/util"
 )
 
 func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
-
-	awsArn, _ := util.ArnParse(metadata.Role)
+	// TODO: this was crashing because of a nil pointer dereference. Fix it!
+	awsArn, _ := util.ArnParse("")
 
 	awsArn.ResourceType = "instance-profile"
 
-	iamInfo := metadata.MetaDataIamInfoResponse{
-		Code:               "Success",
-		LastUpdated:        metadata.LastRenewal.UTC().Format("2006-01-02T15:04:05Z"),
+	iamInfo := MetaDataIamInfoResponse{
+		Code: "Success",
+		//LastUpdated:        metadata.LastRenewal.UTC().Format("2006-01-02T15:04:05Z"),
+		LastUpdated:        "", // TODO: fix this
 		InstanceProfileARN: awsArn.ArnString(),
 		InstanceProfileID:  "AIPAI",
 	}

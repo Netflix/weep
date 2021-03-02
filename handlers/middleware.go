@@ -21,12 +21,11 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/netflix/weep/util"
-
-	"github.com/netflix/weep/metadata"
 )
 
 // CredentialServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
@@ -38,7 +37,7 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("ETag", strconv.FormatInt(rand.Int63n(10000000000), 10))
-		w.Header().Set("Last-Modified", metadata.LastRenewal.UTC().Format("2006-01-02T15:04:05Z"))
+		w.Header().Set("Last-Modified", time.Now().UTC().Format("2006-01-02T15:04:05Z")) // TODO: set this to cred refresh time
 		w.Header().Set("Server", "EC2ws")
 		w.Header().Set("Content-Type", "text/plain")
 

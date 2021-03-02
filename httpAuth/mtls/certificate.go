@@ -1,12 +1,17 @@
 package mtls
 
 import (
+	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/netflix/weep/metadata"
 
 	"github.com/sirupsen/logrus"
 
@@ -17,7 +22,7 @@ import (
 // wrappedCertificate is a wrapper for a tls.Certificate that supports automatically
 // reloading the certificate when a file change is detected.
 type wrappedCertificate struct {
-	sync.Mutex
+	sync.RWMutex
 	certificate *tls.Certificate
 	certFile    string
 	keyFile     string
@@ -30,30 +35,26 @@ func newWrappedCertificate(certFile, keyFile string) (*wrappedCertificate, error
 		"certFile": certFile,
 		"keyFile":  keyFile,
 	}).Debug("creating wrapped certificate")
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		return nil, err
-	}
 
 	wc := wrappedCertificate{
-		certificate: &cert,
-		certFile:    certFile,
-		keyFile:     keyFile,
+		certFile: certFile,
+		keyFile:  keyFile,
 	}
+	wc.loadCertificate()
 	go wc.autoRefresh()
 	return &wc, nil
 }
 
 // getCertificate is a function to be used as the GetClientCertificate member of a tls.Config
 func (wc *wrappedCertificate) getCertificate(clientHello *tls.CertificateRequestInfo) (*tls.Certificate, error) {
-	wc.Lock()
-	defer wc.Unlock()
+	wc.RLock()
+	defer wc.RUnlock()
 
 	return wc.certificate, nil
 }
 
-// reloadCertificate replaces certificate with a new keypair loaded in from the filesystem.
-func (wc *wrappedCertificate) reloadCertificate() {
+// loadCertificate replaces certificate with a keypair loaded in from the filesystem.
+func (wc *wrappedCertificate) loadCertificate() {
 	log.Debug("reloading mTLS certificate")
 	wc.Lock()
 	defer wc.Unlock()
@@ -63,6 +64,7 @@ func (wc *wrappedCertificate) reloadCertificate() {
 		return
 	}
 	wc.certificate = &cert
+	wc.updateInstanceInfo()
 }
 
 func (wc *wrappedCertificate) autoRefresh() {
@@ -95,7 +97,7 @@ func (wc *wrappedCertificate) autoRefresh() {
 				}
 				log.Infof("event received: %v", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					debounced(func() { wc.reloadCertificate() })
+					debounced(func() { wc.loadCertificate() })
 				}
 			case watcherError, ok := <-watcher.Errors:
 				if !ok {
@@ -117,4 +119,27 @@ func (wc *wrappedCertificate) autoRefresh() {
 
 	<-interrupt
 	log.Debug("stopping mTLS cert auto-refresher")
+}
+
+func (wc *wrappedCertificate) Fingerprint() string {
+	fingerprintBytes := sha256.Sum256(wc.certificate.Certificate[0])
+	return fmt.Sprintf("%x", fingerprintBytes)
+}
+
+func (wc *wrappedCertificate) CreateTime() time.Time {
+	var createTime time.Time
+	x509cert, err := x509.ParseCertificate(wc.certificate.Certificate[0])
+	if err != nil {
+		// TODO: handle this better
+		fmt.Printf("ow: %v\n", err)
+		return createTime
+	}
+	createTime = x509cert.NotBefore
+	return createTime
+}
+
+// updateInstanceInfo makes a call to update the metadata package with the creation time
+// and fingerprint of the newly-loaded certificate.
+func (wc *wrappedCertificate) updateInstanceInfo() {
+	metadata.SetCertInfo(wc.CreateTime(), wc.Fingerprint())
 }
