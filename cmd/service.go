@@ -62,7 +62,7 @@ func (p *program) run() {
 	args := viper.GetStringSlice("service.args")
 	switch command := viper.GetString("service.command"); command {
 	case "ecs_credential_provider":
-		err := runEcsMetadata(nil, args)
+		err := runWeepServer(nil, args)
 		if err != nil {
 			log.Error(err)
 			exitCode = 1

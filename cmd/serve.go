@@ -43,10 +43,10 @@ var serveCmd = &cobra.Command{
 	Aliases: []string{"ecs_credential_provider", "metadata", "imds"},
 	Short:   serveShortHelp,
 	Long:    serveLongHelp,
-	RunE:    runEcsMetadata,
+	RunE:    runWeepServer,
 }
 
-func runEcsMetadata(cmd *cobra.Command, args []string) error {
+func runWeepServer(cmd *cobra.Command, args []string) error {
 	ipaddress := net.ParseIP(ecsProviderListenAddr)
 
 	if ipaddress == nil {
@@ -58,8 +58,12 @@ func runEcsMetadata(cmd *cobra.Command, args []string) error {
 	router := mux.NewRouter()
 	router.HandleFunc("/healthcheck", handlers.HealthcheckHandler)
 
-	role := args[0]
+	var role string
+	if len(args) > 0 {
+		role = args[0]
+	}
 	if role != "" {
+		log.Infof("Configuring weep IMDS service for role %s", role)
 		client, err := creds.GetClient()
 		if err != nil {
 			return err
