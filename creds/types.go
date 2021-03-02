@@ -64,7 +64,7 @@ type ConsolemeCredentialResponseType struct {
 type ConsolemeCredentialRequestType struct {
 	RequestedRole  string                 `json:"requested_role"`
 	NoIpRestricton bool                   `json:"no_ip_restrictions"`
-	Metadata       *metadata.InstanceInfo `json:"metadata"`
+	Metadata       *metadata.InstanceInfo `json:"metadata,omitempty"`
 }
 
 type ConsoleMeCredentialRequestMetadata struct {
