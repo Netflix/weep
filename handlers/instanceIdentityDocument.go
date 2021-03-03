@@ -18,7 +18,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"runtime"
 
@@ -59,10 +58,8 @@ func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		Region:                  "", // TODO: set this based on config
 	}
 
-	b, err := json.Marshal(identityDocument)
+	err = json.NewEncoder(w).Encode(identityDocument)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to write response: %v", err)
 	}
-
-	fmt.Fprintln(w, b)
 }

@@ -17,7 +17,6 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,8 +25,12 @@ import (
 )
 
 func RoleHandler(w http.ResponseWriter, r *http.Request) {
-	// I think this works as long as there's a response?
-	fmt.Fprint(w, "hi")
+	defaultRole, err := cache.GlobalCache.GetDefault()
+	if err != nil {
+		fmt.Fprint(w, "error")
+		return
+	}
+	fmt.Fprint(w, defaultRole.Role)
 }
 
 func CredentialsHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,11 +54,8 @@ func CredentialsHandler(w http.ResponseWriter, r *http.Request) {
 		Expiration:      c.Expiration.UTC().Format("2006-01-02T15:04:05Z"),
 	}
 
-	b, err := json.Marshal(credentialResponse)
+	err = json.NewEncoder(w).Encode(credentialResponse)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to write response: %v", err)
 	}
-	var out bytes.Buffer
-	json.Indent(&out, b, "", "  ")
-	fmt.Fprintln(w, out.String())
 }

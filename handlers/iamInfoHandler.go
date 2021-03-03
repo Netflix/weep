@@ -17,9 +17,7 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/netflix/weep/cache"
@@ -40,11 +38,8 @@ func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
 		InstanceProfileID:  "AIPAI",
 	}
 
-	b, err := json.Marshal(iamInfo)
+	err := json.NewEncoder(w).Encode(iamInfo)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to write response: %v", err)
 	}
-	var out bytes.Buffer
-	json.Indent(&out, b, "", "  ")
-	fmt.Fprintln(w, out.String())
 }

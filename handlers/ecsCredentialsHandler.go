@@ -88,12 +88,8 @@ func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request
 		Token:           fmt.Sprintf("%s", cachedCredentials.SessionToken),
 	}
 
-	b, err := json.Marshal(credentialResponse)
+	err = json.NewEncoder(w).Encode(credentialResponse)
 	if err != nil {
-		log.Error(err)
-	}
-	_, err = w.Write(b)
-	if err != nil {
-		log.Errorf("failed to write HTTP response: %s", err)
+		log.Errorf("failed to write response: %v", err)
 	}
 }
