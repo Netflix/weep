@@ -30,7 +30,9 @@ func TestGetInstanceInfo(t *testing.T) {
 	if result.WeepVersion != Version {
 		t.Errorf("weep version: expected %s, got %s", Version, result.WeepVersion)
 	}
-	// TODO: check WeepMethod when that's implemented
+	if result.WeepMethod != weepMethod {
+		t.Errorf("weep method: expected %s, got %s", weepMethod, result.WeepMethod)
+	}
 }
 
 func TestElapsedSeconds(t *testing.T) {
@@ -105,6 +107,23 @@ func TestUsername(t *testing.T) {
 	expected := u.Username
 	result := username()
 	if result != expected {
-		t.Errorf("hostname failed: expected %s, got %s", expected, result)
+		t.Errorf("username failed: expected %s, got %s", expected, result)
+	}
+}
+
+func TestSetWeepMethod(t *testing.T) {
+	expected := "cool-command"
+	SetWeepMethod(expected)
+	if weepMethod != expected {
+		t.Errorf("weep method failed: expected %s, got %s", expected, weepMethod)
+	}
+}
+
+func TestStartupTime(t *testing.T) {
+	weepStartupTime = time.Date(2020, 1, 2, 3, 45, 67, 0, time.UTC)
+	expected := "2020-01-02T03:46:07Z"
+	result := StartupTime()
+	if result != expected {
+		t.Errorf("startup time failed: expected %s, got %s", expected, result)
 	}
 }

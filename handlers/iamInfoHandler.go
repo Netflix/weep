@@ -22,19 +22,20 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/netflix/weep/cache"
+
 	"github.com/netflix/weep/util"
 )
 
 func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: this was crashing because of a nil pointer dereference. Fix it!
-	awsArn, _ := util.ArnParse("")
+	rawArn := cache.GlobalCache.DefaultArn()
+	awsArn, _ := util.ArnParse(rawArn)
 
 	awsArn.ResourceType = "instance-profile"
 
 	iamInfo := MetaDataIamInfoResponse{
-		Code: "Success",
-		//LastUpdated:        metadata.LastRenewal.UTC().Format("2006-01-02T15:04:05Z"),
-		LastUpdated:        "", // TODO: fix this
+		Code:               "Success",
+		LastUpdated:        cache.GlobalCache.DefaultLastUpdated(),
 		InstanceProfileARN: awsArn.ArnString(),
 		InstanceProfileID:  "AIPAI",
 	}
