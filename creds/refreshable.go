@@ -88,8 +88,12 @@ func (rp *RefreshableProvider) refresh() error {
 		newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
 		if err != nil {
 			log.Errorf("failed to get refreshed credentials: %s", err.Error())
+			// Only prep for the next request and sleep if we have remaining retries
 			if i != rp.retries-1 {
-				// only sleep if we have remaining retries
+				// A likely cause of this failure is an expired mTLS cert. The http.Client, with the
+				// best of intentions, will hold the connection open, meaning that an auto-updated
+				// cert won't be used by the client.
+				rp.client.CloseIdleConnections()
 				time.Sleep(retryDelay)
 			}
 		} else {

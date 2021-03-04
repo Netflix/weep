@@ -52,7 +52,7 @@ type Account struct {
 
 // HTTPClient is the interface we expect HTTP clients to implement.
 type HTTPClient interface {
-	Do(*http.Request) (*http.Response, error)
+	Do(req *http.Request) (*http.Response, error)
 }
 
 // Client represents a ConsoleMe client.
@@ -128,6 +128,21 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 	req.Header.Add("Content-Type", "application/json")
 
 	return c.Httpc.Do(req)
+}
+
+// CloseIdleConnections calls CloseIdleConnections() on the client's HTTP transport.
+func (c *Client) CloseIdleConnections() {
+	client, ok := c.Httpc.(*http.Client)
+	if !ok {
+		// We're probably using a mock client. No biggie.
+		return
+	}
+	transport, ok := client.Transport.(*http.Transport)
+	if !ok {
+		// This is unlikely, but we'll fail out anyway.
+		return
+	}
+	transport.CloseIdleConnections()
 }
 
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
