@@ -31,7 +31,6 @@ import (
 )
 
 func init() {
-	fileCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	fileCmd.PersistentFlags().StringVarP(&destination, "output", "o", getDefaultCredentialsFile(), "output file for credentials")
 	fileCmd.PersistentFlags().StringVarP(&profileName, "profile", "p", "default", "profile name")
 	fileCmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "overwrite existing profile without prompting")
@@ -41,13 +40,14 @@ func init() {
 
 var fileCmd = &cobra.Command{
 	Use:   "file [role_name]",
-	Short: "Retrieve credentials and save them to a credentials file",
+	Short: fileShortHelp,
+	Long:  fileLongHelp,
 	Args:  cobra.ExactArgs(1),
 	RunE:  runFile,
 }
 
 func runFile(cmd *cobra.Command, args []string) error {
-	role = args[0]
+	role := args[0]
 	err := updateCredentialsFile(role, profileName, destination, noIpRestrict, assumeRole)
 	if err != nil {
 		return err

@@ -212,6 +212,86 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 	}
 }
 
+func TestCredentialCache_DefaultLastUpdated(t *testing.T) {
+	testCache := CredentialCache{
+		RoleCredentials: map[string]*creds.RefreshableProvider{},
+	}
+	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
+		Credentials: &creds.AwsCredentials{
+			AccessKeyId:     "a",
+			SecretAccessKey: "b",
+			SessionToken:    "c",
+			Expiration:      creds.Time(time.Unix(1, 0)),
+			RoleArn:         "e",
+		},
+	})
+	if err != nil {
+		t.Errorf("test setup failure: %e", err)
+	}
+	err = testCache.SetDefault(testClient, "a", "b", make([]string, 0))
+	if err != nil {
+		t.Errorf("test failure: %e", err)
+	}
+	timeFormat := "2006-01-02T15:04:05Z"
+	result := testCache.DefaultLastUpdated()
+	resultTime, err := time.Parse(timeFormat, result)
+	if err != nil {
+		t.Errorf("invalid time format returned: expected format %s, got result %s", timeFormat, result)
+	}
+	now := time.Now().Format(timeFormat)
+	timeDiff := time.Now().Sub(resultTime)
+	if timeDiff < 0*time.Second || timeDiff > 1*time.Second {
+		t.Errorf("last refreshed time more than 1 second different than current time: %s, current time %s, difference %v seconds", result, now, timeDiff)
+	}
+}
+
+func TestCredentialCache_DefaultLastUpdated_NoDefault(t *testing.T) {
+	testCache := CredentialCache{
+		RoleCredentials: map[string]*creds.RefreshableProvider{},
+	}
+	result := testCache.DefaultLastUpdated()
+	if result != "" {
+		t.Errorf("wrong last updated returned: got %s, expected empty string", result)
+	}
+}
+
+func TestCredentialCache_DefaultArn(t *testing.T) {
+	testCache := CredentialCache{
+		RoleCredentials: map[string]*creds.RefreshableProvider{},
+	}
+	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
+		Credentials: &creds.AwsCredentials{
+			AccessKeyId:     "a",
+			SecretAccessKey: "b",
+			SessionToken:    "c",
+			Expiration:      creds.Time(time.Unix(1, 0)),
+			RoleArn:         "e",
+		},
+	})
+	if err != nil {
+		t.Errorf("test setup failure: %e", err)
+	}
+	err = testCache.SetDefault(testClient, "a", "b", make([]string, 0))
+	if err != nil {
+		t.Errorf("test failure: %e", err)
+	}
+	expected := "e"
+	result := testCache.DefaultArn()
+	if result != expected {
+		t.Errorf("wrong arn returned: got %s, expected %s", result, expected)
+	}
+}
+
+func TestCredentialCache_DefaultArn_NoDefault(t *testing.T) {
+	testCache := CredentialCache{
+		RoleCredentials: map[string]*creds.RefreshableProvider{},
+	}
+	result := testCache.DefaultArn()
+	if result != "" {
+		t.Errorf("wrong arn returned: got %s, expected empty string", result)
+	}
+}
+
 func TestCredentialCache_GetOrSet(t *testing.T) {
 	cases := []struct {
 		CacheContents  map[string]*creds.RefreshableProvider

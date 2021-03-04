@@ -22,9 +22,11 @@ func init() {
 }
 
 var weepServiceControl = &cobra.Command{
-	Use:   "service [start|stop|restart|install|uninstall|run]",
-	Short: "Install or control weep as a system service",
-	RunE:  runWeepServiceControl,
+	Use:    "service [start|stop|restart|install|uninstall|run]",
+	Short:  serviceShortHelp,
+	Long:   serviceLongHelp,
+	RunE:   runWeepServiceControl,
+	Hidden: true,
 }
 
 func runWeepServiceControl(cmd *cobra.Command, args []string) error {
@@ -60,7 +62,7 @@ func (p *program) run() {
 	args := viper.GetStringSlice("service.args")
 	switch command := viper.GetString("service.command"); command {
 	case "ecs_credential_provider":
-		err := runEcsMetadata(nil, args)
+		err := runWeepServer(nil, args)
 		if err != nil {
 			log.Error(err)
 			exitCode = 1

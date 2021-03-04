@@ -49,6 +49,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	cobra.OnInitialize(updateLoggingConfig)
 
+	rootCmd.PersistentFlags().BoolVarP(&noIpRestrict, "no-ip", "n", false, "remove IP restrictions")
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.weep.yaml)")
 	rootCmd.PersistentFlags().StringSliceVarP(&assumeRole, "assume-role", "A", make([]string, 0), "one or more roles to assume after retrieving credentials")
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "log format (json or tty)")

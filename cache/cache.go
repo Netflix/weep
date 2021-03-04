@@ -94,6 +94,24 @@ func (cc *CredentialCache) GetDefault() (*creds.RefreshableProvider, error) {
 	return nil, errors.NoCredentialsFoundInCache
 }
 
+func (cc *CredentialCache) DefaultLastUpdated() string {
+	c, err := cc.GetDefault()
+	if err != nil {
+		log.Debugf("cannot get last updated time of default creds: %v", err)
+		return ""
+	}
+	return c.LastRefreshed.UTC().Format("2006-01-02T15:04:05Z")
+}
+
+func (cc *CredentialCache) DefaultArn() string {
+	c, err := cc.GetDefault()
+	if err != nil {
+		log.Debugf("cannot get arn of default creds: %v", err)
+		return ""
+	}
+	return c.RoleArn
+}
+
 func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {
 	cc.RLock()
 	defer cc.RUnlock()

@@ -26,11 +26,9 @@ func init() {
 
 var setupCmd = &cobra.Command{
 	Use:   "setup",
-	Short: "Print setup information",
+	Short: setupShortHelp,
+	Long:  setupLongHelp,
 	Run: func(cmd *cobra.Command, args []string) {
 		PrintSetup()
 	},
 }
-
-var fishSetup = `set
-`

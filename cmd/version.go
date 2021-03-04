@@ -30,7 +30,8 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print version information",
+	Short: versionShortHelp,
+	Long:  versionLongHelp,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(metadata.GetVersion())
 	},

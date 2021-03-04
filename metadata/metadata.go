@@ -28,8 +28,13 @@ var (
 	certCreationTime time.Time
 	certFingerprint  string
 	weepMethod       string
+	weepStartupTime  time.Time
 	log              = logging.GetLogger()
 )
+
+func init() {
+	weepStartupTime = time.Now()
+}
 
 // GetInstanceInfo populates and returns an InstanceInfo, most likely to be used as
 // request metadata.
@@ -44,6 +49,10 @@ func GetInstanceInfo() *InstanceInfo {
 		WeepMethod:      weepMethod,
 	}
 	return currentInstanceInfo
+}
+
+func StartupTime() string {
+	return weepStartupTime.UTC().Format("2006-01-02T15:04:05Z")
 }
 
 func elapsedSeconds(startTime, endTime time.Time) int {

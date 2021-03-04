@@ -17,14 +17,12 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"time"
+	"runtime"
 
-	"github.com/netflix/weep/creds"
-
+	"github.com/netflix/weep/cache"
+	"github.com/netflix/weep/metadata"
 	"github.com/netflix/weep/util"
 )
 
@@ -33,8 +31,8 @@ var (
 )
 
 func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: this was crashing because of a nil pointer dereference. Fix it!
-	awsArn, err := util.ArnParse("")
+	rawArn := cache.GlobalCache.DefaultArn()
+	awsArn, err := util.ArnParse(rawArn)
 
 	if err != nil {
 		accountID = "123456789012"
@@ -54,19 +52,14 @@ func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		KernelID:                "aki-fc8f11cc",
 		RamdiskID:               "",
 		AccountID:               accountID,
-		Architecture:            "x86_64",
+		Architecture:            runtime.GOARCH,
 		ImageID:                 "ami-12345",
-		//PendingTime:             creds.Time(metadata.LastRenewal.UTC()), //.Format("2006-01-02T15:04:05Z"),
-		PendingTime: creds.Time(time.Now()), // TODO: fix this
-		Region:      "",                     // TODO: set this based on config
+		PendingTime:             metadata.StartupTime(),
+		Region:                  "", // TODO: set this based on config
 	}
 
-	b, err := json.Marshal(identityDocument)
+	err = json.NewEncoder(w).Encode(identityDocument)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("failed to write response: %v", err)
 	}
-
-	var out bytes.Buffer
-	json.Indent(&out, b, "", "  ")
-	fmt.Fprintln(w, out.String())
 }

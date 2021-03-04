@@ -132,7 +132,7 @@ func (c *Client) do(req *http.Request) (*http.Response, error) {
 
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
 // like: /accounts/service/support
-func (c *Client) Roles() ([]string, error) {
+func (c *Client) Roles(showAll bool) ([]string, error) {
 	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
 	req, err := c.buildRequest(http.MethodGet, "/get_roles?all=true", nil)
 	if err != nil {
@@ -141,7 +141,9 @@ func (c *Client) Roles() ([]string, error) {
 
 	// Add URL Parameters
 	q := url.Values{}
-	q.Add("all", "true")
+	if showAll {
+		q.Add("all", "true")
+	}
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := c.do(req)
