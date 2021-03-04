@@ -26,16 +26,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 )
 
-// getAwsCredentials uses the provided Client to request credentials from ConsoleMe.
-func getAwsCredentials(client *Client, role string, ipRestrict bool) (string, string, string, string, Time, error) {
-	tempCreds, err := client.GetRoleCredentials(role, ipRestrict)
-	if err != nil {
-		return "", "", "", "", Time{}, err
-	}
-
-	return tempCreds.AccessKeyId, tempCreds.SecretAccessKey, tempCreds.SessionToken, tempCreds.RoleArn, tempCreds.Expiration, nil
-}
-
 // getSessionName returns the AWS session name, or defaults to weep if we can't find one.
 func getSessionName(session *sts.STS) string {
 	identity, err := session.GetCallerIdentity(&sts.GetCallerIdentityInput{})
@@ -83,26 +73,19 @@ func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string
 // follows the provided chain of roles to assume. Roles are assumed in the order in which
 // they appear in the assumeRole slice.
 func GetCredentialsC(client *Client, role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
-	id, secret, token, roleArn, expiration, err := getAwsCredentials(client, role, ipRestrict)
+	resp, err := client.GetRoleCredentials(role, ipRestrict)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, assumeRoleArn := range assumeRole {
-		id, secret, token, err = getAssumeRoleCredentials(id, secret, token, assumeRoleArn)
+		resp.AccessKeyId, resp.SecretAccessKey, resp.SessionToken, err = getAssumeRoleCredentials(resp.AccessKeyId, resp.SecretAccessKey, resp.SessionToken, assumeRoleArn)
 		if err != nil {
 			return nil, fmt.Errorf("role assumption failed for %s: %s", assumeRoleArn, err)
 		}
 	}
 
-	finalCreds := &AwsCredentials{
-		AccessKeyId:     id,
-		SecretAccessKey: secret,
-		SessionToken:    token,
-		Expiration:      expiration,
-		RoleArn:         roleArn,
-	}
-	return finalCreds, nil
+	return resp, nil
 }
 
 // GetCredentials requests credentials from ConsoleMe then follows the provided chain of roles to
