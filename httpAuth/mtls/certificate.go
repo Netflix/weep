@@ -47,6 +47,7 @@ func newWrappedCertificate(certFile, keyFile string) (*wrappedCertificate, error
 
 // getCertificate is a function to be used as the GetClientCertificate member of a tls.Config
 func (wc *wrappedCertificate) getCertificate(clientHello *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+	log.Debug("getCertificate called")
 	wc.RLock()
 	defer wc.RUnlock()
 
