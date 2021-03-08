@@ -23,9 +23,10 @@ import (
 // reloading the certificate when a file change is detected.
 type wrappedCertificate struct {
 	sync.RWMutex
-	certificate *tls.Certificate
-	certFile    string
-	keyFile     string
+	certificate     *tls.Certificate
+	x509Certificate *x509.Certificate
+	certFile        string
+	keyFile         string
 }
 
 // newWrappedCertificate initializes and returns a wrappedCertificate that will auto-
@@ -54,6 +55,15 @@ func (wc *wrappedCertificate) getCertificate(clientHello *tls.CertificateRequest
 	return wc.certificate, nil
 }
 
+func (wc *wrappedCertificate) watchExpiration() {
+	expiration := wc.x509Certificate.NotAfter
+	if expiration.Before(time.Now()) {
+		// cert is expired, set unhealthy
+	} else if expiration.Before(time.Now().Add(-6 * time.Hour)) {
+		// cert is expiring soon, log warning
+	}
+}
+
 // loadCertificate replaces certificate with a keypair loaded in from the filesystem.
 func (wc *wrappedCertificate) loadCertificate() {
 	log.Debug("reloading mTLS certificate")
@@ -65,6 +75,10 @@ func (wc *wrappedCertificate) loadCertificate() {
 		return
 	}
 	wc.certificate = &cert
+	wc.x509Certificate, err = x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		log.Errorf("could not parse x509 certificate")
+	}
 	wc.updateInstanceInfo()
 }
 
@@ -128,15 +142,7 @@ func (wc *wrappedCertificate) Fingerprint() string {
 }
 
 func (wc *wrappedCertificate) CreateTime() time.Time {
-	var createTime time.Time
-	x509cert, err := x509.ParseCertificate(wc.certificate.Certificate[0])
-	if err != nil {
-		// TODO: handle this better
-		fmt.Printf("ow: %v\n", err)
-		return createTime
-	}
-	createTime = x509cert.NotBefore
-	return createTime
+	return wc.x509Certificate.NotBefore
 }
 
 // updateInstanceInfo makes a call to update the metadata package with the creation time
