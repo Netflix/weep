@@ -17,6 +17,7 @@
 package creds
 
 import (
+	"github.com/spf13/viper"
 	"time"
 
 	"github.com/netflix/weep/errors"
@@ -84,25 +85,32 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.Lock()
 	defer rp.Unlock()
 
+RetryLoop:
 	for i := 0; i < rp.retries; i++ {
 		newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
-		if err != nil {
-			log.Errorf("failed to get refreshed credentials: %s", err.Error())
+		switch err {
+		case nil:
+			// Everything is happy, so we don't need to retry
+			break RetryLoop
+		case errors.MutualTLSCertNeedsRefreshError:
+			log.Error(viper.GetString("mtls_settings.old_cert_message"))
 			// Only prep for the next request and sleep if we have remaining retries
 			if i != rp.retries-1 {
-				// A likely cause of this failure is an expired mTLS cert. The http.Client, with the
-				// best of intentions, will hold the connection open, meaning that an auto-updated
-				// cert won't be used by the client.
+				// The http.Client, with the best of intentions, will hold the connection open,
+				// meaning that an auto-updated cert won't be used by the client.
 				rp.client.CloseIdleConnections()
 				time.Sleep(retryDelay)
 			}
-		} else {
-			break
+		case errors.MultipleMatchingRoles:
+			return err
+		default:
+			log.Errorf("failed to get refreshed credentials: %s", err.Error())
+			return err
 		}
 	}
-	if newCreds == nil {
-		log.Error("Unable to retrieve credentials from ConsoleMe")
-		return errors.CredentialRetrievalError
+	if err != nil {
+		log.Errorf("Unable to retrieve credentials from ConsoleMe: %v", err)
+		return err
 	}
 
 	rp.Expiration = newCreds.Expiration
