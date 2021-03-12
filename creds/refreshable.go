@@ -17,8 +17,9 @@
 package creds
 
 import (
-	"github.com/spf13/viper"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/netflix/weep/errors"
 
@@ -27,7 +28,7 @@ import (
 
 // NewRefreshableProvider creates an AWS credential provider that will automatically refresh credentials
 // when they are close to expiring
-func NewRefreshableProvider(client *Client, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
+func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
 	rp := &RefreshableProvider{
 		Role:         role,
 		Region:       region,

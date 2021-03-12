@@ -72,7 +72,7 @@ func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string
 // GetCredentialsC uses the provided Client to request credentials from ConsoleMe then
 // follows the provided chain of roles to assume. Roles are assumed in the order in which
 // they appear in the assumeRole slice.
-func GetCredentialsC(client *Client, role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
+func GetCredentialsC(client HTTPClient, role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
 	resp, err := client.GetRoleCredentials(role, ipRestrict)
 	if err != nil {
 		return nil, err

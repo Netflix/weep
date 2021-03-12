@@ -52,6 +52,8 @@ type Account struct {
 // HTTPClient is the interface we expect HTTP clients to implement.
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
+	GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error)
+	CloseIdleConnections()
 }
 
 // Client represents a ConsoleMe client.
@@ -261,8 +263,15 @@ func defaultTransport() *http.Transport {
 }
 
 type ClientMock struct {
-	DoFunc func(req *http.Request) (*http.Response, error)
+	DoFunc                 func(req *http.Request) (*http.Response, error)
+	GetRoleCredentialsFunc func(role string, ipRestrict bool) (*AwsCredentials, error)
 }
+
+func (c *ClientMock) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+	return c.GetRoleCredentialsFunc(role, ipRestrict)
+}
+
+func (c *ClientMock) CloseIdleConnections() {}
 
 func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
 	return c.DoFunc(req)
