@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/netflix/weep/metadata"
@@ -54,6 +55,7 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 	GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error)
 	CloseIdleConnections()
+	buildRequest(string, string, io.Reader) (*http.Request, error)
 }
 
 // Client represents a ConsoleMe client.
@@ -199,6 +201,10 @@ func parseError(statusCode int, rawErrorResponse []byte) error {
 }
 
 func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+	return getRoleCredentialsFunc(c, role, ipRestrict)
+}
+
+func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*AwsCredentials, error) {
 	var credentialsResponse ConsolemeCredentialResponseType
 
 	cmCredRequest := ConsolemeCredentialRequestType{
@@ -268,16 +274,31 @@ type ClientMock struct {
 }
 
 func (c *ClientMock) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
-	return c.GetRoleCredentialsFunc(role, ipRestrict)
+	return getRoleCredentialsFunc(c, role, ipRestrict)
 }
 
 func (c *ClientMock) CloseIdleConnections() {}
+
+func (c *ClientMock) buildRequest(string, string, io.Reader) (*http.Request, error) {
+	return &http.Request{}, nil
+}
 
 func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
 	return c.DoFunc(req)
 }
 
 func GetTestClient(responseBody interface{}) (HTTPClient, error) {
+	var responseCredentials *AwsCredentials
+	var responseCode = 200
+	if c, ok := responseBody.(ConsolemeCredentialResponseType); ok {
+		responseCredentials = c.Credentials
+	}
+	if e, ok := responseBody.(ConsolemeCredentialErrorMessageType); ok {
+		code, err := strconv.Atoi(e.Code)
+		if err == nil {
+			responseCode = code
+		}
+	}
 	resp, err := json.Marshal(responseBody)
 	if err != nil {
 		return nil, err
@@ -287,9 +308,15 @@ func GetTestClient(responseBody interface{}) (HTTPClient, error) {
 		DoFunc: func(*http.Request) (*http.Response, error) {
 			r := ioutil.NopCloser(bytes.NewReader(resp))
 			return &http.Response{
-				StatusCode: 200,
+				StatusCode: responseCode,
 				Body:       r,
 			}, nil
+		},
+		GetRoleCredentialsFunc: func(role string, ipRestrict bool) (*AwsCredentials, error) {
+			if responseCredentials != nil {
+				return responseCredentials, nil
+			}
+			return &AwsCredentials{RoleArn: role}, nil
 		},
 	}
 	return client, nil
