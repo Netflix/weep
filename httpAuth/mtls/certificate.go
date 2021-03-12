@@ -110,7 +110,7 @@ func (wc *wrappedCertificate) autoRefresh() {
 					log.Warn("problem with mTLS file watcher")
 					return
 				}
-				log.Infof("event received: %v", event)
+				log.Debugf("event received: %v", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					debounced(func() { wc.loadCertificate() })
 				}
