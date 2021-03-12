@@ -173,10 +173,10 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 			Retries:      2,
 			RetryDelay:   1,
 			CredentialResponse: ConsolemeCredentialErrorMessageType{
-				Code:    "403",
+				Code:    "901",
 				Message: "Nope",
 			},
-			ExpectedError:  errors.CredentialRetrievalError,
+			ExpectedError:  errors.MultipleMatchingRoles,
 			ExpectedResult: nil,
 		},
 	}

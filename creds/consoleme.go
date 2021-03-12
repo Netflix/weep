@@ -26,7 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
-	"syscall"
+	"strconv"
 	"time"
 
 	"github.com/netflix/weep/metadata"
@@ -52,13 +52,16 @@ type Account struct {
 
 // HTTPClient is the interface we expect HTTP clients to implement.
 type HTTPClient interface {
-	Do(*http.Request) (*http.Response, error)
+	Do(req *http.Request) (*http.Response, error)
+	GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error)
+	CloseIdleConnections()
+	buildRequest(string, string, io.Reader) (*http.Request, error)
 }
 
 // Client represents a ConsoleMe client.
 type Client struct {
-	Httpc HTTPClient
-	Host  string
+	http.Client
+	Host string
 }
 
 // GetClient creates an authenticated ConsoleMe client
@@ -98,7 +101,7 @@ func GetClient() (*Client, error) {
 
 // NewClient takes a ConsoleMe hostname and *http.Client, and returns a
 // ConsoleMe client that will talk to that ConsoleMe instance for AWS Credentials.
-func NewClient(hostname string, httpc HTTPClient) (*Client, error) {
+func NewClient(hostname string, httpc *http.Client) (*Client, error) {
 	if len(hostname) == 0 {
 		return nil, errors.New("hostname cannot be empty string")
 	}
@@ -108,8 +111,8 @@ func NewClient(hostname string, httpc HTTPClient) (*Client, error) {
 	}
 
 	c := &Client{
-		Httpc: httpc,
-		Host:  hostname,
+		Client: *httpc,
+		Host:   hostname,
 	}
 
 	return c, nil
@@ -117,24 +120,30 @@ func NewClient(hostname string, httpc HTTPClient) (*Client, error) {
 
 func (c *Client) buildRequest(method string, resource string, body io.Reader) (*http.Request, error) {
 	urlStr := c.Host + "/api/v1" + resource
-
-	return http.NewRequest(method, urlStr, body)
-}
-
-// do invokes an HTTP request, and returns the response. This also sets the
-// User-Agent of the client.
-func (c *Client) do(req *http.Request) (*http.Response, error) {
-	req.Header.Set(("User-Agent"), userAgent)
+	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", userAgent)
 	req.Header.Add("Content-Type", "application/json")
 
-	return c.Httpc.Do(req)
+	return req, nil
+}
+
+// CloseIdleConnections calls CloseIdleConnections() on the client's HTTP transport.
+func (c *Client) CloseIdleConnections() {
+	transport, ok := c.Client.Transport.(*http.Transport)
+	if !ok {
+		// This is unlikely, but we'll fail out anyway.
+		return
+	}
+	transport.CloseIdleConnections()
 }
 
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
 // like: /accounts/service/support
 func (c *Client) Roles(showAll bool) ([]string, error) {
-	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
-	req, err := c.buildRequest(http.MethodGet, "/get_roles?all=true", nil)
+	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
 	}
@@ -146,33 +155,18 @@ func (c *Client) Roles(showAll bool) ([]string, error) {
 	}
 	req.URL.RawQuery = q.Encode()
 
-	resp, err := c.do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to action request")
 	}
 
 	defer resp.Body.Close()
 	document, err := ioutil.ReadAll(resp.Body)
-	// Handle invalid_jwt error from ConsoleMe by deleting local credentials and asking user to retry
-	if resp.StatusCode == 403 {
-		if err := json.Unmarshal(document, &cmCredentialErrorMessageType); err != nil {
-			return nil, err
-		}
-		if cmCredentialErrorMessageType.Code == "invalid_jwt" {
-			log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
-			err = challenge.DeleteLocalWeepCredentials()
-			if err != nil {
-				return nil, errors.Wrap(err, "Failed to delete invalid Weep jwt")
-			}
-		}
-	}
-	// Handle non-200 errors
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("unexpected HTTP status %s, want 200. Body: %s", resp.Status, string(document))
-	}
-
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseError(resp.StatusCode, document)
 	}
 
 	var roles []string
@@ -183,9 +177,35 @@ func (c *Client) Roles(showAll bool) ([]string, error) {
 	return roles, nil
 }
 
+func parseError(statusCode int, rawErrorResponse []byte) error {
+	var errorResponse ConsolemeCredentialErrorMessageType
+	if err := json.Unmarshal(rawErrorResponse, &errorResponse); err != nil {
+		return errors.Wrap(err, "failed to unmarshal JSON")
+	}
+
+	switch errorResponse.Code {
+	case "901":
+		return werrors.MultipleMatchingRoles
+	case "905":
+		return werrors.MutualTLSCertNeedsRefreshError
+	case "invalid_jwt":
+		log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
+		err := challenge.DeleteLocalWeepCredentials()
+		if err != nil {
+			log.Errorf("failed to delete credentials: %v", err)
+		}
+		return werrors.InvalidJWT
+	default:
+		return fmt.Errorf("unexpected HTTP status %d, want 200. Response: %s", statusCode, string(rawErrorResponse))
+	}
+}
+
 func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+	return getRoleCredentialsFunc(c, role, ipRestrict)
+}
+
+func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*AwsCredentials, error) {
 	var credentialsResponse ConsolemeCredentialResponseType
-	var cmCredentialErrorMessageType ConsolemeCredentialErrorMessageType
 
 	cmCredRequest := ConsolemeCredentialRequestType{
 		RequestedRole:  role,
@@ -207,38 +227,18 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentia
 		return credentialsResponse.Credentials, errors.Wrap(err, "failed to build request")
 	}
 
-	resp, err := c.do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return credentialsResponse.Credentials, errors.Wrap(err, "failed to action request")
 	}
 
 	defer resp.Body.Close()
 	document, err := ioutil.ReadAll(resp.Body)
-	if resp.StatusCode != 200 {
-		if resp.StatusCode == 403 {
-			if err != nil {
-				return credentialsResponse.Credentials, errors.Wrap(err, "failed to read response body")
-			}
-			if err := json.Unmarshal(document, &cmCredentialErrorMessageType); err != nil {
-				return credentialsResponse.Credentials, errors.Wrap(err, "failed to unmarshal JSON")
-			}
-			if cmCredentialErrorMessageType.Code == "905" {
-				return credentialsResponse.Credentials, fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
-			}
-			if cmCredentialErrorMessageType.Code == "invalid_jwt" {
-				log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
-				err = challenge.DeleteLocalWeepCredentials()
-				if err != nil {
-					fmt.Println(err.Error())
-				}
-				syscall.Exit(1)
-			}
-		}
-		return credentialsResponse.Credentials, fmt.Errorf("unexpected HTTP status %s, want 200. Response: %s", resp.Status, string(document))
-	}
-
 	if err != nil {
 		return credentialsResponse.Credentials, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return credentialsResponse.Credentials, parseError(resp.StatusCode, document)
 	}
 
 	if err := json.Unmarshal(document, &credentialsResponse); err != nil {
@@ -269,27 +269,54 @@ func defaultTransport() *http.Transport {
 }
 
 type ClientMock struct {
-	DoFunc func(req *http.Request) (*http.Response, error)
+	DoFunc                 func(req *http.Request) (*http.Response, error)
+	GetRoleCredentialsFunc func(role string, ipRestrict bool) (*AwsCredentials, error)
+}
+
+func (c *ClientMock) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+	return getRoleCredentialsFunc(c, role, ipRestrict)
+}
+
+func (c *ClientMock) CloseIdleConnections() {}
+
+func (c *ClientMock) buildRequest(string, string, io.Reader) (*http.Request, error) {
+	return &http.Request{}, nil
 }
 
 func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
 	return c.DoFunc(req)
 }
 
-func GetTestClient(responseBody interface{}) (*Client, error) {
+func GetTestClient(responseBody interface{}) (HTTPClient, error) {
+	var responseCredentials *AwsCredentials
+	var responseCode = 200
+	if c, ok := responseBody.(ConsolemeCredentialResponseType); ok {
+		responseCredentials = c.Credentials
+	}
+	if e, ok := responseBody.(ConsolemeCredentialErrorMessageType); ok {
+		code, err := strconv.Atoi(e.Code)
+		if err == nil {
+			responseCode = code
+		}
+	}
 	resp, err := json.Marshal(responseBody)
 	if err != nil {
 		return nil, err
 	}
-	client := &Client{
-		Httpc: &ClientMock{
-			DoFunc: func(*http.Request) (*http.Response, error) {
-				r := ioutil.NopCloser(bytes.NewReader(resp))
-				return &http.Response{
-					StatusCode: 200,
-					Body:       r,
-				}, nil
-			},
+	var client HTTPClient
+	client = &ClientMock{
+		DoFunc: func(*http.Request) (*http.Response, error) {
+			r := ioutil.NopCloser(bytes.NewReader(resp))
+			return &http.Response{
+				StatusCode: responseCode,
+				Body:       r,
+			}, nil
+		},
+		GetRoleCredentialsFunc: func(role string, ipRestrict bool) (*AwsCredentials, error) {
+			if responseCredentials != nil {
+				return responseCredentials, nil
+			}
+			return &AwsCredentials{RoleArn: role}, nil
 		},
 	}
 	return client, nil

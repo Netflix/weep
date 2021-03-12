@@ -37,7 +37,7 @@ type AwsCredentials struct {
 type RefreshableProvider struct {
 	sync.RWMutex
 	value         credentials.Value
-	client        *Client
+	client        HTTPClient
 	retries       int
 	retryDelay    int
 	Expiration    Time

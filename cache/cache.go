@@ -59,7 +59,7 @@ func (cc *CredentialCache) Get(role string, assumeChain []string) (*creds.Refres
 	return nil, errors.NoCredentialsFoundInCache
 }
 
-func (cc *CredentialCache) GetOrSet(client *creds.Client, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
+func (cc *CredentialCache) GetOrSet(client creds.HTTPClient, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	c, err := cc.Get(role, assumeChain)
 	if err == nil {
 		return c, nil
@@ -74,7 +74,7 @@ func (cc *CredentialCache) GetOrSet(client *creds.Client, role, region string, a
 	return c, nil
 }
 
-func (cc *CredentialCache) SetDefault(client *creds.Client, role, region string, assumeChain []string) error {
+func (cc *CredentialCache) SetDefault(client creds.HTTPClient, role, region string, assumeChain []string) error {
 	_, err := cc.set(client, role, region, assumeChain)
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {
 	return c, ok
 }
 
-func (cc *CredentialCache) set(client *creds.Client, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
+func (cc *CredentialCache) set(client creds.HTTPClient, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	c, err := creds.NewRefreshableProvider(client, role, region, assumeChain, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate creds: %w", err)

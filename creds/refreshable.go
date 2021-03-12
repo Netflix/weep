@@ -19,6 +19,8 @@ package creds
 import (
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/netflix/weep/errors"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -26,7 +28,7 @@ import (
 
 // NewRefreshableProvider creates an AWS credential provider that will automatically refresh credentials
 // when they are close to expiring
-func NewRefreshableProvider(client *Client, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
+func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
 	rp := &RefreshableProvider{
 		Role:         role,
 		Region:       region,
@@ -84,21 +86,32 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.Lock()
 	defer rp.Unlock()
 
+RetryLoop:
 	for i := 0; i < rp.retries; i++ {
 		newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
-		if err != nil {
-			log.Errorf("failed to get refreshed credentials: %s", err.Error())
+		switch err {
+		case nil:
+			// Everything is happy, so we don't need to retry
+			break RetryLoop
+		case errors.MutualTLSCertNeedsRefreshError:
+			log.Error(viper.GetString("mtls_settings.old_cert_message"))
+			// Only prep for the next request and sleep if we have remaining retries
 			if i != rp.retries-1 {
-				// only sleep if we have remaining retries
+				// The http.Client, with the best of intentions, will hold the connection open,
+				// meaning that an auto-updated cert won't be used by the client.
+				rp.client.CloseIdleConnections()
 				time.Sleep(retryDelay)
 			}
-		} else {
-			break
+		case errors.MultipleMatchingRoles:
+			return err
+		default:
+			log.Errorf("failed to get refreshed credentials: %s", err.Error())
+			return err
 		}
 	}
-	if newCreds == nil {
-		log.Error("Unable to retrieve credentials from ConsoleMe")
-		return errors.CredentialRetrievalError
+	if err != nil {
+		log.Errorf("Unable to retrieve credentials from ConsoleMe: %v", err)
+		return err
 	}
 
 	rp.Expiration = newCreds.Expiration
