@@ -61,7 +61,7 @@ func runFile(cmd *cobra.Command, args []string) error {
 }
 
 func updateCredentialsFile(role, profile, filename string, noIpRestrict bool, assumeRole []string) error {
-	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole)
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
 		return err
 	}

@@ -19,26 +19,24 @@ package cmd
 import "os"
 
 var (
-	assumeRole            []string
-	profileName           string
-	destination           string
-	destinationConfig     string
-	force                 bool
-	autoRefresh           bool
-	generate              bool
-	noIpRestrict          bool
-	showAll               bool
-	metadataRegion        string
-	metadataListenAddr    string
-	metadataListenPort    int
-	ecsProviderListenAddr string
-	ecsProviderListenPort int
-	cfgFile               string
-	logLevel              string
-	logFile               string
-	logFormat             string
-	shutdown              chan os.Signal
-	done                  chan int
+	assumeRole        []string
+	profileName       string
+	destination       string
+	destinationConfig string
+	force             bool
+	autoRefresh       bool
+	generate          bool
+	noIpRestrict      bool
+	showAll           bool
+	region            string
+	listenAddr        string
+	listenPort        int
+	cfgFile           string
+	logLevel          string
+	logFile           string
+	logFormat         string
+	shutdown          chan os.Signal
+	done              chan int
 )
 
 var completionShortHelp = "Generate completion script"

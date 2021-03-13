@@ -14,32 +14,24 @@
  * limitations under the License.
  */
 
-package handlers
+package server
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/netflix/weep/cache"
+	"github.com/gorilla/mux"
 
-	"github.com/netflix/weep/util"
+	"github.com/netflix/weep/config"
 )
 
-func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
-	rawArn := cache.GlobalCache.DefaultArn()
-	awsArn, _ := util.ArnParse(rawArn)
+func CustomHandler(w http.ResponseWriter, r *http.Request) {
 
-	awsArn.ResourceType = "instance-profile"
+	path := mux.Vars(r)["path"]
 
-	iamInfo := MetaDataIamInfoResponse{
-		Code:               "Success",
-		LastUpdated:        cache.GlobalCache.DefaultLastUpdated(),
-		InstanceProfileARN: awsArn.ArnString(),
-		InstanceProfileID:  "AIPAI",
-	}
-
-	err := json.NewEncoder(w).Encode(iamInfo)
-	if err != nil {
-		log.Errorf("failed to write response: %v", err)
+	for _, configRoute := range config.Config.MetaData.Routes {
+		if configRoute.Path == path {
+			fmt.Fprintln(w, configRoute.Path)
+		}
 	}
 }

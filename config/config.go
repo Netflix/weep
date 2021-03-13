@@ -34,6 +34,7 @@ var log = logging.GetLogger()
 func init() {
 	// Set default configuration values here
 	viper.SetTypeByDefaultValue(true)
+	viper.SetDefault("aws.region", "us-east-1")
 	viper.SetDefault("feature_flags.consoleme_metadata", false)
 	viper.SetDefault("log_file", getDefaultLogFile())
 	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")

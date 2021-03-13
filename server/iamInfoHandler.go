@@ -14,49 +14,32 @@
  * limitations under the License.
  */
 
-package handlers
+package server
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
-	"github.com/netflix/weep/logging"
+	"github.com/netflix/weep/cache"
+
+	"github.com/netflix/weep/util"
 )
 
-var log = logging.GetLogger()
+func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
+	rawArn := cache.GlobalCache.DefaultArn()
+	awsArn, _ := util.ArnParse(rawArn)
 
-func BaseHandler(w http.ResponseWriter, r *http.Request) {
+	awsArn.ResourceType = "instance-profile"
 
-	baseMetadata := `ami-id
-ami-launch-index
-ami-manifest-path
-block-device-mapping/
-hostname
-iam/
-instance-action
-instance-id
-instance-type
-kernel-id
-local-hostname
-local-ipv4
-mac
-metrics/
-network/
-placement/
-profile
-public-keys/
-reservation-id
-security-groups
-services/`
+	iamInfo := MetaDataIamInfoResponse{
+		Code:               "Success",
+		LastUpdated:        cache.GlobalCache.DefaultLastUpdated(),
+		InstanceProfileARN: awsArn.ArnString(),
+		InstanceProfileID:  "AIPAI",
+	}
 
-	fmt.Fprint(w, baseMetadata)
-}
-
-func BaseVersionHandler(w http.ResponseWriter, r *http.Request) {
-
-	baseVersionPath := `dynamic
-meta-data
-user-data`
-
-	fmt.Fprintln(w, baseVersionPath)
+	err := json.NewEncoder(w).Encode(iamInfo)
+	if err != nil {
+		log.Errorf("failed to write response: %v", err)
+	}
 }

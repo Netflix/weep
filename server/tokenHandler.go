@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package handlers
+package server
 
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/gorilla/mux"
-
-	"github.com/netflix/weep/config"
 )
 
-func CustomHandler(w http.ResponseWriter, r *http.Request) {
+const staticToken = "AQAEANQlVdnIoNfmJQHofbSTjkIm8eoMIBZZZX05Xk9jLiFuJuL2_A=="
 
-	path := mux.Vars(r)["path"]
-
-	for _, configRoute := range config.Config.MetaData.Routes {
-		if configRoute.Path == path {
-			fmt.Fprintln(w, configRoute.Path)
-		}
-	}
+func TokenHandler(w http.ResponseWriter, r *http.Request) {
+	// Returning a static token allows us to support IMDSv2 with minimal effort.
+	fmt.Fprint(w, staticToken)
 }

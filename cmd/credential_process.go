@@ -77,7 +77,7 @@ func generateCredentialProcessConfig(destination string) error {
 	if destination == "" {
 		return fmt.Errorf("no destination provided")
 	}
-	client, err := creds.GetClient()
+	client, err := creds.GetClient(region)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 		return generateCredentialProcessConfig(destination)
 	}
 	role := args[0]
-	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole)
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
 		return err
 	}

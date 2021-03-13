@@ -55,6 +55,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "log format (json or tty)")
 	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", viper.GetString("log_file"), "log file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
+	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", viper.GetString("aws.region"), "AWS region")
 }
 
 func Run(initFunctions ...func()) {

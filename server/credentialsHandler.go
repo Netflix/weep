@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package handlers
+package server
 
 import (
 	"encoding/json"
@@ -33,7 +33,7 @@ func RoleHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, defaultRole.Role)
 }
 
-func CredentialsHandler(w http.ResponseWriter, r *http.Request) {
+func IMDSHandler(w http.ResponseWriter, r *http.Request) {
 
 	c, err := cache.GlobalCache.GetDefault()
 	if err != nil {

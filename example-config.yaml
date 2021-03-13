@@ -2,6 +2,8 @@ consoleme_url: https://path_to_consoleme:port
 authentication_method: mtls # challenge or mtls
 log_level: info
 log_file: /path/to/log/file
+aws:
+  region: us-east-1
 server:
   http_timeout: 20
   metadata_port: 9090

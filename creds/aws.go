@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -46,10 +48,12 @@ func getSessionName(session *sts.STS) string {
 
 // getAssumeRoleCredentials uses the provided credentials to assume the role specified by roleArn.
 func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string, string, error) {
+	region := viper.GetString("aws.region")
 	staticCreds := credentials.NewStaticCredentials(id, secret, token)
 	awsSession := session.Must(session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{
 			Credentials: staticCreds,
+			Region:      aws.String(region),
 		},
 	}))
 
@@ -90,8 +94,8 @@ func GetCredentialsC(client HTTPClient, role string, ipRestrict bool, assumeRole
 
 // GetCredentials requests credentials from ConsoleMe then follows the provided chain of roles to
 // assume. Roles are assumed in the order in which they appear in the assumeRole slice.
-func GetCredentials(role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
-	client, err := GetClient()
+func GetCredentials(role string, ipRestrict bool, assumeRole []string, region string) (*AwsCredentials, error) {
+	client, err := GetClient(region)
 	if err != nil {
 		return nil, err
 	}

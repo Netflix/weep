@@ -14,16 +14,49 @@
  * limitations under the License.
  */
 
-package handlers
+package server
 
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/netflix/weep/logging"
 )
 
-const staticToken = "AQAEANQlVdnIoNfmJQHofbSTjkIm8eoMIBZZZX05Xk9jLiFuJuL2_A=="
+var log = logging.GetLogger()
 
-func TokenHandler(w http.ResponseWriter, r *http.Request) {
-	// Returning a static token allows us to support IMDSv2 with minimal effort.
-	fmt.Fprint(w, staticToken)
+func BaseHandler(w http.ResponseWriter, r *http.Request) {
+
+	baseMetadata := `ami-id
+ami-launch-index
+ami-manifest-path
+block-device-mapping/
+hostname
+iam/
+instance-action
+instance-id
+instance-type
+kernel-id
+local-hostname
+local-ipv4
+mac
+metrics/
+network/
+placement/
+profile
+public-keys/
+reservation-id
+security-groups
+services/`
+
+	fmt.Fprint(w, baseMetadata)
+}
+
+func BaseVersionHandler(w http.ResponseWriter, r *http.Request) {
+
+	baseVersionPath := `dynamic
+meta-data
+user-data`
+
+	fmt.Fprintln(w, baseVersionPath)
 }

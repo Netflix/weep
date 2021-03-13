@@ -36,7 +36,7 @@ var listCmd = &cobra.Command{
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	client, err := creds.GetClient()
+	client, err := creds.GetClient(region)
 	if err != nil {
 		return err
 	}

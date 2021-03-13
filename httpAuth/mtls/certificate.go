@@ -88,7 +88,7 @@ func (wc *wrappedCertificate) autoRefresh() {
 	// create the fsnotify watcher that we'll use to monitor the cert and key files
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("mTLS cert watcher encountered an error: %v", err)
 	}
 	defer watcher.Close()
 

@@ -61,11 +61,12 @@ type HTTPClient interface {
 // Client represents a ConsoleMe client.
 type Client struct {
 	http.Client
-	Host string
+	Host   string
+	Region string
 }
 
 // GetClient creates an authenticated ConsoleMe client
-func GetClient() (*Client, error) {
+func GetClient(region string) (*Client, error) {
 	var client *Client
 	consoleMeUrl := viper.GetString("consoleme_url")
 	authenticationMethod := viper.GetString("authentication_method")
@@ -75,7 +76,7 @@ func GetClient() (*Client, error) {
 		if err != nil {
 			return client, err
 		}
-		client, err = NewClient(consoleMeUrl, mtlsClient)
+		client, err = NewClient(consoleMeUrl, "", mtlsClient)
 		if err != nil {
 			return client, err
 		}
@@ -88,7 +89,7 @@ func GetClient() (*Client, error) {
 		if err != nil {
 			return client, err
 		}
-		client, err = NewClient(consoleMeUrl, httpClient)
+		client, err = NewClient(consoleMeUrl, "", httpClient)
 		if err != nil {
 			return client, err
 		}
@@ -101,7 +102,7 @@ func GetClient() (*Client, error) {
 
 // NewClient takes a ConsoleMe hostname and *http.Client, and returns a
 // ConsoleMe client that will talk to that ConsoleMe instance for AWS Credentials.
-func NewClient(hostname string, httpc *http.Client) (*Client, error) {
+func NewClient(hostname string, region string, httpc *http.Client) (*Client, error) {
 	if len(hostname) == 0 {
 		return nil, errors.New("hostname cannot be empty string")
 	}
@@ -113,6 +114,7 @@ func NewClient(hostname string, httpc *http.Client) (*Client, error) {
 	c := &Client{
 		Client: *httpc,
 		Host:   hostname,
+		Region: region,
 	}
 
 	return c, nil

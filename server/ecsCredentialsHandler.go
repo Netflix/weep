@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package handlers
+package server
 
 import (
 	"encoding/json"
@@ -52,44 +52,46 @@ func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
 	return roles, nil
 }
 
-func ECSMetadataServiceCredentialsHandler(w http.ResponseWriter, r *http.Request) {
-	var client, err = creds.GetClient()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	assume, err := parseAssumeRoleQuery(r)
-	if err != nil {
-		log.Error(err)
-		util.WriteError(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	vars := mux.Vars(r)
-	requestedRole := vars["role"]
+func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var client, err = creds.GetClient("")
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		assume, err := parseAssumeRoleQuery(r)
+		if err != nil {
+			log.Error(err)
+			util.WriteError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		vars := mux.Vars(r)
+		requestedRole := vars["role"]
 
-	cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, "", assume)
-	if err != nil {
-		// TODO: handle error better and return a helpful response/status
-		log.Errorf("failed to get credentials: %s", err.Error())
-		return
-	}
-	cachedCredentials, err := cached.Retrieve()
-	if err != nil {
-		// TODO: handle error better and return a helpful response/status
-		log.Errorf("failed to get credentials: %s", err.Error())
-		return
-	}
+		cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, "", assume)
+		if err != nil {
+			// TODO: handle error better and return a helpful response/status
+			log.Errorf("failed to get credentials: %s", err.Error())
+			return
+		}
+		cachedCredentials, err := cached.Retrieve()
+		if err != nil {
+			// TODO: handle error better and return a helpful response/status
+			log.Errorf("failed to get credentials: %s", err.Error())
+			return
+		}
 
-	credentialResponse := ECSMetaDataCredentialResponse{
-		AccessKeyId:     fmt.Sprintf("%s", cachedCredentials.AccessKeyID),
-		Expiration:      cached.Expiration.UTC().Format("2006-01-02T15:04:05Z"),
-		RoleArn:         cached.RoleArn,
-		SecretAccessKey: fmt.Sprintf("%s", cachedCredentials.SecretAccessKey),
-		Token:           fmt.Sprintf("%s", cachedCredentials.SessionToken),
-	}
+		credentialResponse := ECSMetaDataCredentialResponse{
+			AccessKeyId:     fmt.Sprintf("%s", cachedCredentials.AccessKeyID),
+			Expiration:      cached.Expiration.UTC().Format("2006-01-02T15:04:05Z"),
+			RoleArn:         cached.RoleArn,
+			SecretAccessKey: fmt.Sprintf("%s", cachedCredentials.SecretAccessKey),
+			Token:           fmt.Sprintf("%s", cachedCredentials.SessionToken),
+		}
 
-	err = json.NewEncoder(w).Encode(credentialResponse)
-	if err != nil {
-		log.Errorf("failed to write response: %v", err)
+		err = json.NewEncoder(w).Encode(credentialResponse)
+		if err != nil {
+			log.Errorf("failed to write response: %v", err)
+		}
 	}
 }
