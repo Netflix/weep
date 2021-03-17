@@ -54,9 +54,10 @@ func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
 
 func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var client, err = creds.GetClient("")
+		var client, err = creds.GetClient(region)
 		if err != nil {
 			log.Error(err)
+			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		assume, err := parseAssumeRoleQuery(r)
@@ -68,16 +69,18 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 		vars := mux.Vars(r)
 		requestedRole := vars["role"]
 
-		cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, "", assume)
+		cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, region, assume)
 		if err != nil {
 			// TODO: handle error better and return a helpful response/status
-			log.Errorf("failed to get credentials: %s", err.Error())
+			log.Errorf("failed to get credentials: %s", err)
+			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		cachedCredentials, err := cached.Retrieve()
 		if err != nil {
 			// TODO: handle error better and return a helpful response/status
 			log.Errorf("failed to get credentials: %s", err.Error())
+			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 

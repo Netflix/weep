@@ -102,15 +102,11 @@ RetryLoop:
 				rp.client.CloseIdleConnections()
 				time.Sleep(retryDelay)
 			}
-		case errors.MultipleMatchingRoles:
-			return err
 		default:
-			log.Errorf("failed to get refreshed credentials: %s", err.Error())
 			return err
 		}
 	}
 	if err != nil {
-		log.Errorf("Unable to retrieve credentials from ConsoleMe: %v", err)
 		return err
 	}
 

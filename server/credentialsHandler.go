@@ -21,27 +21,34 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/netflix/weep/util"
+
 	"github.com/netflix/weep/cache"
 )
 
 func RoleHandler(w http.ResponseWriter, r *http.Request) {
 	defaultRole, err := cache.GlobalCache.GetDefault()
 	if err != nil {
-		fmt.Fprint(w, "error")
+		util.WriteError(w, "error", 500)
 		return
 	}
-	fmt.Fprint(w, defaultRole.Role)
+	if _, err := w.Write([]byte(defaultRole.Role)); err != nil {
+		log.Errorf("failed to write response: %v", err)
+	}
 }
 
 func IMDSHandler(w http.ResponseWriter, r *http.Request) {
-
 	c, err := cache.GlobalCache.GetDefault()
 	if err != nil {
 		log.Errorf("could not get credentials from cache: %e", err)
+		util.WriteError(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	credentials, err := c.Retrieve()
 	if err != nil {
 		log.Errorf("could not get credentials: %e", err)
+		util.WriteError(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	credentialResponse := MetaDataCredentialResponse{

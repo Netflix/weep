@@ -186,8 +186,18 @@ func parseError(statusCode int, rawErrorResponse []byte) error {
 	}
 
 	switch errorResponse.Code {
+	case "899":
+		return werrors.InvalidArn
+	case "900":
+		return werrors.NoMatchingRoles
 	case "901":
 		return werrors.MultipleMatchingRoles
+	case "902":
+		return werrors.CredentialRetrievalError
+	case "903":
+		return werrors.NoMatchingRoles
+	case "904":
+		return werrors.MalformedRequestError
 	case "905":
 		return werrors.MutualTLSCertNeedsRefreshError
 	case "invalid_jwt":

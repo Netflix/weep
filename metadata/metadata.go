@@ -41,12 +41,12 @@ func init() {
 func GetInstanceInfo() *InstanceInfo {
 	currentTime := time.Now()
 	currentInstanceInfo := &InstanceInfo{
-		Hostname:        hostname(),
-		Username:        username(),
-		CertAgeSeconds:  elapsedSeconds(certCreationTime, currentTime),
-		CertFingerprint: certFingerprint,
-		WeepVersion:     Version,
-		WeepMethod:      weepMethod,
+		Hostname:              hostname(),
+		Username:              username(),
+		CertAgeSeconds:        elapsedSeconds(certCreationTime, currentTime),
+		CertFingerprintSHA256: certFingerprint,
+		WeepVersion:           Version,
+		WeepMethod:            weepMethod,
 	}
 	return currentInstanceInfo
 }

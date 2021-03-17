@@ -24,8 +24,8 @@ func TestGetInstanceInfo(t *testing.T) {
 	if !(result.CertAgeSeconds >= 4 && result.CertAgeSeconds <= 6) {
 		t.Errorf("cert age seconds: expected 4 <= x <= 6, got %d", result.CertAgeSeconds)
 	}
-	if result.CertFingerprint != certFingerprint {
-		t.Errorf("cert fingerprint: expected %s, got %s", certFingerprint, result.CertFingerprint)
+	if result.CertFingerprintSHA256 != certFingerprint {
+		t.Errorf("cert fingerprint: expected %s, got %s", certFingerprint, result.CertFingerprintSHA256)
 	}
 	if result.WeepVersion != Version {
 		t.Errorf("weep version: expected %s, got %s", Version, result.WeepVersion)

@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/netflix/weep/cache"
@@ -48,7 +49,17 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	go func() {
 		log.Info("Starting weep on ", listenAddr)
-		log.Info(http.ListenAndServe(listenAddr, router))
+		srv := &http.Server{
+			ReadTimeout:       1 * time.Second,
+			WriteTimeout:      10 * time.Second,
+			IdleTimeout:       30 * time.Second,
+			ReadHeaderTimeout: 2 * time.Second,
+			Addr:              listenAddr,
+			Handler:           router,
+		}
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatalf("server failed: %v", err)
+		}
 	}()
 
 	// Check for interrupt signal and exit cleanly
