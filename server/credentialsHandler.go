@@ -29,10 +29,12 @@ import (
 func RoleHandler(w http.ResponseWriter, r *http.Request) {
 	defaultRole, err := cache.GlobalCache.GetDefault()
 	if err != nil {
-		fmt.Fprint(w, "error")
+		util.WriteError(w, "error", 500)
 		return
 	}
-	fmt.Fprint(w, defaultRole.Role)
+	if _, err := w.Write([]byte(defaultRole.Role)); err != nil {
+		log.Errorf("failed to write response: %v", err)
+	}
 }
 
 func IMDSHandler(w http.ResponseWriter, r *http.Request) {
