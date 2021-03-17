@@ -17,10 +17,10 @@
 package metadata
 
 type InstanceInfo struct {
-	Hostname        string `json:"hostname"`
-	Username        string `json:"username"`
-	CertAgeSeconds  int    `json:"cert_age,omitempty"`
-	CertFingerprint string `json:"cert_fingerprint,omitempty"`
-	WeepVersion     string `json:"weep_version"`
-	WeepMethod      string `json:"weep_method"`
+	Hostname              string `json:"hostname"`
+	Username              string `json:"username"`
+	CertAgeSeconds        int    `json:"cert_age_seconds,omitempty"`
+	CertFingerprintSHA256 string `json:"cert_fingerprint_sha256,omitempty"`
+	WeepVersion           string `json:"weep_version"`
+	WeepMethod            string `json:"weep_method"`
 }

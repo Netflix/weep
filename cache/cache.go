@@ -17,7 +17,6 @@
 package cache
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 
@@ -122,7 +121,7 @@ func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {
 func (cc *CredentialCache) set(client creds.HTTPClient, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	c, err := creds.NewRefreshableProvider(client, role, region, assumeChain, false)
 	if err != nil {
-		return nil, fmt.Errorf("could not generate creds: %w", err)
+		return nil, err
 	}
 	cc.Lock()
 	defer cc.Unlock()
