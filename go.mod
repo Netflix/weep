@@ -1,9 +1,9 @@
 module github.com/netflix/weep
 
-go 1.15
+go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.37.30
+	github.com/aws/aws-sdk-go v1.38.0
 	github.com/bep/debounce v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gobuffalo/here v0.6.2 // indirect
@@ -26,7 +26,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
-	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2 // indirect
+	golang.org/x/sys v0.0.0-20210317225723-c4fcb01b228e // indirect
 	golang.org/x/text v0.3.5 // indirect
 	gopkg.in/ini.v1 v1.62.0
 )
