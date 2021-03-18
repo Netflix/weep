@@ -71,6 +71,9 @@ every hour to get new credentials.
 More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-file
 `
 
+var infoShortHelp = ""
+var infoLongHelp = ``
+
 var listShortHelp = "List available roles"
 var listLongHelp = `The list command prints out all of the roles you have access to via ConsoleMe. By default,
 this command will only show console roles. Use the --all flag to also include application
