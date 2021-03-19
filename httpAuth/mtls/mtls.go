@@ -38,8 +38,23 @@ import (
 
 var log = logging.GetLogger()
 
+var tlsConfig *tls.Config
+
+func init() {
+	if config.MtlsEnabled() {
+		var err error
+		tlsConfig, err = getTLSConfig()
+		if err != nil {
+			log.Fatalf("could not initialize mtls: %v", err)
+		}
+	}
+}
+
 // getTLSConfig makes and returns a pointer to a tls.Config
 func getTLSConfig() (*tls.Config, error) {
+	if tlsConfig != nil {
+		return tlsConfig, nil
+	}
 	dirs, err := getTLSDirs()
 	if err != nil {
 		return nil, err
@@ -48,7 +63,7 @@ func getTLSConfig() (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	tlsConfig, err := makeTLSConfig(certFile, keyFile, caFile, insecure)
+	tlsConfig, err = makeTLSConfig(certFile, keyFile, caFile, insecure)
 	if err != nil {
 		return nil, err
 	}

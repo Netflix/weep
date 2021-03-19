@@ -17,6 +17,7 @@
 package creds
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/viper"
@@ -35,8 +36,6 @@ func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain 
 		NoIpRestrict: noIpRestrict,
 		AssumeChain:  assumeChain,
 		client:       client,
-		retries:      5,
-		retryDelay:   5,
 	}
 	err := rp.refresh()
 	if err != nil {
@@ -54,7 +53,6 @@ func (rp *RefreshableProvider) AutoRefresh() {
 	for {
 		select {
 		case _ = <-ticker.C:
-			log.Debugf("checking credentials for %s", rp.Role)
 			_, err := rp.checkAndRefresh(10)
 			if err != nil {
 				log.Error(err.Error())
@@ -81,33 +79,21 @@ func (rp *RefreshableProvider) refresh() error {
 	log.Debugf("refreshing credentials for %s", rp.Role)
 	var err error
 	var newCreds *AwsCredentials
-	retryDelay := time.Duration(rp.retryDelay) * time.Second
 
 	rp.Lock()
 	defer rp.Unlock()
 
-RetryLoop:
-	for i := 0; i < rp.retries; i++ {
-		newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
-		switch err {
-		case nil:
-			// Everything is happy, so we don't need to retry
-			break RetryLoop
-		case errors.MutualTLSCertNeedsRefreshError:
-			log.Error(viper.GetString("mtls_settings.old_cert_message"))
-			// Only prep for the next request and sleep if we have remaining retries
-			if i != rp.retries-1 {
-				// The http.Client, with the best of intentions, will hold the connection open,
-				// meaning that an auto-updated cert won't be used by the client.
-				rp.client.CloseIdleConnections()
-				time.Sleep(retryDelay)
-			}
-		default:
+	newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
+	if err != nil {
+		if err == errors.MutualTLSCertNeedsRefreshError {
+			log.Error(err)
+			// The http.Client, with the best of intentions, will hold the connection open,
+			// meaning that an auto-updated cert won't be used by the client.
+			rp.client.CloseIdleConnections()
+			return fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
+		} else {
 			return err
 		}
-	}
-	if err != nil {
-		return err
 	}
 
 	rp.Expiration = newCreds.Expiration
