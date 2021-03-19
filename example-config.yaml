@@ -6,8 +6,8 @@ aws:
   region: us-east-1
 server:
   http_timeout: 20
-  metadata_port: 9090
-  ecs_credential_provider_port: 9091
+  address: 127.0.0.1
+  port: 9091
 service:
   command: ecs_credential_provider
   args:

@@ -48,7 +48,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router.HandleFunc("/{path:.*}", CredentialServiceMiddleware(CustomHandler))
 
 	go func() {
-		log.Info("Starting weep on ", listenAddr)
+		log.Info("starting weep on ", listenAddr)
 		srv := &http.Server{
 			ReadTimeout:       1 * time.Second,
 			WriteTimeout:      10 * time.Second,
@@ -64,6 +64,6 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
-	log.Print("Shutdown signal received, stopping server...")
+	log.Print("shutdown signal received, stopping server...")
 	return nil
 }
