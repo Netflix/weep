@@ -1,5 +1,7 @@
-[![](https://img.shields.io/badge/docs-gitbook-blue?style=flat-square)](https://hawkins.gitbook.io/consoleme/weep-cli/)
-[![Discord Chat](https://img.shields.io/discord/730908778299523072?label=Chat&logo=discord&style=flat-square)](https://discord.gg/tZ8S7Yg)
+[![](https://img.shields.io/badge/docs-gitbook-blue`)](https://hawkins.gitbook.io/consoleme/weep-cli/)
+[![Discord Chat](https://img.shields.io/discord/730908778299523072?label=Chat&logo=discord)](https://discord.gg/tZ8S7Yg)
+[![pre-commit](https://github.com/Netflix/weep/actions/workflows/precommit.yml/badge.svg)](https://github.com/Netflix/weep/actions/workflows/precommit.yml)
+[![goreleaser](https://github.com/Netflix/weep/actions/workflows/release.yml/badge.svg)](https://github.com/Netflix/weep/actions/workflows/release.yml)
 
 # weep
 
