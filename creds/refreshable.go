@@ -18,6 +18,7 @@ package creds
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -30,8 +31,11 @@ import (
 // NewRefreshableProvider creates an AWS credential provider that will automatically refresh credentials
 // when they are close to expiring
 func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
+	splitRole := strings.Split(role, "/")
+	roleName := splitRole[len(splitRole)-1]
 	rp := &RefreshableProvider{
-		Role:         role,
+		Role:         roleName,
+		RoleArn:      role,
 		Region:       region,
 		NoIpRestrict: noIpRestrict,
 		AssumeChain:  assumeChain,
