@@ -34,7 +34,7 @@ func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain 
 	splitRole := strings.Split(role, "/")
 	roleName := splitRole[len(splitRole)-1]
 	rp := &RefreshableProvider{
-		Role:         roleName,
+		RoleName:     roleName,
 		RoleArn:      role,
 		Region:       region,
 		NoIpRestrict: noIpRestrict,
@@ -66,7 +66,7 @@ func (rp *RefreshableProvider) AutoRefresh() {
 }
 
 func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
-	log.Debugf("checking credentials for %s", rp.Role)
+	log.Debugf("checking credentials for %s", rp.RoleName)
 	// refresh creds if we're within 10 minutes of them expiring
 	diff := time.Duration(threshold*-1) * time.Minute
 	thresh := rp.Expiration.Add(diff)
@@ -80,14 +80,14 @@ func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
 }
 
 func (rp *RefreshableProvider) refresh() error {
-	log.Debugf("refreshing credentials for %s", rp.Role)
+	log.Debugf("refreshing credentials for %s", rp.RoleArn)
 	var err error
 	var newCreds *AwsCredentials
 
 	rp.Lock()
 	defer rp.Unlock()
 
-	newCreds, err = GetCredentialsC(rp.client, rp.Role, rp.NoIpRestrict, rp.AssumeChain)
+	newCreds, err = GetCredentialsC(rp.client, rp.RoleArn, rp.NoIpRestrict, rp.AssumeChain)
 	if err != nil {
 		if err == errors.MutualTLSCertNeedsRefreshError {
 			log.Error(err)
@@ -106,11 +106,12 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.value.SecretAccessKey = newCreds.SecretAccessKey
 	rp.value.AccessKeyID = newCreds.AccessKeyId
 	rp.LastRefreshed = Time(time.Now())
+	// We favor the role ARN from ConsoleMe over the one from the user, which could just be a search string.
 	rp.RoleArn = newCreds.RoleArn
 	if rp.value.ProviderName == "" {
 		rp.value.ProviderName = "WeepRefreshableProvider"
 	}
-	log.Debugf("successfully refreshed credentials for %s", rp.Role)
+	log.Debugf("successfully refreshed credentials for %s", rp.RoleArn)
 	return nil
 }
 

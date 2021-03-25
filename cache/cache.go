@@ -48,14 +48,14 @@ func getCacheSlug(role string, assume []string) string {
 	return strings.Join(elements, "/")
 }
 
-func (cc *CredentialCache) Get(role string, assumeChain []string) (*creds.RefreshableProvider, error) {
+func (cc *CredentialCache) Get(searchString string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	log.WithFields(logrus.Fields{
-		"role":        role,
-		"assumeChain": assumeChain,
+		"searchString": searchString,
+		"assumeChain":  assumeChain,
 	}).Info("retrieving credentials")
-	c, ok := cc.get(getCacheSlug(role, assumeChain))
+	c, ok := cc.get(getCacheSlug(searchString, assumeChain))
 	if ok {
-		log.Debugf("found credentials for %s in cache", role)
+		log.Debugf("found credentials for %s in cache", searchString)
 		return c, nil
 	}
 	return nil, errors.NoCredentialsFoundInCache

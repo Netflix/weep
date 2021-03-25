@@ -43,7 +43,7 @@ type RefreshableProvider struct {
 	Expiration    Time
 	LastRefreshed Time
 	Region        string
-	Role          string
+	RoleName      string
 	RoleArn       string
 	NoIpRestrict  bool
 	AssumeChain   []string
