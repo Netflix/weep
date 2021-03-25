@@ -71,7 +71,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 				Expiration:    testExpiration,
 				LastRefreshed: Time{},
 				Region:        testRegion,
-				Role:          testRole,
+				RoleName:      testRole,
 				RoleArn:       testRoleArn,
 				NoIpRestrict:  false,
 				AssumeChain:   make([]string, 0),
@@ -89,7 +89,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 				Expiration:    testExpiration,
 				LastRefreshed: Time{},
 				Region:        testRegion,
-				Role:          testRole,
+				RoleName:      testRole,
 				RoleArn:       testRoleArn,
 				NoIpRestrict:  true,
 				AssumeChain:   make([]string, 0),
@@ -120,8 +120,8 @@ func TestNewRefreshableProvider(t *testing.T) {
 			t.Errorf("%s failed: got %v region, expected %v", tc.Description, actualResult.Region, tc.ExpectedResult.Region)
 			continue
 		}
-		if actualResult != nil && actualResult.Role != tc.ExpectedResult.Role {
-			t.Errorf("%s failed: got %v role, expected %v", tc.Description, actualResult.Role, tc.ExpectedResult.Role)
+		if actualResult != nil && actualResult.RoleName != tc.ExpectedResult.RoleName {
+			t.Errorf("%s failed: got %v role, expected %v", tc.Description, actualResult.RoleName, tc.ExpectedResult.RoleName)
 			continue
 		}
 		if actualResult != nil && actualResult.RoleArn != tc.ExpectedResult.RoleArn {
@@ -194,7 +194,7 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 			retries:      tc.Retries,
 			retryDelay:   tc.RetryDelay,
 			Region:       tc.Region,
-			Role:         tc.Role,
+			RoleName:     tc.Role,
 			RoleArn:      tc.RoleArn,
 			NoIpRestrict: tc.NoIpRestrict,
 			AssumeChain:  tc.AssumeChain,
