@@ -8,7 +8,7 @@
   <array> 
     <string>/bin/bash</string> 
     <string>-c</string> 
-    <string>echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9090" | sudo pfctl -ef -</string> 
+    <string>echo "rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9091" | sudo pfctl -ef -</string>
   </array> 
   <key>RunAtLoad</key> <true/> 
   <key>Nice</key> 

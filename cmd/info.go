@@ -58,6 +58,9 @@ func PrintWeepInfo(w io.Writer) error {
 		defer b64encoder.Close()
 		writer = zlib.NewWriter(b64encoder)
 	}
+	if closeable, ok := writer.(io.WriteCloser); ok {
+		defer closeable.Close()
+	}
 
 	roles, err := roleList(true)
 	if err != nil {

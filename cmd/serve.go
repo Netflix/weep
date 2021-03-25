@@ -24,8 +24,8 @@ import (
 )
 
 func init() {
-	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", "127.0.0.1", "IP address for the ECS credential provider to listen on")
-	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.ecs_credential_provider_port"), "port for the ECS credential provider service to listen on")
+	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", "127.0.0.1", "IP address to listen on")
+	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.port"), "port for the ECS credential provider service to listen on")
 	rootCmd.AddCommand(serveCmd)
 }
 
