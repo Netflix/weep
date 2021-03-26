@@ -44,6 +44,7 @@ func init() {
 	viper.SetDefault("server.port", 9091)
 	viper.SetDefault("service.command", "ecs_credential_provider")
 	viper.SetDefault("service.args", []string{})
+	viper.SetDefault("service.flags", []string{})
 
 	// Set aliases for backward-compatibility
 	viper.RegisterAlias("server.ecs_credential_provider_port", "server.port")
