@@ -42,7 +42,8 @@ func init() {
 	viper.SetDefault("server.http_timeout", 20)
 	viper.SetDefault("server.address", "127.0.0.1")
 	viper.SetDefault("server.port", 9091)
-	viper.SetDefault("service.command", "ecs_credential_provider")
+	viper.SetDefault("service.command", "serve")
+	viper.SetDefault("service.run", []string{"service", "run"})
 	viper.SetDefault("service.args", []string{})
 	viper.SetDefault("service.flags", []string{})
 

@@ -102,10 +102,12 @@ func initService() {
 
 	svcProgram = &program{}
 
-	args := []string{"service", "run"}
-	configArgs := viper.GetStringSlice("service.args")
-	if len(configArgs) > 0 {
-		args = append(args, configArgs...)
+	var args []string
+	for _, key := range []string{"service.flags", "service.args", "service.run"} {
+		configArgs := viper.GetStringSlice(key)
+		if len(configArgs) > 0 {
+			args = append(args, configArgs...)
+		}
 	}
 	svcConfig = &service.Config{
 		Name:        "weep",
