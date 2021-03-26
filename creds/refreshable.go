@@ -21,6 +21,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/spf13/viper"
 
 	"github.com/netflix/weep/errors"
@@ -87,6 +89,12 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.Lock()
 	defer rp.Unlock()
 
+	log.WithFields(logrus.Fields{
+		"roleName":     rp.RoleName,
+		"roleArn":      rp.RoleArn,
+		"noIpRestrict": rp.NoIpRestrict,
+		"assumeChain":  rp.AssumeChain,
+	}).Debug("requesting new credentials")
 	newCreds, err = GetCredentialsC(rp.client, rp.RoleArn, rp.NoIpRestrict, rp.AssumeChain)
 	if err != nil {
 		if err == errors.MutualTLSCertNeedsRefreshError {
@@ -106,8 +114,10 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.value.SecretAccessKey = newCreds.SecretAccessKey
 	rp.value.AccessKeyID = newCreds.AccessKeyId
 	rp.LastRefreshed = Time(time.Now())
-	// We favor the role ARN from ConsoleMe over the one from the user, which could just be a search string.
-	rp.RoleArn = newCreds.RoleArn
+	if newCreds.RoleArn != "" {
+		// We favor the role ARN from ConsoleMe over the one from the user, which could just be a search string.
+		rp.RoleArn = newCreds.RoleArn
+	}
 	if rp.value.ProviderName == "" {
 		rp.value.ProviderName = "WeepRefreshableProvider"
 	}
