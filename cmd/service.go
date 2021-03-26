@@ -57,14 +57,22 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
+	var err error
 	log.Info("starting weep service!")
 	exitCode := 0
+
+	flags := viper.GetStringSlice("service.args")
+	err = rootCmd.ParseFlags(flags)
+	if err != nil {
+		log.Errorf("could not parse flags: %v", err)
+	}
+
 	args := viper.GetStringSlice("service.args")
 	switch command := viper.GetString("service.command"); command {
 	case "ecs_credential_provider":
 		fallthrough
 	case "serve":
-		err := runWeepServer(nil, args)
+		err = runWeepServer(nil, args)
 		if err != nil {
 			log.Error(err)
 			exitCode = 1
