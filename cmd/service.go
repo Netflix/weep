@@ -94,11 +94,16 @@ func initService() {
 
 	svcProgram = &program{}
 
+	args := []string{"service", "run"}
+	configArgs := viper.GetStringSlice("service.args")
+	if len(configArgs) > 0 {
+		args = append(args, configArgs...)
+	}
 	svcConfig = &service.Config{
 		Name:        "weep",
 		DisplayName: "Weep",
 		Description: "The ConsoleMe CLI",
-		Arguments:   []string{"service", "run"},
+		Arguments:   args,
 	}
 
 	weepService, err = service.New(svcProgram, svcConfig)
