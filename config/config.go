@@ -34,14 +34,21 @@ var log = logging.GetLogger()
 func init() {
 	// Set default configuration values here
 	viper.SetTypeByDefaultValue(true)
+	viper.SetDefault("authentication_method", "challenge")
 	viper.SetDefault("aws.region", "us-east-1")
 	viper.SetDefault("feature_flags.consoleme_metadata", false)
 	viper.SetDefault("log_file", getDefaultLogFile())
 	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")
 	viper.SetDefault("server.http_timeout", 20)
+	viper.SetDefault("server.address", "127.0.0.1")
 	viper.SetDefault("server.port", 9091)
 	viper.SetDefault("service.command", "serve")
+	viper.SetDefault("service.run", []string{"service", "run"})
 	viper.SetDefault("service.args", []string{})
+	viper.SetDefault("service.flags", []string{})
+
+	// Set aliases for backward-compatibility
+	viper.RegisterAlias("server.ecs_credential_provider_port", "server.port")
 }
 
 func getDefaultLogFile() string {
@@ -146,6 +153,11 @@ func SetUser(user string) error {
 		return err
 	}
 	return nil
+}
+
+func MtlsEnabled() bool {
+	authMethod := viper.GetString("authentication_method")
+	return authMethod == "mtls"
 }
 
 var (

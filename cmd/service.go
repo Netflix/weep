@@ -57,14 +57,22 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
+	var err error
 	log.Info("starting weep service!")
 	exitCode := 0
+
+	flags := viper.GetStringSlice("service.args")
+	err = rootCmd.ParseFlags(flags)
+	if err != nil {
+		log.Errorf("could not parse flags: %v", err)
+	}
+
 	args := viper.GetStringSlice("service.args")
 	switch command := viper.GetString("service.command"); command {
-	case "serve":
 	case "ecs_credential_provider":
-	case "metadata":
-		err := runWeepServer(nil, args)
+		fallthrough
+	case "serve":
+		err = runWeepServer(nil, args)
 		if err != nil {
 			log.Error(err)
 			exitCode = 1
@@ -94,11 +102,18 @@ func initService() {
 
 	svcProgram = &program{}
 
+	var args []string
+	for _, key := range []string{"service.flags", "service.args", "service.run"} {
+		configArgs := viper.GetStringSlice(key)
+		if len(configArgs) > 0 {
+			args = append(args, configArgs...)
+		}
+	}
 	svcConfig = &service.Config{
 		Name:        "weep",
 		DisplayName: "Weep",
 		Description: "The ConsoleMe CLI",
-		Arguments:   []string{"service", "run"},
+		Arguments:   args,
 	}
 
 	weepService, err = service.New(svcProgram, svcConfig)

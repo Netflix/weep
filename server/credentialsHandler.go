@@ -32,7 +32,7 @@ func RoleHandler(w http.ResponseWriter, r *http.Request) {
 		util.WriteError(w, "error", 500)
 		return
 	}
-	if _, err := w.Write([]byte(defaultRole.Role)); err != nil {
+	if _, err := w.Write([]byte(defaultRole.RoleName)); err != nil {
 		log.Errorf("failed to write response: %v", err)
 	}
 }
