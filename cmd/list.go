@@ -24,7 +24,6 @@ import (
 )
 
 func init() {
-	listCmd.PersistentFlags().BoolVarP(&showAll, "all", "a", false, "include all roles (console and application)")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -40,7 +39,7 @@ func roleList(all bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	roles, err := client.Roles(all)
+	roles, err := client.Roles()
 	if err != nil {
 		return "", err
 	}
