@@ -39,6 +39,8 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 		router.HandleFunc("/{version}/meta-data", CredentialServiceMiddleware(BaseHandler))
 		router.HandleFunc("/{version}/meta-data/", CredentialServiceMiddleware(BaseHandler))
 		router.HandleFunc("/{version}/meta-data/iam/info", CredentialServiceMiddleware(IamInfoHandler))
+		// There's an extra route here to support the lack of trailing slash without the redirect that StrictSlash(true) does
+		router.HandleFunc("/{version}/meta-data/iam/security-credentials", CredentialServiceMiddleware(RoleHandler))
 		router.HandleFunc("/{version}/meta-data/iam/security-credentials/", CredentialServiceMiddleware(RoleHandler))
 		router.HandleFunc("/{version}/meta-data/iam/security-credentials/{role}", CredentialServiceMiddleware(IMDSHandler))
 		router.HandleFunc("/{version}/dynamic/instance-identity/document", CredentialServiceMiddleware(InstanceIdentityDocumentHandler))
