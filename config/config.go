@@ -54,9 +54,9 @@ func init() {
 func getDefaultLogFile() string {
 	switch os := runtime.GOOS; os {
 	case "darwin":
-		return filepath.Join("tmp", "weep.log")
+		return filepath.Join("/", "tmp", "weep.log")
 	case "linux":
-		return filepath.Join("tmp", "weep.log")
+		return filepath.Join("/", "tmp", "weep.log")
 	case "windows":
 		p, _ := filepath.Abs(filepath.FromSlash("/programdata/weep/weep.log"))
 		return p
