@@ -30,7 +30,6 @@ import (
 
 func init() {
 	CredentialProcessCmd.PersistentFlags().BoolVarP(&generate, "generate", "g", false, "generate ~/.aws/config with credential process config")
-	CredentialProcessCmd.PersistentFlags().BoolVarP(&showAll, "all", "a", false, "include all roles (console and application)")
 	CredentialProcessCmd.PersistentFlags().StringVarP(&destinationConfig, "output", "o", getDefaultAwsConfigFile(), "output file for AWS config")
 	rootCmd.AddCommand(CredentialProcessCmd)
 }
@@ -81,7 +80,7 @@ func generateCredentialProcessConfig(destination string) error {
 	if err != nil {
 		return err
 	}
-	roles, err := client.Roles(showAll)
+	roles, err := client.Roles()
 	if err != nil {
 		return err
 	}

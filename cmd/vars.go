@@ -20,23 +20,25 @@ import "os"
 
 var (
 	assumeRole        []string
-	profileName       string
+	autoRefresh       bool
+	cfgFile           string
 	destination       string
 	destinationConfig string
+	done              chan int
 	force             bool
-	autoRefresh       bool
 	generate          bool
-	noIpRestrict      bool
-	showAll           bool
-	region            string
+	infoDecode        bool
+	infoRaw           bool
 	listenAddr        string
 	listenPort        int
-	cfgFile           string
-	logLevel          string
 	logFile           string
 	logFormat         string
+	logLevel          string
+	noIpRestrict      bool
+	profileName       string
+	region            string
+	showAll           bool
 	shutdown          chan os.Signal
-	done              chan int
 )
 
 var completionShortHelp = "Generate completion script"
@@ -69,6 +71,16 @@ var fileLongHelp = `The file command writes role credentials to the AWS credenti
 every hour to get new credentials.
 
 More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-file
+`
+
+var infoShortHelp = "Print info for support and troubleshooting"
+var infoLongHelp = `The info command prints a compressed and base64-encoded dump of Weep's configuration,
+available roles according to ConsoleMe, and basic system information. The raw output can be viewed by
+running the command with the --raw/-R flag.
+
+The command also has a --decode/-d flag to decode output, which allows folks to do fun things like this:
+
+	weep info | weep info -d
 `
 
 var listShortHelp = "List available roles"

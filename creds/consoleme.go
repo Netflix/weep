@@ -144,7 +144,7 @@ func (c *Client) CloseIdleConnections() {
 
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
 // like: /accounts/service/support
-func (c *Client) Roles(showAll bool) ([]string, error) {
+func (c *Client) Roles() ([]string, error) {
 	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
@@ -152,9 +152,7 @@ func (c *Client) Roles(showAll bool) ([]string, error) {
 
 	// Add URL Parameters
 	q := url.Values{}
-	if showAll {
-		q.Add("all", "true")
-	}
+	q.Add("all", "true")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := c.Do(req)
