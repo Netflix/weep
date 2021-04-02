@@ -35,6 +35,7 @@ var (
 	logFormat         string
 	logLevel          string
 	noIpRestrict      bool
+	noOpen            bool
 	profileName       string
 	region            string
 	showAll           bool
@@ -81,6 +82,12 @@ running the command with the --raw/-R flag.
 The command also has a --decode/-d flag to decode output, which allows folks to do fun things like this:
 
 	weep info | weep info -d
+`
+
+var linkShortHelp = "generate link for resource"
+var linkLongHelp = `The link command generates the link for supported resources in ConsoleMe. By default, this command 
+also attempts to open the browser after generating the link. Use the --no-open flag to prevent opening. 
+The current supported resources for generating a link are iam roles, s3, sns, and sqs.
 `
 
 var listShortHelp = "List available roles"

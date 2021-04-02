@@ -17,9 +17,13 @@
 package util
 
 import (
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/netflix/weep/logging"
@@ -101,4 +105,48 @@ func WriteError(w http.ResponseWriter, message string, status int) {
 		log.Errorf("could not write error response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+// Attempt to open a link in browser, if supported
+func OpenLink(link string) error {
+	var openUrlCommand []string = nil
+	switch runtime.GOOS {
+	case "darwin":
+		openUrlCommand = []string{"open"}
+	case "linux":
+		if isWSL() {
+			openUrlCommand = []string{"cmd.exe", "/C", "start"}
+		} else {
+			openUrlCommand = []string{"xdg-open"}
+		}
+	case "windows":
+		openUrlCommand = []string{"cmd", "/C", "start"}
+	}
+
+	if openUrlCommand != nil {
+		cmd := exec.Command(openUrlCommand[0], append(openUrlCommand[1:], link)...)
+		err := cmd.Start()
+		if err == nil {
+			err = cmd.Wait()
+		}
+		if err != nil {
+			return err
+		} else {
+			log.Infoln("Link opened in a new browser window.")
+		}
+	} else {
+		return errors.New("Could not automatically launch browser window. Open the above link manually to continue.")
+	}
+	return nil
+}
+
+func isWSL() bool {
+	if FileExists("/proc/sys/kernel/osrelease") {
+		if osrelease, err := ioutil.ReadFile("/proc/sys/kernel/osrelease"); err == nil {
+			if strings.Contains(strings.ToLower(string(osrelease)), "microsoft") {
+				return true
+			}
+		}
+	}
+	return false
 }
