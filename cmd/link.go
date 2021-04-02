@@ -17,12 +17,11 @@
 package cmd
 
 import (
-	"fmt"
+	"errors"
 
+	"github.com/netflix/weep/creds"
 	"github.com/netflix/weep/util"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -45,19 +44,17 @@ func runLink(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	if (arn_parsed.Service == "sns" || arn_parsed.Service == "sqs") && arn_parsed.Region == "" {
+		return errors.New("Resource type sns and sqs require region in the arn")
+	}
 	var resourceURL string
-	if arn_parsed.Service == "sns" || arn_parsed.Service == "sqs" {
-		if arn_parsed.Region == "" {
-			return errors.New("Region is required for sns or sqs")
-		}
-		resourceURL = fmt.Sprintf("%s/policies/edit/%s/%s/%s/%s", viper.GetString("consoleme_url"), arn_parsed.AccountId, arn_parsed.Service, arn_parsed.Region, arn_parsed.Resource)
-	} else if arn_parsed.Service == "iam" {
-		service := "iamrole"
-		resourceURL = fmt.Sprintf("%s/policies/edit/%s/%s/%s", viper.GetString("consoleme_url"), arn_parsed.AccountId, service, arn_parsed.Resource)
-	} else if arn_parsed.Service == "s3" {
-		// TODO: s3 doesn't have an account ID, how to solve?
-	} else {
-
+	client, err := creds.GetClient(region)
+	if err != nil {
+		return err
+	}
+	resourceURL, err = client.GetResourceURL(args[0])
+	if err != nil {
+		return err
 	}
 	if noOpen {
 		cmd.Printf("ConsoleMe Link: %s\n", resourceURL)
