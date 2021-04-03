@@ -63,14 +63,16 @@ func Run(initFunctions ...func()) {
 	Execute()
 }
 
-func Execute() {
+func Execute() error {
 	shutdown = make(chan os.Signal, 1)
 	done = make(chan int, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	if err := rootCmd.Execute(); err != nil {
-		rootCmd.PrintErr(err)
+		// err is already printed out by cobra's Execute
+		return err
 	}
+	return nil
 }
 
 func initConfig() {

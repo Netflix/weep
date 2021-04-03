@@ -17,9 +17,15 @@
 package main
 
 import (
+	"os"
+
 	"github.com/netflix/weep/cmd"
 )
 
 func main() {
-	cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		// err printing is handled by cobra
+		os.Exit(1)
+	}
 }
