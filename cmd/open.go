@@ -25,20 +25,20 @@ import (
 )
 
 func init() {
-	linkCmd.PersistentFlags().BoolVarP(&noOpen, "no-open", "x", false, "don't automatically open links")
-	rootCmd.AddCommand(linkCmd)
+	openCmd.PersistentFlags().BoolVarP(&noOpen, "no-open", "x", false, "don't automatically open links")
+	rootCmd.AddCommand(openCmd)
 }
 
-var linkCmd = &cobra.Command{
-	Use:          "link <arn>",
-	Short:        linkShortHelp,
-	Long:         linkLongHelp,
-	RunE:         runLink,
+var openCmd = &cobra.Command{
+	Use:          "open <arn>",
+	Short:        openShortHelp,
+	Long:         openLongHelp,
+	RunE:         runopen,
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
 
-func runLink(cmd *cobra.Command, args []string) error {
+func runopen(cmd *cobra.Command, args []string) error {
 	arn_parsed, err := util.ArnParse(args[0])
 
 	if err != nil {
