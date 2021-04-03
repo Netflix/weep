@@ -33,12 +33,12 @@ var openCmd = &cobra.Command{
 	Use:          "open <arn>",
 	Short:        openShortHelp,
 	Long:         openLongHelp,
-	RunE:         runopen,
+	RunE:         runOpen,
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
 
-func runopen(cmd *cobra.Command, args []string) error {
+func runOpen(cmd *cobra.Command, args []string) error {
 	arn_parsed, err := util.ArnParse(args[0])
 
 	if err != nil {
