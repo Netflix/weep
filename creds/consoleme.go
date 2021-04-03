@@ -202,14 +202,14 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", parseError(resp.StatusCode, document)
 	}
-	var resourceURL map[string]string
-	if err := json.Unmarshal(document, &resourceURL); err != nil {
+	var responseParsed ConsolemeGenerateURLResponse
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	if resourceURL["url"] == "" {
+	if responseParsed.URL == "" {
 		return "", errors.New("This resource type is currently not supported")
 	}
-	return viper.GetString("consoleme_url") + resourceURL["url"], nil
+	return viper.GetString("consoleme_url") + responseParsed.URL, nil
 }
 
 func parseError(statusCode int, rawErrorResponse []byte) error {

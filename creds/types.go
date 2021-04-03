@@ -135,3 +135,9 @@ type Credentials struct {
 	LastRenewal         Time
 	mu                  sync.Mutex
 }
+
+// ConsolemeGenerateURLResponse represents the response that ConsoleMe
+// responds with for a call to generate URL for a resource
+type ConsolemeGenerateURLResponse struct {
+	URL string `json:"url"`
+}
