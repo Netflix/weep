@@ -17,15 +17,11 @@
 package cmd
 
 import (
-	"github.com/spf13/viper"
-
 	"github.com/netflix/weep/server"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", viper.GetString("server.address"), "IP address for the ECS credential provider to listen on")
-	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.port"), "port for the ECS credential provider service to listen on")
 	rootCmd.AddCommand(serveCmd)
 }
 
