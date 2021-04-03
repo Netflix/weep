@@ -69,7 +69,8 @@ func Execute() {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	if err := rootCmd.Execute(); err != nil {
-		rootCmd.PrintErr(err)
+		// err is already printed out by cobra's Execute
+		os.Exit(1)
 	}
 }
 
