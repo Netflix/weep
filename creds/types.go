@@ -136,7 +136,7 @@ type Credentials struct {
 	mu                  sync.Mutex
 }
 
-// ConsolemeWebResponse represents the response that ConsoleMe model WebResponse
+// ConsolemeWebResponse represents the response structure of ConsoleMe's model WebResponse
 type ConsolemeWebResponse struct {
 	Status      string            `json:"status"`
 	Reason      string            `json:"reason"`
