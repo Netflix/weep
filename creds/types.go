@@ -136,8 +136,13 @@ type Credentials struct {
 	mu                  sync.Mutex
 }
 
-// ConsolemeGenerateURLResponse represents the response that ConsoleMe
-// responds with for a call to generate URL for a resource
-type ConsolemeGenerateURLResponse struct {
-	URL string `json:"url"`
+// ConsolemeWebResponse represents the response that ConsoleMe model WebResponse
+type ConsolemeWebResponse struct {
+	Status      string            `json:"status"`
+	Reason      string            `json:"reason"`
+	RedirectURL string            `json:"redirect_url"`
+	StatusCode  int               `json:"status_code"`
+	Message     string            `json:"message"`
+	Errors      []string          `json:"errors"`
+	Data        map[string]string `json:"data"`
 }

@@ -27,6 +27,7 @@ import (
 	"net/url"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/netflix/weep/metadata"
@@ -200,16 +201,21 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 		return "", errors.Wrap(err, "failed to read response body")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", parseError(resp.StatusCode, document)
+		return "", parseWebError(document)
 	}
-	var responseParsed ConsolemeGenerateURLResponse
+	var responseParsed ConsolemeWebResponse
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	if responseParsed.URL == "" {
-		return "", errors.New("This resource type is currently not supported")
+	return viper.GetString("consoleme_url") + responseParsed.Data["url"], nil
+}
+
+func parseWebError(rawErrorResponse []byte) error {
+	var errorResponse ConsolemeWebResponse
+	if err := json.Unmarshal(rawErrorResponse, &errorResponse); err != nil {
+		return errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	return viper.GetString("consoleme_url") + responseParsed.URL, nil
+	return fmt.Errorf(strings.Join(errorResponse.Errors, "\n"))
 }
 
 func parseError(statusCode int, rawErrorResponse []byte) error {
