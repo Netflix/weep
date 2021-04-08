@@ -207,7 +207,16 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	return viper.GetString("consoleme_url") + responseParsed.Data["url"], nil
+	return baseWebURL() + responseParsed.Data["url"], nil
+}
+
+// baseWebURL allows the ConsoleMe URL to be overridden for cases where the API
+// and UI are accessed via different URLs
+func baseWebURL() string {
+	if override := viper.GetString("consoleme_open_url_override"); override != "" {
+		return override
+	}
+	return viper.GetString("consoleme_url")
 }
 
 func parseWebError(rawErrorResponse []byte) error {
