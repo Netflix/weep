@@ -27,6 +27,7 @@ import (
 	"net/url"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/netflix/weep/metadata"
@@ -55,7 +56,7 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 	GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error)
 	CloseIdleConnections()
-	buildRequest(string, string, io.Reader) (*http.Request, error)
+	buildRequest(string, string, io.Reader, string) (*http.Request, error)
 }
 
 // Client represents a ConsoleMe client.
@@ -120,8 +121,8 @@ func NewClient(hostname string, region string, httpc *http.Client) (*Client, err
 	return c, nil
 }
 
-func (c *Client) buildRequest(method string, resource string, body io.Reader) (*http.Request, error) {
-	urlStr := c.Host + "/api/v1" + resource
+func (c *Client) buildRequest(method string, resource string, body io.Reader, apiPrefix string) (*http.Request, error) {
+	urlStr := c.Host + apiPrefix + resource
 	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
 		return nil, err
@@ -145,7 +146,7 @@ func (c *Client) CloseIdleConnections() {
 // accounts returns all accounts, and allows you to filter the accounts by sub-resources
 // like: /accounts/service/support
 func (c *Client) Roles() ([]string, error) {
-	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil)
+	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil, "/api/v1")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
 	}
@@ -175,6 +176,46 @@ func (c *Client) Roles() ([]string, error) {
 	}
 
 	return roles, nil
+}
+
+// Get resource URL given an ARN, from ConsoleMe
+func (c *Client) GetResourceURL(arn string) (string, error) {
+	req, err := c.buildRequest(http.MethodGet, "/get_resource_url", nil, "/api/v2")
+	if err != nil {
+		return "", errors.Wrap(err, "failed to build request")
+	}
+
+	// Add URL Parameters
+	q := url.Values{}
+	q.Add("arn", arn)
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to action request")
+	}
+
+	defer resp.Body.Close()
+	document, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", parseWebError(document)
+	}
+	var responseParsed ConsolemeWebResponse
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
+		return "", errors.Wrap(err, "failed to unmarshal JSON")
+	}
+	return viper.GetString("consoleme_url") + responseParsed.Data["url"], nil
+}
+
+func parseWebError(rawErrorResponse []byte) error {
+	var errorResponse ConsolemeWebResponse
+	if err := json.Unmarshal(rawErrorResponse, &errorResponse); err != nil {
+		return errors.Wrap(err, "failed to unmarshal JSON")
+	}
+	return fmt.Errorf(strings.Join(errorResponse.Errors, "\n"))
 }
 
 func parseError(statusCode int, rawErrorResponse []byte) error {
@@ -232,7 +273,7 @@ func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*AwsCre
 		return credentialsResponse.Credentials, errors.Wrap(err, "failed to create request body")
 	}
 
-	req, err := c.buildRequest(http.MethodPost, "/get_credentials", b)
+	req, err := c.buildRequest(http.MethodPost, "/get_credentials", b, "/api/v1")
 	if err != nil {
 		return credentialsResponse.Credentials, errors.Wrap(err, "failed to build request")
 	}
@@ -289,7 +330,7 @@ func (c *ClientMock) GetRoleCredentials(role string, ipRestrict bool) (*AwsCrede
 
 func (c *ClientMock) CloseIdleConnections() {}
 
-func (c *ClientMock) buildRequest(string, string, io.Reader) (*http.Request, error) {
+func (c *ClientMock) buildRequest(string, string, io.Reader, string) (*http.Request, error) {
 	return &http.Request{}, nil
 }
 

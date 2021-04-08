@@ -135,3 +135,14 @@ type Credentials struct {
 	LastRenewal         Time
 	mu                  sync.Mutex
 }
+
+// ConsolemeWebResponse represents the response structure of ConsoleMe's model WebResponse
+type ConsolemeWebResponse struct {
+	Status      string            `json:"status"`
+	Reason      string            `json:"reason"`
+	RedirectURL string            `json:"redirect_url"`
+	StatusCode  int               `json:"status_code"`
+	Message     string            `json:"message"`
+	Errors      []string          `json:"errors"`
+	Data        map[string]string `json:"data"`
+}

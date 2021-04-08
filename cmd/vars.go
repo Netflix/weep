@@ -35,6 +35,7 @@ var (
 	logFormat         string
 	logLevel          string
 	noIpRestrict      bool
+	noOpen            bool
 	profileName       string
 	region            string
 	showAll           bool
@@ -81,6 +82,12 @@ running the command with the --raw/-R flag.
 The command also has a --decode/-d flag to decode output, which allows folks to do fun things like this:
 
 	weep info | weep info -d
+`
+
+var openShortHelp = "Generate (and open) a ConsoleMe link for a given ARN"
+var openLongHelp = `The open command generates the link for supported resources in ConsoleMe. By default, this command 
+also attempts to open the browser after generating the link. Use the --no-open flag to prevent opening. 
+The supported resources match those that are supported by ConsoleMe. IAM roles, s3, sqs and sns resources open in the ConsoleMe editor, while other supported resources attempt to redirect to the AWS Console using the right role.
 `
 
 var listShortHelp = "List available roles"
