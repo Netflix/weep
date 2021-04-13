@@ -89,6 +89,7 @@ func (wc *wrappedCertificate) autoRefresh() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Errorf("mTLS cert watcher encountered an error: %v", err)
+		return
 	}
 	defer watcher.Close()
 
