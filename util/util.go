@@ -17,7 +17,6 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -26,6 +25,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/netflix/weep/errors"
 	"github.com/netflix/weep/logging"
 )
 
@@ -49,7 +49,7 @@ type ErrorResponse struct {
 
 func validate(arn string, pieces []string) error {
 	if len(pieces) < 6 {
-		return fmt.Errorf("malformed ARN: %s", arn)
+		return errors.InvalidArn
 	}
 	return nil
 }
@@ -120,7 +120,8 @@ func OpenLink(link string) error {
 			openUrlCommand = []string{"xdg-open"}
 		}
 	case "windows":
-		openUrlCommand = []string{"cmd", "/C", "start"}
+		// This is unsupported until we find a safer way to run the open command in Windows.
+		return errors.BrowserOpenError
 	}
 
 	if openUrlCommand != nil {
@@ -135,7 +136,7 @@ func OpenLink(link string) error {
 			log.Infoln("Link opened in a new browser window.")
 		}
 	} else {
-		return errors.New("Could not automatically launch browser window. Open the above link manually to continue.")
+		return errors.BrowserOpenError
 	}
 	return nil
 }
