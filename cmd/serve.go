@@ -26,6 +26,12 @@ import (
 func init() {
 	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", viper.GetString("server.address"), "IP address for the ECS credential provider to listen on")
 	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.port"), "port for the ECS credential provider service to listen on")
+	if err := viper.BindPFlag("server.address", serveCmd.PersistentFlags().Lookup("listen-address")); err != nil {
+		log.Fatal(err)
+	}
+	if err := viper.BindPFlag("server.port", serveCmd.PersistentFlags().Lookup("port")); err != nil {
+		log.Fatal(err)
+	}
 	rootCmd.AddCommand(serveCmd)
 }
 
@@ -42,5 +48,7 @@ func runWeepServer(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		role = args[0]
 	}
-	return server.Run(listenAddr, listenPort, role, region, shutdown)
+	address := viper.GetString("server.address")
+	port := viper.GetInt("server.port")
+	return server.Run(address, port, role, region, shutdown)
 }
