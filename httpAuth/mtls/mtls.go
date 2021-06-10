@@ -162,24 +162,29 @@ func getClientCertificatePaths(configDirs []string) (string, string, string, boo
 		return cert, key, caFile, insecure, nil
 	}
 
+	var foundCertPath, foundKeyPath, foundCaPath string
 	// Otherwise, look for the files in the list of dirs from the config
 	for _, metatronDir := range configDirs {
 		certPath := filepath.Join(metatronDir, cert)
-		if !util.FileExists(certPath) {
-			continue
+		if foundCertPath == "" && util.FileExists(certPath) {
+			foundCertPath = certPath
 		}
 
 		keyPath := filepath.Join(metatronDir, key)
-		if !util.FileExists(keyPath) {
-			continue
+		if foundKeyPath == "" && util.FileExists(keyPath) {
+			foundKeyPath = keyPath
 		}
 
 		caPath := filepath.Join(metatronDir, caFile)
-		if !util.FileExists(caPath) {
-			continue
+		if foundCaPath == "" && util.FileExists(caPath) {
+			foundCaPath = caPath
 		}
-
-		return certPath, keyPath, caPath, insecure, nil
 	}
+
+	if foundCertPath != "" && foundKeyPath != "" && foundCaPath != "" {
+		// We have all the files we need!
+		return foundCertPath, foundKeyPath, foundCaPath, insecure, nil
+	}
+
 	return "", "", "", false, config.ClientCertificatesNotFoundError
 }
