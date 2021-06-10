@@ -92,6 +92,9 @@ func (a AwsArn) ArnString() string {
 
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
+	if err != nil {
+		log.Debugf("failed to stat file %s: %v", path, err)
+	}
 	return err == nil
 }
 
