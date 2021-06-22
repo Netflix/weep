@@ -51,11 +51,17 @@ func writeConfigFile(roles []string, destination string) error {
 	ini.PrettyEqual = true
 
 	if util.FileExists(destination) {
+		// There's an existing config file, so we'll load it in and update the existing contents
 		configINI, err = ini.Load(destination)
 		if err != nil {
 			return err
 		}
 	} else {
+		// Config file doesn't exist yet. Create it with the same perms as awscli
+		err = util.CreateFile(destination, 0700, 0600)
+		if err != nil {
+			return err
+		}
 		configINI = ini.Empty()
 	}
 
