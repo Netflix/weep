@@ -161,11 +161,17 @@ func writeCredentialsFile(credentials *creds.AwsCredentials, profile, filename s
 	ini.PrettyEqual = true
 
 	if util.FileExists(filename) {
+		// There's an existing credentials file, so we'll load it in and update the existing contents
 		credentialsINI, err = ini.Load(filename)
 		if err != nil {
 			return err
 		}
 	} else {
+		// Credentials file doesn't exist yet. Create it with the same perms as awscli
+		err = util.CreateFile(filename, 0700, 0600)
+		if err != nil {
+			return err
+		}
 		credentialsINI = ini.Empty()
 	}
 
@@ -186,5 +192,5 @@ func writeCredentialsFile(credentials *creds.AwsCredentials, profile, filename s
 		return err
 	}
 
-	return nil
+	return err
 }

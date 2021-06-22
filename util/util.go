@@ -18,10 +18,12 @@ package util
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -96,6 +98,28 @@ func FileExists(path string) bool {
 		log.Debugf("failed to stat file %s: %v", path, err)
 	}
 	return err == nil
+}
+
+func createEmptyFile(filename string, filemode fs.FileMode) error {
+	d := []byte("")
+	err := ioutil.WriteFile(filename, d, filemode)
+	return err
+}
+
+// CreateFile safely creates an empty file and any missing directory structure.
+// The directories will have directoryPerm filemode. The file will have filePerm filemode.
+func CreateFile(filename string, directoryPerm, filePerm fs.FileMode) error {
+	var err error
+
+	// Make sure the directory exists, using the same perms that awscli uses (0600)
+	dir := filepath.Dir(filename)
+	err = os.MkdirAll(dir, directoryPerm)
+	if err != nil {
+		return err
+	}
+
+	err = createEmptyFile(filename, filePerm)
+	return err
 }
 
 // WriteError writes a status code and plaintext error to the provided http.ResponseWriter.
