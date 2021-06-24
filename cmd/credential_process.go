@@ -101,6 +101,9 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	if generate {
 		return generateCredentialProcessConfig(destination)
 	}
+	if len(args) == 0 {
+		return fmt.Errorf("role_name not provided")
+	}
 	role := args[0]
 	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
