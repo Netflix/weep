@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"os"
 	"strings"
 
 	"github.com/netflix/weep/creds"
@@ -62,6 +63,7 @@ func runList(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	cmd.SetOut(os.Stdout)
 	cmd.Print(roles)
 	return nil
 }
