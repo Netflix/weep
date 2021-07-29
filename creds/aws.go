@@ -68,7 +68,7 @@ func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string
 
 	stsCreds, err := stsSession.AssumeRole(stsParams)
 	if err != nil {
-		return "", "", "", fmt.Errorf("error retrieving awsSession token: %s", err)
+		return "", "", "", fmt.Errorf("error retrieving awsSession session: %s", err)
 	}
 	return *stsCreds.Credentials.AccessKeyId, *stsCreds.Credentials.SecretAccessKey, *stsCreds.Credentials.SessionToken, nil
 }

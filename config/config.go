@@ -39,6 +39,7 @@ func init() {
 	viper.SetDefault("feature_flags.consoleme_metadata", false)
 	viper.SetDefault("log_file", getDefaultLogFile())
 	viper.SetDefault("mtls_settings.old_cert_message", "mTLS certificate is too old, please refresh mtls certificate")
+	viper.SetDefault("server.enforce_imdsv2", false)
 	viper.SetDefault("server.http_timeout", 20)
 	viper.SetDefault("server.address", "127.0.0.1")
 	viper.SetDefault("server.port", 9091)

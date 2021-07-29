@@ -17,6 +17,8 @@
 package server
 
 import (
+	"github.com/netflix/weep/session"
+	"github.com/spf13/viper"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -28,9 +30,40 @@ import (
 	"github.com/netflix/weep/util"
 )
 
-// CredentialServiceMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
-func CredentialServiceMiddleware(next http.HandlerFunc) http.HandlerFunc {
+// InstanceMetadataMiddleware is a convenience wrapper that chains TokenMiddleware, BrowserFilterMiddleware, and AWSHeaderMiddleware
+func InstanceMetadataMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return TokenMiddleware(TaskMetadataMiddleware(next))
+}
+
+// TaskMetadataMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
+func TaskMetadataMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return BrowserFilterMiddleware(AWSHeaderMiddleware(next))
+}
+
+func TokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var remainingTtl int
+		var ok bool
+
+		token := r.Header.Get("x-aws-ec2-metadata-token")
+		if token != "" {
+			if ok, remainingTtl = session.CheckToken(token); !ok {
+				log.Debug("token invalid")
+				util.WriteError(w, "invalid session token", http.StatusForbidden)
+				return
+			}
+		} else if token == "" && viper.GetBool("server.enforce_imdsv2") {
+			log.Info("request forbidden, imdsv2 required")
+			util.WriteError(w, "IMDSv2 required, please upgrade your SDK or CLI", http.StatusForbidden)
+			return
+		}
+
+		// Return the token's remaining TTL in a header
+		if remainingTtl > 0 {
+			w.Header().Set("X-Aws-Ec2-Metadata-Token-Ttl-Seconds", strconv.Itoa(remainingTtl))
+		}
+		next.ServeHTTP(w, r)
+	}
 }
 
 func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
@@ -44,11 +77,11 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		ua := r.Header.Get("User-Agent")
 		metadataVersion := 1
 		tokenTtl := r.Header.Get("X-Aws-Ec2-Metadata-Token-Ttl-Seconds")
-		token := r.Header.Get("X-aws-ec2-metadata-token")
+		token := r.Header.Get("X-aws-ec2-metadata-session")
 		// If either of these request headers exist, we can be reasonably confident that the request is for IMDSv2.
-		// `X-Aws-Ec2-Metadata-Token-Ttl-Seconds` is used when requesting a token
-		// `X-aws-ec2-metadata-token` is used to pass the token to the metadata service
-		// Weep uses a static token, and does not perform any token validation.
+		// `X-Aws-Ec2-Metadata-Token-Ttl-Seconds` is used when requesting a session
+		// `X-aws-ec2-metadata-session` is used to pass the session to the metadata service
+		// Weep uses a static session, and does not perform any session validation.
 		if token != "" || tokenTtl != "" {
 			metadataVersion = 2
 		}
@@ -71,18 +104,17 @@ var allowedHosts = map[string]bool{
 }
 
 // deniedHeaders is a list of headers that will cause a 403 if present at all
-var deniedHeaders = []string{
-	"Referrer",
-	"referrer",
-	"Origin",
-	"origin",
+var deniedHeaders = map[string]bool{
+	"referrer":        true,
+	"origin":          true,
+	"x-forwarded-for": true,
 }
 
 // BrowserFilterMiddleware is a middleware designed mitigate risks related to DNS rebinding,
 // cross site request forgery, and any other traffic from a well behaved modern web browser
 func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Check User-Agent
+		// CheckToken User-Agent
 		// If User-Agent has Mozilla in it, this is almost certainly a browser request
 		userAgent := r.Header.Get("User-Agent")
 		userAgent = strings.ToLower(userAgent)
@@ -92,20 +124,19 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Check for presence of deniedHeaders
+		// CheckToken for presence of deniedHeaders
 		// These also indicate a likely browser request
-		headers := r.Header
-		for _, h := range deniedHeaders {
-			if _, ok := headers[h]; ok {
-				log.Warnf("%s detected", h)
+		for h, _ := range r.Header {
+			if deniedHeaders[strings.ToLower(h)] {
+				log.Warnf("%s header detected", h)
 				util.WriteError(w, "forbidden", http.StatusForbidden)
 				return
 			}
 		}
 
-		// Check host header
+		// CheckToken host header
 		// This should only be 127.0.0.1 or 169.254.169.254
-		if host := r.Header.Get("Host"); host != "" && !allowedHosts[host] {
+		if host := r.Header.Get("Host"); host != "" && !allowedHosts[strings.ToLower(host)] {
 			log.Warn("bad host detected")
 			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
