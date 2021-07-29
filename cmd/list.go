@@ -51,7 +51,6 @@ func roleList(all bool) (string, error) {
 		sb.WriteString("Available Console Roles\n")
 	}
 	for i := range roles {
-		sb.WriteString("\t")
 		sb.WriteString(roles[i])
 		sb.WriteString("\n")
 	}
@@ -64,6 +63,6 @@ func runList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	cmd.SetOut(os.Stdout)
-	cmd.Print(roles)
+	cmd.Println(roles)
 	return nil
 }
