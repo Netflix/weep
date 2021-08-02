@@ -55,6 +55,18 @@ var browserHeaderTestCases = []struct {
 		ExpectedStatus: http.StatusForbidden,
 	},
 	{
+		Description:    "xff header set",
+		HeaderName:     "X-Forwarded-For",
+		HeaderValue:    "anything",
+		ExpectedStatus: http.StatusForbidden,
+	},
+	{
+		Description:    "empty xff header set",
+		HeaderName:     "X-Forwarded-For",
+		HeaderValue:    "",
+		ExpectedStatus: http.StatusForbidden,
+	},
+	{
 		Description:    "host header not in allowlist",
 		HeaderName:     "Host",
 		HeaderValue:    "netflix.com",

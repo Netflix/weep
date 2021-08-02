@@ -4,11 +4,11 @@ import (
 	"github.com/netflix/weep/logging"
 )
 
-var sessions *Cache
+var sessions *tokenCache
 var log = logging.GetLogger()
 
 func init() {
-	sessions = CreateCache()
+	sessions = createCache()
 }
 
 func GenerateToken(role string, ttlSeconds int) string {

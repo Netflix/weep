@@ -2,26 +2,27 @@ package session
 
 import (
 	"crypto/rand"
-	"github.com/netflix/weep/errors"
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/netflix/weep/errors"
 )
 
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
 
-type Cache struct {
+type tokenCache struct {
 	sync.RWMutex
 	TokenMap
 }
 
-type TokenAttributes struct {
+type tokenAttributes struct {
 	InitialTtl int
 	Expiration time.Time
 	Role       string
 }
 
-type TokenMap map[string]*TokenAttributes
+type TokenMap map[string]*tokenAttributes
 
 func randomString(n int) string {
 	ret := make([]byte, n)
@@ -36,15 +37,15 @@ func randomString(n int) string {
 	return string(ret)
 }
 
-func CreateCache() *Cache {
-	c := &Cache{
-		TokenMap: make(map[string]*TokenAttributes),
+func createCache() *tokenCache {
+	c := &tokenCache{
+		TokenMap: make(map[string]*tokenAttributes),
 	}
 	go c.startWatcher()
 	return c
 }
 
-func (c *Cache) startWatcher() {
+func (c *tokenCache) startWatcher() {
 	ticker := time.NewTicker(time.Minute)
 
 	for {
@@ -55,7 +56,7 @@ func (c *Cache) startWatcher() {
 	}
 }
 
-func (c *Cache) clean() {
+func (c *tokenCache) clean() {
 	for token, attr := range c.TokenMap {
 		if attr.Expiration.Before(time.Now()) {
 			log.Debugf("deleting token with expiration %v", attr.Expiration)
@@ -64,13 +65,13 @@ func (c *Cache) clean() {
 	}
 }
 
-func (c *Cache) generateToken(role string, ttlSeconds int) string {
+func (c *tokenCache) generateToken(role string, ttlSeconds int) string {
 	token := randomString(64)
 	c.Set(token, role, ttlSeconds)
 	return token
 }
 
-func (c *Cache) checkToken(token string) (bool, int) {
+func (c *tokenCache) checkToken(token string) (bool, int) {
 	attr, err := sessions.Get(token)
 	if err != nil {
 		log.Warning("invalid session token")
@@ -84,7 +85,7 @@ func (c *Cache) checkToken(token string) (bool, int) {
 	return true, int(remainingTtl.Seconds())
 }
 
-func (c *Cache) delete(token string) {
+func (c *tokenCache) delete(token string) {
 	c.Lock()
 	defer c.Unlock()
 	if _, ok := c.TokenMap[token]; ok {
@@ -92,9 +93,9 @@ func (c *Cache) delete(token string) {
 	}
 }
 
-func (c *Cache) Set(token, role string, ttl int) {
+func (c *tokenCache) Set(token, role string, ttl int) {
 	expiration := time.Now().Add(time.Duration(ttl) * time.Second)
-	attr := TokenAttributes{
+	attr := tokenAttributes{
 		InitialTtl: ttl,
 		Expiration: expiration,
 		Role:       role,
@@ -104,7 +105,7 @@ func (c *Cache) Set(token, role string, ttl int) {
 	c.TokenMap[token] = &attr
 }
 
-func (c *Cache) Get(token string) (*TokenAttributes, error) {
+func (c *tokenCache) Get(token string) (*tokenAttributes, error) {
 	c.RLock()
 	defer c.RUnlock()
 	attr, ok := c.TokenMap[token]
