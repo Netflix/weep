@@ -18,8 +18,9 @@ package server
 
 import (
 	"fmt"
-	"github.com/netflix/weep/util"
 	"net/http"
+
+	"github.com/netflix/weep/util"
 
 	"github.com/netflix/weep/logging"
 )

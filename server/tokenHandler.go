@@ -18,11 +18,12 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/netflix/weep/session"
 	"github.com/netflix/weep/util"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"strconv"
 )
 
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
