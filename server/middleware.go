@@ -17,13 +17,14 @@
 package server
 
 import (
-	"github.com/netflix/weep/session"
-	"github.com/spf13/viper"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/netflix/weep/session"
+	"github.com/spf13/viper"
 
 	"github.com/sirupsen/logrus"
 
@@ -77,11 +78,10 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		ua := r.Header.Get("User-Agent")
 		metadataVersion := 1
 		tokenTtl := r.Header.Get("X-Aws-Ec2-Metadata-Token-Ttl-Seconds")
-		token := r.Header.Get("X-aws-ec2-metadata-session")
+		token := r.Header.Get("X-aws-ec2-metadata-token")
 		// If either of these request headers exist, we can be reasonably confident that the request is for IMDSv2.
-		// `X-Aws-Ec2-Metadata-Token-Ttl-Seconds` is used when requesting a session
-		// `X-aws-ec2-metadata-session` is used to pass the session to the metadata service
-		// Weep uses a static session, and does not perform any session validation.
+		// `X-Aws-Ec2-Metadata-Token-Ttl-Seconds` is used when requesting a token
+		// `X-aws-ec2-metadata-token` is used to pass the token to the metadata service
 		if token != "" || tokenTtl != "" {
 			metadataVersion = 2
 		}
@@ -114,7 +114,7 @@ var deniedHeaders = map[string]bool{
 // cross site request forgery, and any other traffic from a well behaved modern web browser
 func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// CheckToken User-Agent
+		// Check User-Agent
 		// If User-Agent has Mozilla in it, this is almost certainly a browser request
 		userAgent := r.Header.Get("User-Agent")
 		userAgent = strings.ToLower(userAgent)
@@ -124,7 +124,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// CheckToken for presence of deniedHeaders
+		// Check for presence of deniedHeaders
 		// These also indicate a likely browser request
 		for h, _ := range r.Header {
 			if deniedHeaders[strings.ToLower(h)] {
@@ -134,7 +134,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		// CheckToken host header
+		// Check host header
 		// This should only be 127.0.0.1 or 169.254.169.254
 		if host := r.Header.Get("Host"); host != "" && !allowedHosts[strings.ToLower(host)] {
 			log.Warn("bad host detected")

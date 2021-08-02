@@ -141,7 +141,7 @@ func getTLSDirs() ([]string, error) {
 	mtlsDirKey := fmt.Sprintf("mtls_settings.%s", runtime.GOOS)
 	mtlsDirs := viper.GetStringSlice(mtlsDirKey)
 
-	// Replace $HOME session with home dir
+	// Replace $HOME token with home dir
 	homeDir, err := homedir.Dir()
 	if err != nil {
 		return nil, HomeDirectoryError
