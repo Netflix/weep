@@ -17,12 +17,14 @@
 package config
 
 import (
-	"github.com/markbates/pkger"
+	"embed"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
 var (
+	EmbeddedConfigs    embed.FS
 	EmbeddedConfigFile string // To be set by ldflags at compile time
 )
 
@@ -31,7 +33,7 @@ func ReadEmbeddedConfig() error {
 	if EmbeddedConfigFile == "" {
 		return EmbeddedConfigDisabledError
 	}
-	f, err := pkger.Open(EmbeddedConfigFile)
+	f, err := EmbeddedConfigs.Open(EmbeddedConfigFile)
 	if err != nil {
 		return errors.Wrap(err, "could not open embedded config")
 	}
@@ -42,7 +44,7 @@ func ReadEmbeddedConfig() error {
 	if err != nil {
 		return errors.Wrap(err, "could not read embedded config")
 	}
-	if err := viper.MergeConfigMap(v.AllSettings()); err != nil {
+	if err = viper.MergeConfigMap(v.AllSettings()); err != nil {
 		return errors.Wrap(err, "could not merge embedded config")
 	}
 	return nil
