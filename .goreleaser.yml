@@ -35,7 +35,6 @@ builds:
         -X github.com/netflix/weep/metadata.Commit={{.CommitDate}}
         -X github.com/netflix/weep/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
-    hooks:
 archives:
   -
     builds:
