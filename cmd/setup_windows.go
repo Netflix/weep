@@ -30,6 +30,6 @@ func PrintSetup(cmd *cobra.Command) {
 	fmt.Println("")
 }
 
-func Setup(cmd *cobra.Command) error {
+func Setup(cmd *cobra.Command, commit bool) error {
 	return fmt.Errorf("not supported on Windows")
 }
