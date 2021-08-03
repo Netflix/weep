@@ -27,6 +27,5 @@ var setupLongHelp = ``
 
 func Setup(cmd *cobra.Command, commit bool) error {
 	fmt.Println("Metadata service in windows has never been tried")
-	fmt.Println("")
 	return nil
 }

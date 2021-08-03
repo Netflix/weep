@@ -26,7 +26,7 @@ var setupShortHelp = "Print setup information"
 var setupLongHelp = ``
 
 func Setup(cmd *cobra.Command, commit bool) error {
-	fmt.Println("Please run the following commands to setup routing for the meta-data service:\n")
-	fmt.Println("sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to 127.0.0.1:9091\n")
+	fmt.Print("Please run the following commands to setup routing for the meta-data service:\n\n")
+	fmt.Print("sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -d 169.254.169.254 -j DNAT --to 127.0.0.1:9091")
 	return nil
 }
