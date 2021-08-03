@@ -9,6 +9,7 @@ server:
   http_timeout: 20
   address: 127.0.0.1
   port: 9091
+  enforce_imdsv2: false  # Enforce use of a token in IMDS emulation mode (weep serve <role>)
 service:
   command: serve
   flags:  # Flags are CLI options

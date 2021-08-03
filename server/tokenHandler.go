@@ -19,11 +19,23 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.com/netflix/weep/session"
+	"github.com/netflix/weep/util"
+	"github.com/sirupsen/logrus"
 )
 
-const staticToken = "AQAEANQlVdnIoNfmJQHofbSTjkIm8eoMIBZZZX05Xk9jLiFuJuL2_A=="
-
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
-	// Returning a static token allows us to support IMDSv2 with minimal effort.
-	fmt.Fprint(w, staticToken)
+	ttlString := r.Header.Get("X-aws-ec2-metadata-token-ttl-seconds")
+	ttlSeconds, err := strconv.Atoi(ttlString)
+	log.WithFields(logrus.Fields{
+		"ttlSeconds": ttlSeconds,
+	}).Debug("generating IMDSv2 token")
+	if err != nil {
+		util.WriteError(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	token := session.GenerateToken("", ttlSeconds)
+	fmt.Fprint(w, token)
 }

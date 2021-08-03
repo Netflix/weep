@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/netflix/weep/util"
+
 	"github.com/netflix/weep/logging"
 )
 
@@ -59,4 +61,9 @@ meta-data
 user-data`
 
 	fmt.Fprintln(w, baseVersionPath)
+}
+
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	util.WriteError(w, "not found", http.StatusNotFound)
+	return
 }
