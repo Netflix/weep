@@ -42,10 +42,12 @@ Otherwise, run weep setup and inspect the output. Then run sudo eval $(weep setu
 	loopbackPlistFilename = "/Library/LaunchDaemons/com.user.lo0-loopback.plist"
 )
 
+// isRoot returns true if weep is running as root and false otherwise
 func isRoot() bool {
 	return os.Geteuid() == 0
 }
 
+// writeFileFromEmbedded calls the appropriate file writing function based on the value of commit
 func writeFileFromEmbedded(prefix string, filename string, commit bool) error {
 	data, err := SetupExtras.ReadFile(prefix + filename)
 	port := viper.GetString("server.port")
@@ -71,6 +73,7 @@ func writeFileGo(filename string, data []byte) error {
 	return err
 }
 
+// backupFile creates a copy of filename with a timestamp appended to the filename
 func backupFile(filename string) error {
 	src := filename
 	dst := fmt.Sprintf("%s.%s", filename, time.Now().Format("20060102150405"))
@@ -108,6 +111,8 @@ func writeFileShell(filename string, data []byte) error {
 	return nil
 }
 
+// reloadPlist uses executes launchctl to unload and load the specified plist, or prints the commands
+// to do so if commit is false
 func reloadPlist(plistFile string, commit bool) error {
 	unloadCmd := exec.Command("launchctl", "unload", plistFile)
 	loadCmd := exec.Command("launchctl", "load", plistFile)
