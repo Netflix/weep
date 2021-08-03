@@ -41,3 +41,64 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      -
+        name: Store Binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: dist/bin/
+          retention-days: 5
+  package:
+    needs: goreleaser
+    runs-on: macos-latest
+    environment: Signing
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Retrieve Binaries
+        uses: actions/download-artifact@v2
+        with:
+          name: binaries
+          path: dist/bin/
+      -
+        name: Import Signing Certificates
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
+          p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
+      -
+        name: Build, Sign, & Notarize Package
+        env:
+          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
+          VERSION: ${{ env.GITHUB_REF }}
+        run: |
+          ./build/build_package.sh
+      -
+        name: Store Package
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: dist/macos/*.pkg
+  upload:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Retrieve Package
+        uses: actions/download-artifact@v2
+        with:
+          name: package
+          path: dist/macos/
+      -
+        name: Upload package to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/macos/*.pkg
+          file_glob: true
+          tag: ${{ github.ref }}
+          overwrite: true
