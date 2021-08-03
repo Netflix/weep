@@ -17,20 +17,24 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"time"
+
+	"github.com/spf13/viper"
 
 	"github.com/spf13/cobra"
 )
 
-var setupShortHelp = "Print setup information"
-var setupLongHelp = `By default, this command will print a script that can be used to set up IMDS routing.
+var (
+	setupShortHelp = "Print setup information"
+	setupLongHelp  = `By default, this command will print a script that can be used to set up IMDS routing.
 If you trust us enough, you can run sudo weep setup --write.
 Otherwise, run weep setup and inspect the output. Then run sudo eval $(weep setup).`
-
-var (
 	embedPrefix           = "extras/macos"
 	pfRedirectionFilename = "/etc/pf.anchors/redirection"
 	pfConfFilename        = "/etc/pf.conf"
@@ -38,40 +42,84 @@ var (
 	loopbackPlistFilename = "/Library/LaunchDaemons/com.user.lo0-loopback.plist"
 )
 
-func PrintSetup(cmd *cobra.Command) {
-	cmd.Println("Please run the following commands to setup routing for the meta-data service:")
-	cmd.Println("sudo ifconfig lo0 169.254.169.254 alias")
-	cmd.Println("echo \"rdr pass on lo0 inet proto tcp from any to 169.254.169.254 port 80 -> 127.0.0.1 port 9091\" | sudo pfctl -ef -")
-}
-
 func isRoot() bool {
 	return os.Geteuid() == 0
 }
 
 func writeFileFromEmbedded(prefix string, filename string, commit bool) error {
 	data, err := SetupExtras.ReadFile(prefix + filename)
+	port := viper.GetString("server.port")
+	data = bytes.Replace(data, []byte("WEEP_PORT"), []byte(port), -1)
 	if err != nil {
 		return err
 	}
 	if commit {
-		print("writing ", filename, "...\n")
-		err = ioutil.WriteFile(filename, data, 0644)
+		err = writeFileGo(filename, data)
+		return err
+	} else {
+		err = writeFileShell(filename, data)
 		return err
 	}
+}
+
+// writeFileGo creates a backup of the target file and writes new content using Go
+func writeFileGo(filename string, data []byte) error {
+	print("writing ", filename, "...\n")
+	// Ignore error on backup, we're just trying to be nice anyway
+	_ = backupFile(filename)
+	err := ioutil.WriteFile(filename, data, 0644)
+	return err
+}
+
+func backupFile(filename string) error {
+	src := filename
+	dst := fmt.Sprintf("%s.%s", filename, time.Now().Format("20060102150405"))
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	return err
+}
+
+// writeFileGo prints a script to create a backup of the target file and writes new content
+func writeFileShell(filename string, data []byte) error {
+	// make a backup copy, ignoring failure (e.g. if source file doesn't exist)
+	fmt.Printf("cp %s %s.$(date +%%Y%%m%%d%%H%%M%%S) || true\n", filename, filename)
 	fmt.Printf("cat << EOF > %s\n", filename)
 	fmt.Print(string(data))
 	fmt.Print("EOF\n")
 	return nil
 }
 
-func loadPlist(plistFile string, commit bool) error {
-	cmd := exec.Command("launchctl", "load", plistFile)
+func reloadPlist(plistFile string, commit bool) error {
+	unloadCmd := exec.Command("launchctl", "unload", plistFile)
+	loadCmd := exec.Command("launchctl", "load", plistFile)
 	if commit {
 		print("loading ", plistFile, "...\n")
-		err := cmd.Run()
+		// Ignore error on unload because this plist might not exist
+		_ = unloadCmd.Run()
+		err := loadCmd.Run()
 		return err
 	}
-	fmt.Println(cmd.String())
+	fmt.Println(unloadCmd.String(), " || true")
+	fmt.Println(loadCmd.String())
 	return nil
 }
 
@@ -80,7 +128,8 @@ func Setup(cmd *cobra.Command, commit bool) error {
 		cmd.Print("not running as root. If this fails, try again using sudo.\n")
 	}
 	if !commit {
-		fmt.Println("#!/usr/bin/env bash")
+		fmt.Println("#!/bin/sh")
+		fmt.Println("set -euo pipefail")
 	}
 	// copy redirection file to pf.anchors
 	if err := writeFileFromEmbedded(embedPrefix, pfRedirectionFilename, commit); err != nil {
@@ -98,10 +147,10 @@ func Setup(cmd *cobra.Command, commit bool) error {
 		return err
 	}
 	// load plist files with launchctl
-	if err := loadPlist(pfPlistFilename, commit); err != nil {
+	if err := reloadPlist(pfPlistFilename, commit); err != nil {
 		return err
 	}
-	if err := loadPlist(loopbackPlistFilename, commit); err != nil {
+	if err := reloadPlist(loopbackPlistFilename, commit); err != nil {
 		return err
 	}
 	return nil
