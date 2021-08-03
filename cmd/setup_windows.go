@@ -25,11 +25,8 @@ import (
 var setupShortHelp = "Print setup information"
 var setupLongHelp = ``
 
-func PrintSetup(cmd *cobra.Command) {
+func Setup(cmd *cobra.Command, commit bool) error {
 	fmt.Println("Metadata service in windows has never been tried")
 	fmt.Println("")
-}
-
-func Setup(cmd *cobra.Command, commit bool) error {
-	return fmt.Errorf("not supported on Windows")
+	return nil
 }

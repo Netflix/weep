@@ -23,12 +23,12 @@ import (
 )
 
 var (
-	doItForMe   bool
+	commit      bool
 	SetupExtras embed.FS
 )
 
 func init() {
-	setupCmd.PersistentFlags().BoolVarP(&doItForMe, "write", "w", false, "install all the things (probably requires root, definitely requires trust)")
+	setupCmd.PersistentFlags().BoolVarP(&commit, "commit", "C", false, "install all the things (probably requires root, definitely requires trust)")
 	rootCmd.AddCommand(setupCmd)
 }
 
@@ -37,7 +37,7 @@ var setupCmd = &cobra.Command{
 	Short: setupShortHelp,
 	Long:  setupLongHelp,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := Setup(cmd, doItForMe)
+		err := Setup(cmd, commit)
 		return err
 	},
 }
