@@ -147,7 +147,6 @@ func Setup(cmd *cobra.Command, commit bool) error {
 	}
 	if !commit {
 		fmt.Println("#!/bin/sh")
-		fmt.Println("set -euo pipefail")
 	}
 	// copy redirection file to pf.anchors
 	if err := writeFileFromEmbedded(embedPrefix, pfRedirectionFilename, commit); err != nil {
