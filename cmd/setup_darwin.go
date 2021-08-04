@@ -33,8 +33,21 @@ import (
 var (
 	setupShortHelp = "Print setup information"
 	setupLongHelp  = `By default, this command will print a script that can be used to set up IMDS routing.
-If you trust us enough, you can run sudo weep setup --write.
-Otherwise, run weep setup and inspect the output. Then run sudo eval $(weep setup).`
+If you trust us enough, you can let Weep do all the work for you:
+
+sudo weep setup --commit
+
+Otherwise, run weep setup and inspect the output. Then save the output to a file or pass it to your shell:
+
+# Pass to shell
+weep setup  # trust no one, always inspect
+weep setup | sudo sh
+
+# Save to file
+weep setup > setup.sh
+cat setup.sh  # trust no one, always inspect
+chmod u+x setup.sh
+./setup.sh`
 	embedPrefix           = "extras/macos"
 	pfRedirectionFilename = "/etc/pf.anchors/redirection"
 	pfConfFilename        = "/etc/pf.conf"

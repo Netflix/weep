@@ -33,15 +33,7 @@ BUILD_TAGS="${BUILD_TAGS:-"weep"}"
 GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_DIRTY="$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)"
 
-rm pkger.go 2&> /dev/null || true
-
 echo "=> Building..."
-if [ ! -z "$EMBEDDED_CONFIG_FILE" ]; then
-  echo "Bundling config"
-  pkger -include "${EMBEDDED_CONFIG_FILE}"
-else
-  echo "Not bundling config"
-fi
 go build \
     -ldflags "${LD_FLAGS} \
     -X github.com/netflix/weep/config.EmbeddedConfigFile=${EMBEDDED_CONFIG_FILE} \
