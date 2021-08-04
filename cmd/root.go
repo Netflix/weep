@@ -21,10 +21,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/netflix/weep/metadata"
-
-	"github.com/netflix/weep/config"
-	"github.com/netflix/weep/logging"
+	"github.com/netflix/weep/internal/config"
+	"github.com/netflix/weep/internal/logging"
+	"github.com/netflix/weep/internal/metadata"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

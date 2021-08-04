@@ -20,7 +20,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/netflix/weep/creds"
+	"github.com/netflix/weep/internal/creds"
+
 	"github.com/spf13/cobra"
 )
 

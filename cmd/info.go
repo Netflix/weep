@@ -8,9 +8,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/netflix/weep/internal/metadata"
+
 	"gopkg.in/yaml.v2"
 
-	"github.com/netflix/weep/metadata"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -97,10 +98,10 @@ func DecodeWeepInfo(args []string, w io.Writer) error {
 	}
 	b64decoder := base64.NewDecoder(base64.StdEncoding, r)
 	zreader, err := zlib.NewReader(b64decoder)
-	defer zreader.Close()
 	if err != nil {
 		return err
 	}
+	defer zreader.Close()
 
 	io.Copy(w, zreader)
 

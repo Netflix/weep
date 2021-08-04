@@ -17,9 +17,9 @@
 package cmd
 
 import (
+	"github.com/netflix/weep/internal/server"
 	"github.com/spf13/viper"
 
-	"github.com/netflix/weep/server"
 	"github.com/spf13/cobra"
 )
 

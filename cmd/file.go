@@ -22,11 +22,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/netflix/weep/internal/creds"
+	"github.com/netflix/weep/internal/util"
+
 	"gopkg.in/ini.v1"
 
 	"github.com/mitchellh/go-homedir"
-	"github.com/netflix/weep/creds"
-	"github.com/netflix/weep/util"
 	"github.com/spf13/cobra"
 )
 
