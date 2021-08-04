@@ -47,7 +47,7 @@ weep setup | sudo sh
 weep setup > setup.sh
 cat setup.sh  # trust no one, always inspect
 chmod u+x setup.sh
-./setup.sh`
+sudo ./setup.sh`
 	embedPrefix           = "extras/macos"
 	pfRedirectionFilename = "/etc/pf.anchors/redirection"
 	pfConfFilename        = "/etc/pf.conf"
