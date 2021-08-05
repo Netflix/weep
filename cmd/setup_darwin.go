@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -60,30 +61,42 @@ func isRoot() bool {
 	return os.Geteuid() == 0
 }
 
-// writeFileFromEmbedded calls the appropriate file writing function based on the value of commit
-func writeFileFromEmbedded(prefix string, filename string, commit bool) error {
+func embeddedFileData(prefix, filename string) ([]byte, error) {
 	data, err := SetupExtras.ReadFile(prefix + filename)
+	if err != nil {
+		return nil, err
+	}
 	port := viper.GetString("server.port")
 	data = bytes.Replace(data, []byte("WEEP_PORT"), []byte(port), -1)
+	return data, nil
+}
+
+// writeFile creates a backup of the target file and writes new content using Go
+func writeFile(prefix, filename string) error {
+	print("writing ", filename, "...\n")
+	data, err := embeddedFileData(prefix, filename)
 	if err != nil {
 		return err
 	}
-	if commit {
-		err = writeFileGo(filename, data)
-		return err
-	} else {
-		err = writeFileShell(filename, data)
-		return err
-	}
-}
-
-// writeFileGo creates a backup of the target file and writes new content using Go
-func writeFileGo(filename string, data []byte) error {
-	print("writing ", filename, "...\n")
 	// Ignore error on backup, we're just trying to be nice anyway
 	_ = backupFile(filename)
-	err := ioutil.WriteFile(filename, data, 0644)
+	err = ioutil.WriteFile(filename, data, 0644)
 	return err
+}
+
+// writeFileCommand returns commands to create a backup of the target file and write new content
+func writeFileCommand(prefix, filename string) (string, error) {
+	data, err := embeddedFileData(prefix, filename)
+	if err != nil {
+		return "", err
+	}
+	result := "printf \"backing up and overwriting " + filename + "...\"\n"
+	result += fmt.Sprintf("cp %s %s.$(date +%%Y%%m%%d%%H%%M%%S) > /dev/null 2>&1 || true\n", filename, filename)
+	result += fmt.Sprintf("cat << EOF > %s\n", filename)
+	result += string(data)
+	result += "EOF\n"
+	result += "printf \" done\\n\"\n"
+	return result, nil
 }
 
 // backupFile creates a copy of filename with a timestamp appended to the filename
@@ -105,70 +118,97 @@ func backupFile(filename string) error {
 	}
 	defer source.Close()
 
-	destination, err := os.Create(dst)
+	dest, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer destination.Close()
-	_, err = io.Copy(destination, source)
+	defer dest.Close()
+	_, err = io.Copy(dest, source)
 	return err
 }
 
-// writeFileGo prints a script to create a backup of the target file and writes new content
-func writeFileShell(filename string, data []byte) error {
-	// make a backup copy, ignoring failure (e.g. if source file doesn't exist)
-	fmt.Printf("cp %s %s.$(date +%%Y%%m%%d%%H%%M%%S) || true\n", filename, filename)
-	fmt.Printf("cat << EOF > %s\n", filename)
-	fmt.Print(string(data))
-	fmt.Print("EOF\n")
+// reloadPlist executes launchctl to unload and load the specified plist
+func reloadPlist(plistFile string) error {
+	unloadCmd := exec.Command("launchctl", "unload", plistFile)
+	loadCmd := exec.Command("launchctl", "load", plistFile)
+	print("loading ", plistFile, "...\n")
+	// Ignore error on unload because this plist might not exist
+	_ = unloadCmd.Run()
+	err := loadCmd.Run()
+	return err
+}
+
+// reloadPlistCommand returns launchctl commands to unload and load the specified plist
+func reloadPlistCommand(plistFile string) string {
+	unloadCmd := exec.Command("launchctl", "unload", plistFile)
+	loadCmd := exec.Command("launchctl", "load", plistFile)
+	result := "printf \"reloading " + plistFile + "...\"\n"
+	result += unloadCmd.String() + " > /dev/null 2>&1 || true"
+	result += "\n"
+	result += loadCmd.String()
+	result += "\n"
+	result += "printf \" done\\n\"\n"
+	return result
+}
+
+func performSetup(files, plists []string) error {
+	for _, file := range files {
+		if err := writeFile(embedPrefix, file); err != nil {
+			return err
+		}
+	}
+	for _, plist := range plists {
+		if err := reloadPlist(plist); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-// reloadPlist uses executes launchctl to unload and load the specified plist, or prints the commands
-// to do so if commit is false
-func reloadPlist(plistFile string, commit bool) error {
-	unloadCmd := exec.Command("launchctl", "unload", plistFile)
-	loadCmd := exec.Command("launchctl", "load", plistFile)
-	if commit {
-		print("loading ", plistFile, "...\n")
-		// Ignore error on unload because this plist might not exist
-		_ = unloadCmd.Run()
-		err := loadCmd.Run()
-		return err
+func buildScript(files, plists []string) (string, error) {
+	var builder strings.Builder
+	builder.WriteString("#!/bin/sh\n\n")
+	for _, file := range files {
+		if result, err := writeFileCommand(embedPrefix, file); err != nil {
+			return "", err
+		} else {
+			builder.WriteString(result)
+		}
+		builder.WriteString("\n")
 	}
-	fmt.Println(unloadCmd.String(), " || true")
-	fmt.Println(loadCmd.String())
-	return nil
+	for _, plist := range plists {
+		result := reloadPlistCommand(plist)
+		builder.WriteString(result)
+		builder.WriteString("\n")
+	}
+	return builder.String(), nil
 }
 
 func Setup(cmd *cobra.Command, commit bool) error {
 	if commit && !isRoot() {
 		cmd.Print("not running as root. If this fails, try again using sudo.\n")
 	}
-	if !commit {
-		fmt.Println("#!/bin/sh")
+	files := []string{
+		pfRedirectionFilename,
+		pfConfFilename,
+		pfPlistFilename,
+		loopbackPlistFilename,
 	}
-	// copy redirection file to pf.anchors
-	if err := writeFileFromEmbedded(embedPrefix, pfRedirectionFilename, commit); err != nil {
-		return err
+	plists := []string{
+		pfPlistFilename,
+		loopbackPlistFilename,
 	}
-	// replace pf.conf with ours
-	if err := writeFileFromEmbedded(embedPrefix, pfConfFilename, commit); err != nil {
-		return err
-	}
-	// copy plist files to launchdaemons
-	if err := writeFileFromEmbedded(embedPrefix, pfPlistFilename, commit); err != nil {
-		return err
-	}
-	if err := writeFileFromEmbedded(embedPrefix, loopbackPlistFilename, commit); err != nil {
-		return err
-	}
-	// load plist files with launchctl
-	if err := reloadPlist(pfPlistFilename, commit); err != nil {
-		return err
-	}
-	if err := reloadPlist(loopbackPlistFilename, commit); err != nil {
-		return err
+
+	if commit {
+		if err := performSetup(files, plists); err != nil {
+			return err
+		}
+	} else {
+		if script, err := buildScript(files, plists); err != nil {
+			return err
+		} else {
+			fmt.Println(script)
+		}
 	}
 	return nil
 }
