@@ -14,25 +14,29 @@
  * limitations under the License.
  */
 
-package cmd
+package server
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
 
-	"github.com/netflix/weep/internal/metadata"
+	"github.com/netflix/weep/internal/session"
+	"github.com/netflix/weep/internal/util"
 
-	"github.com/spf13/cobra"
+	"github.com/sirupsen/logrus"
 )
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: versionShortHelp,
-	Long:  versionLongHelp,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(metadata.GetVersion())
-	},
+func TokenHandler(w http.ResponseWriter, r *http.Request) {
+	ttlString := r.Header.Get("X-aws-ec2-metadata-token-ttl-seconds")
+	ttlSeconds, err := strconv.Atoi(ttlString)
+	log.WithFields(logrus.Fields{
+		"ttlSeconds": ttlSeconds,
+	}).Debug("generating IMDSv2 token")
+	if err != nil {
+		util.WriteError(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	token := session.GenerateToken("", ttlSeconds)
+	fmt.Fprint(w, token)
 }

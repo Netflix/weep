@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-package main
+package server
 
 import (
-	"embed"
-	"os"
+	"encoding/json"
+	"net/http"
 
-	"github.com/netflix/weep/internal/config"
-
-	"github.com/netflix/weep/cmd"
+	"github.com/netflix/weep/internal/cache"
+	"github.com/netflix/weep/internal/util"
 )
 
-//go:embed configs/*.yaml
-var Configs embed.FS
+func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
+	rawArn := cache.GlobalCache.DefaultArn()
+	awsArn, _ := util.ArnParse(rawArn)
 
-//go:embed extras/*
-var Extras embed.FS
+	awsArn.ResourceType = "instance-profile"
 
-func init() {
-	cmd.SetupExtras = Extras
-	config.EmbeddedConfigs = Configs
-}
+	iamInfo := MetaDataIamInfoResponse{
+		Code:               "Success",
+		LastUpdated:        cache.GlobalCache.DefaultLastUpdated(),
+		InstanceProfileARN: awsArn.ArnString(),
+		InstanceProfileID:  "AIPAI",
+	}
 
-func main() {
-	err := cmd.Execute()
+	err := json.NewEncoder(w).Encode(iamInfo)
 	if err != nil {
-		// err printing is handled by cobra
-		os.Exit(1)
+		log.Errorf("failed to write response: %v", err)
 	}
 }
