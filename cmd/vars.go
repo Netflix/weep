@@ -121,8 +121,5 @@ The service command lets you install Weep as a service on a Linux, macOS, or Win
 system.
 `
 
-var setupShortHelp = "Print setup information"
-var setupLongHelp = ``
-
 var versionShortHelp = "Print version information"
 var versionLongHelp = ``

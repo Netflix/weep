@@ -18,9 +18,14 @@ package cmd
 
 import (
 	"fmt"
+
+	"github.com/spf13/cobra"
 )
 
-func PrintSetup() {
+var setupShortHelp = "Print setup information"
+var setupLongHelp = ``
+
+func Setup(cmd *cobra.Command, commit bool) error {
 	fmt.Println("Metadata service in windows has never been tried")
-	fmt.Println("")
+	return nil
 }

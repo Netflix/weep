@@ -17,10 +17,18 @@
 package cmd
 
 import (
+	"embed"
+
 	"github.com/spf13/cobra"
 )
 
+var (
+	commit      bool
+	SetupExtras embed.FS
+)
+
 func init() {
+	setupCmd.PersistentFlags().BoolVarP(&commit, "commit", "C", false, "install all the things (probably requires root, definitely requires trust)")
 	rootCmd.AddCommand(setupCmd)
 }
 
@@ -28,7 +36,8 @@ var setupCmd = &cobra.Command{
 	Use:   "setup",
 	Short: setupShortHelp,
 	Long:  setupLongHelp,
-	Run: func(cmd *cobra.Command, args []string) {
-		PrintSetup()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		err := Setup(cmd, commit)
+		return err
 	},
 }
