@@ -92,7 +92,7 @@ function notarize() {
     --file "$FINAL_PACKAGE")
   printf " done ✅ \n"
   request_id=$(echo "$output" | grep RequestUUID | awk '{ print $3 }')
-  print "👨‍💻 waiting for Apple\n"
+  printf "👨‍💻 waiting for Apple\n"
   printf "💡 notarize request id is %s\n" "$request_id"
   # give the server side a few seconds to sort things out
   sleep 5
