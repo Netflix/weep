@@ -46,6 +46,7 @@ func runWhoami(cmd *cobra.Command, args []string) error {
 	} else {
 		fmt.Fprintf(w, "Account:\t%s\n", *callerIdentity.Account)
 	}
+	fmt.Fprintf(w, "ARN:\t%s\n", *callerIdentity.Arn)
 	fmt.Fprintf(w, "UserId:\t%s\n", *callerIdentity.UserId)
 	w.Flush()
 
