@@ -71,10 +71,13 @@ jobs:
           p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
           p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
       -
+        name: Set version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      -
         name: Build, Sign, & Notarize Package
         env:
           AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
-          VERSION: ${{ env.GITHUB_REF }}
+          VERSION: ${{ env.RELEASE_VERSION }}
         run: |
           ./build/build_package.sh
       -

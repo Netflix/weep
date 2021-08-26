@@ -83,7 +83,7 @@ function sign_package() {
 }
 
 function notarize() {
-  printf "🔐 notarizing package..."
+  printf "🔐 submitting package for notarization..."
   output=$(xcrun altool \
     --notarize-app \
     --primary-bundle-id "com.netflix.weep" \
@@ -92,9 +92,10 @@ function notarize() {
     --file "$FINAL_PACKAGE")
   printf " done ✅ \n"
   request_id=$(echo "$output" | grep RequestUUID | awk '{ print $3 }')
+  print "👨‍💻 waiting for Apple\n"
   printf "💡 notarize request id is %s\n" "$request_id"
   # give the server side a few seconds to sort things out
-  sleep 3
+  sleep 5
   while true; do
     status=$(check_notarize_status "$request_id")
     printf "👀 current status \"%s\"" "$status"
@@ -104,12 +105,12 @@ function notarize() {
         break
         ;;
       "failure")
-        printf ", exiting! 🔴\n"
+        printf ", exiting! 🔴 \n"
         exit 1
         ;;
       *)
-        printf ", not ready yet 😴\n"
-        sleep 5
+        printf ", not ready yet 😴 \n"
+        sleep 10
         ;;
     esac
   done
