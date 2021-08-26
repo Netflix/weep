@@ -18,6 +18,8 @@ builds:
         -X github.com/netflix/weep/internal/metadata.Commit={{.CommitDate}}
         -X github.com/netflix/weep/internal/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
+    no_unique_dist_dir: true
+    binary: 'bin/{{ .Target }}/weep'
   -
     id: demo
     env:
@@ -35,6 +37,8 @@ builds:
         -X github.com/netflix/weep/metadata.Commit={{.CommitDate}}
         -X github.com/netflix/weep/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
+    no_unique_dist_dir: true
+    binary: 'bin/demo/{{ .Target }}/weep'
 archives:
   -
     builds:

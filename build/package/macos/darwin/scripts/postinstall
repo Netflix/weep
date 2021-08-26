@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+
+#Parameters
+PRODUCT_HOME=/Library/weep
+APPLICATION_FILE_PATH=bin/weep-universal
+
+echo "Post installation process started"
+
+#Change permissions in home directory
+echo "Change permissions in product home"
+pushd "$PRODUCT_HOME"
+chmod -R 755 .
+[ -d /usr/local/bin ] || mkdir /usr/local/bin
+
+#Add application shortcut to /usr/local/bin
+rm -f /usr/local/bin/weep
+ln -s ${PRODUCT_HOME}/${APPLICATION_FILE_PATH} /usr/local/bin/weep
+echo "Post installation process finished"
+popd
