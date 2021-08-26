@@ -123,3 +123,8 @@ system.
 
 var versionShortHelp = "Print version information"
 var versionLongHelp = ``
+
+var whoamiShortHelp = "Print information about current AWS credentials"
+var whoamiLongHelp = `The whoami command retrieves information about your AWS credentials from AWS STS using the default
+credential provider chain. If SWAG (https://github.com/Netflix-Skunkworks/swag-api) is enabled, weep will
+attempt to enrich the output with additional data.`

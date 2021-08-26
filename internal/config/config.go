@@ -47,6 +47,9 @@ func init() {
 	viper.SetDefault("service.run", []string{"service", "run"})
 	viper.SetDefault("service.args", []string{})
 	viper.SetDefault("service.flags", []string{})
+	viper.SetDefault("swag.enable", false)
+	viper.SetDefault("swag.use_mtls", false)
+	viper.SetDefault("swag.url", "")
 
 	// Set aliases for backward-compatibility
 	viper.RegisterAlias("server.ecs_credential_provider_port", "server.port")
