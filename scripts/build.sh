@@ -36,10 +36,10 @@ GIT_DIRTY="$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)"
 echo "=> Building..."
 go build \
     -ldflags "${LD_FLAGS} \
-    -X github.com/netflix/weep/config.EmbeddedConfigFile=${EMBEDDED_CONFIG_FILE} \
-    -X github.com/netflix/weep/version.Version=${VERSION} \
-    -X github.com/netflix/weep/version.VersionPrerelease=${VERSION_PRERELEASE} \
-    -X github.com/netflix/weep/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} \
-    -X github.com/netflix/weep/version.BuildDate=${BUILD_DATE}" \
+    -X github.com/netflix/weep/pkg/config.EmbeddedConfigFile=${EMBEDDED_CONFIG_FILE} \
+    -X github.com/netflix/weep/pkg/metadata.Version=${VERSION} \
+    -X github.com/netflix/weep/pkg/metadata.VersionPrerelease=${VERSION_PRERELEASE} \
+    -X github.com/netflix/weep/pkg/metadata.Commit=${GIT_COMMIT}${GIT_DIRTY} \
+    -X github.com/netflix/weep/pkg/metadata.Date=${BUILD_DATE}" \
     -trimpath \
     -o ${BINARY}

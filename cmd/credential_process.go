@@ -21,8 +21,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/netflix/weep/internal/creds"
-	"github.com/netflix/weep/internal/util"
+	"github.com/netflix/weep/pkg/aws"
+
+	"github.com/netflix/weep/pkg/creds"
+	"github.com/netflix/weep/pkg/util"
 
 	"gopkg.in/ini.v1"
 
@@ -114,7 +116,7 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func printCredentialProcess(credentials *creds.AwsCredentials) {
+func printCredentialProcess(credentials *aws.Credentials) {
 	expirationTimeFormat := credentials.Expiration.Format(time.RFC3339)
 
 	credentialProcessOutput := &creds.CredentialProcess{
