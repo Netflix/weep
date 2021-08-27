@@ -32,10 +32,10 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -extldflags "-static"
-        -X github.com/netflix/weep/config.EmbeddedConfigFile=configs/weep-demo.yaml
-        -X github.com/netflix/weep/metadata.Version={{.Version}}
-        -X github.com/netflix/weep/metadata.Commit={{.CommitDate}}
-        -X github.com/netflix/weep/metadata.Date={{.Date}}
+        -X github.com/netflix/weep/pkg/config.EmbeddedConfigFile=configs/weep-demo.yaml
+        -X github.com/netflix/weep/pkg/metadata.Version={{.Version}}
+        -X github.com/netflix/weep/pkg/metadata.Commit={{.CommitDate}}
+        -X github.com/netflix/weep/pkg/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
     no_unique_dist_dir: true
     binary: 'bin/demo/{{ .Target }}/weep'
