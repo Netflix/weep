@@ -64,6 +64,6 @@ func runList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	cmd.SetOut(os.Stdout)
-	cmd.Println(roles)
+	cmd.Printf(roles)
 	return nil
 }
