@@ -20,6 +20,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/types"
+
 	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/errors"
 )
@@ -189,11 +192,11 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 	expectedRole := "a"
 	expectedExpiration := time.Unix(1, 0).Round(0)
 	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-		Credentials: &creds.AwsCredentials{
+		Credentials: &aws.Credentials{
 			AccessKeyId:     "a",
 			SecretAccessKey: "b",
 			SessionToken:    "c",
-			Expiration:      creds.Time(time.Unix(1, 0)),
+			Expiration:      types.Time(time.Unix(1, 0)),
 			RoleArn:         "e",
 		},
 	})
@@ -217,11 +220,11 @@ func TestCredentialCache_DefaultLastUpdated(t *testing.T) {
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
 	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-		Credentials: &creds.AwsCredentials{
+		Credentials: &aws.Credentials{
 			AccessKeyId:     "a",
 			SecretAccessKey: "b",
 			SessionToken:    "c",
-			Expiration:      creds.Time(time.Unix(1, 0)),
+			Expiration:      types.Time(time.Unix(1, 0)),
 			RoleArn:         "e",
 		},
 	})
@@ -260,11 +263,11 @@ func TestCredentialCache_DefaultArn(t *testing.T) {
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
 	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-		Credentials: &creds.AwsCredentials{
+		Credentials: &aws.Credentials{
 			AccessKeyId:     "a",
 			SecretAccessKey: "b",
 			SessionToken:    "c",
-			Expiration:      creds.Time(time.Unix(1, 0)),
+			Expiration:      types.Time(time.Unix(1, 0)),
 			RoleArn:         "e",
 		},
 	})
@@ -339,11 +342,11 @@ func TestCredentialCache_GetOrSet(t *testing.T) {
 			RoleCredentials: tc.CacheContents,
 		}
 		client, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-			Credentials: &creds.AwsCredentials{
+			Credentials: &aws.Credentials{
 				AccessKeyId:     "a",
 				SecretAccessKey: "b",
 				SessionToken:    "c",
-				Expiration:      creds.Time(time.Unix(1, 0)),
+				Expiration:      types.Time(time.Unix(1, 0)),
 				RoleArn:         tc.ExpectedResult.RoleArn,
 			},
 		})

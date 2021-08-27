@@ -21,6 +21,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/types"
+
 	"github.com/netflix/weep/pkg/errors"
 
 	"github.com/sirupsen/logrus"
@@ -84,7 +87,7 @@ func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
 func (rp *RefreshableProvider) refresh() error {
 	log.Debugf("refreshing credentials for %s", rp.RoleArn)
 	var err error
-	var newCreds *AwsCredentials
+	var newCreds *aws.Credentials
 
 	rp.Lock()
 	defer rp.Unlock()
@@ -113,7 +116,7 @@ func (rp *RefreshableProvider) refresh() error {
 	rp.value.SessionToken = newCreds.SessionToken
 	rp.value.SecretAccessKey = newCreds.SecretAccessKey
 	rp.value.AccessKeyID = newCreds.AccessKeyId
-	rp.LastRefreshed = Time(time.Now())
+	rp.LastRefreshed = types.Time(time.Now())
 	if newCreds.RoleArn != "" {
 		// We favor the role ARN from ConsoleMe over the one from the user, which could just be a search string.
 		rp.RoleArn = newCreds.RoleArn

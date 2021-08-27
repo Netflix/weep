@@ -130,7 +130,7 @@ func WriteError(w http.ResponseWriter, message string, status int) {
 	_, err := w.Write([]byte(message))
 	if err != nil {
 		log.Errorf("could not write error response: %s", err)
-		w.WriteHeader(http.StatuspkgServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 

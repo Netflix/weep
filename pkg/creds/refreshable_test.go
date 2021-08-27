@@ -20,6 +20,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/types"
+
 	"github.com/netflix/weep/pkg/errors"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -33,10 +36,10 @@ var (
 	testRole            = "e"
 	testRoleArn         = "f"
 	testProviderName    = "g"
-	testExpiration      = Time(time.Now().Add(60 * time.Minute).Round(0))
-	testSoonExpiration  = Time(time.Now().Add(5 * time.Minute).Round(0))
-	testPastExpiration  = Time(time.Now().Add(-5 * time.Minute).Round(0))
-	testCredentials     = &AwsCredentials{
+	testExpiration      = types.Time(time.Now().Add(60 * time.Minute).Round(0))
+	testSoonExpiration  = types.Time(time.Now().Add(5 * time.Minute).Round(0))
+	testPastExpiration  = types.Time(time.Now().Add(-5 * time.Minute).Round(0))
+	testCredentials     = &aws.Credentials{
 		AccessKeyId:     testAccessKeyId,
 		SecretAccessKey: testSecretAccessKey,
 		SessionToken:    testSessionToken,
@@ -69,7 +72,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 			ExpectedError:      nil,
 			ExpectedResult: &RefreshableProvider{
 				Expiration:    testExpiration,
-				LastRefreshed: Time{},
+				LastRefreshed: types.Time{},
 				Region:        testRegion,
 				RoleName:      testRole,
 				RoleArn:       testRoleArn,
@@ -87,7 +90,7 @@ func TestNewRefreshableProvider(t *testing.T) {
 			ExpectedError:      nil,
 			ExpectedResult: &RefreshableProvider{
 				Expiration:    testExpiration,
-				LastRefreshed: Time{},
+				LastRefreshed: types.Time{},
 				Region:        testRegion,
 				RoleName:      testRole,
 				RoleArn:       testRoleArn,
@@ -181,7 +184,7 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 		},
 	}
 
-	zeroTime := Time{}
+	zeroTime := types.Time{}
 	for i, tc := range cases {
 		t.Logf("test case %d: %s", i, tc.Description)
 		client, err := GetTestClient(tc.CredentialResponse)
@@ -231,8 +234,8 @@ func TestRefreshableProvider_refresh(t *testing.T) {
 func TestRefreshableProvider_checkAndRefresh(t *testing.T) {
 	cases := []struct {
 		Description        string
-		Expiration         Time
-		ExpectedExpiration Time
+		Expiration         types.Time
+		ExpectedExpiration types.Time
 		CredentialResponse interface{}
 		ShouldRefresh      bool
 		ExpectedError      error

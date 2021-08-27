@@ -17,6 +17,7 @@ else
 	DOCKER_TAG=v$(VERSION)
 endif
 
+.PHONY: build
 build:
 	@BINARY_NAME="$(BINARY_NAME)" sh -c "'$(CURDIR)/scripts/build.sh'"
 
