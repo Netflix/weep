@@ -14,9 +14,9 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -extldflags "-static"
-        -X github.com/netflix/weep/internal/metadata.Version={{.Version}}
-        -X github.com/netflix/weep/internal/metadata.Commit={{.CommitDate}}
-        -X github.com/netflix/weep/internal/metadata.Date={{.Date}}
+        -X github.com/netflix/weep/pkg/metadata.Version={{.Version}}
+        -X github.com/netflix/weep/pkg/metadata.Commit={{.CommitDate}}
+        -X github.com/netflix/weep/pkg/metadata.Date={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
     no_unique_dist_dir: true
     binary: 'bin/{{ .Target }}/weep'

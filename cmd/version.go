@@ -19,7 +19,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/netflix/weep/internal/metadata"
+	"github.com/netflix/weep/pkg/metadata"
 
 	"github.com/spf13/cobra"
 )
