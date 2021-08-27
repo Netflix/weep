@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/manifoldco/promptui"
-	"github.com/netflix/weep/internal/creds"
+	"github.com/netflix/weep/pkg/creds"
 	"os"
 	"strings"
 )
