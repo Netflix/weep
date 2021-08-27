@@ -43,13 +43,18 @@ var fileCmd = &cobra.Command{
 	Use:   "file [role_name]",
 	Short: fileShortHelp,
 	Long:  fileLongHelp,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MaximumNArgs(1),
 	RunE:  runFile,
 }
 
 func runFile(cmd *cobra.Command, args []string) error {
-	role := args[0]
-	err := updateCredentialsFile(role, profileName, destination, noIpRestrict, assumeRole)
+	// If a role was provided, use it, otherwise prompt
+	role, err := InteractiveRolePrompt(args, region, nil)
+	if err != nil {
+		return err
+	}
+
+	err = updateCredentialsFile(role, profileName, destination, noIpRestrict, assumeRole)
 	if err != nil {
 		return err
 	}
