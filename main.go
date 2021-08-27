@@ -20,7 +20,7 @@ import (
 	"embed"
 	"os"
 
-	"github.com/netflix/weep/internal/config"
+	"github.com/netflix/weep/pkg/config"
 
 	"github.com/netflix/weep/cmd"
 )

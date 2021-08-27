@@ -19,8 +19,8 @@ package cmd
 import (
 	"errors"
 
-	"github.com/netflix/weep/internal/creds"
-	"github.com/netflix/weep/internal/util"
+	"github.com/netflix/weep/pkg/creds"
+	"github.com/netflix/weep/pkg/util"
 
 	"github.com/spf13/cobra"
 )

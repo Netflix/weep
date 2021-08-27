@@ -6,8 +6,8 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/netflix/weep/internal/aws"
-	"github.com/netflix/weep/internal/swag"
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/swag"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

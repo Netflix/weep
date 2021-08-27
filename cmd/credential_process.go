@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/netflix/weep/internal/aws"
+	"github.com/netflix/weep/pkg/aws"
 
-	"github.com/netflix/weep/internal/creds"
-	"github.com/netflix/weep/internal/util"
+	"github.com/netflix/weep/pkg/creds"
+	"github.com/netflix/weep/pkg/util"
 
 	"gopkg.in/ini.v1"
 
