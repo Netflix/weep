@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/netflix/weep/internal/aws"
+
 	"github.com/netflix/weep/internal/creds"
 	"github.com/netflix/weep/internal/util"
 
@@ -158,7 +160,7 @@ func isExpiring(filename, profile string, thresholdMinutes int) (bool, error) {
 	return false, nil
 }
 
-func writeCredentialsFile(credentials *creds.AwsCredentials, profile, filename string) error {
+func writeCredentialsFile(credentials *aws.Credentials, profile, filename string) error {
 	var credentialsINI *ini.File
 	var err error
 
