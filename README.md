@@ -15,7 +15,7 @@ This README contains developer documentation. Weep user documentation can be fou
 ## Configuration
 
 Weep can be compiled with an embedded configuration (See the Building section below), or it can get its configuration 
-from a YAML-formatted file. We've included an example config file in [example-config.yaml](example-config.yaml).
+from a YAML-formatted file. We've included an example config file in [example-config.yaml](configs/example-config.yaml).
 
 Weep searches for a configuration in the following locations:
 

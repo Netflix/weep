@@ -18,11 +18,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/lithammer/fuzzysearch/fuzzy"
-	"github.com/manifoldco/promptui"
-	"github.com/netflix/weep/internal/creds"
 	"os"
 	"strings"
+
+	"github.com/lithammer/fuzzysearch/fuzzy"
+	"github.com/manifoldco/promptui"
+	"github.com/netflix/weep/pkg/creds"
 )
 
 // InteractiveRolePrompt will present the user with a fuzzy-searchable list of roles if
@@ -61,7 +62,7 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 	prompt := promptui.Select{
 		Label: "Select Role",
 		Items: roles,
-		Size: 16,
+		Size:  16,
 		Searcher: func(input string, index int) bool {
 			return fuzzy.MatchNormalized(strings.ToLower(input), strings.ToLower(roles[index]))
 		},
