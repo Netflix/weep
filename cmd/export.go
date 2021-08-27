@@ -21,6 +21,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/netflix/weep/internal/aws"
+
 	"github.com/netflix/weep/internal/creds"
 
 	"github.com/spf13/cobra"
@@ -60,7 +62,7 @@ func isFish() bool {
 	}
 }
 
-func printExport(creds *creds.AwsCredentials) {
+func printExport(creds *aws.Credentials) {
 	if isFish() {
 		// fish has a different way of setting variables than bash/zsh and others
 		fmt.Printf("set -x AWS_ACCESS_KEY_ID %s && set -x AWS_SECRET_ACCESS_KEY %s && set -x AWS_SESSION_TOKEN %s\n",

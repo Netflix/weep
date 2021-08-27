@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package creds
+package aws
 
 import (
 	"fmt"
@@ -25,8 +25,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/netflix/weep/internal/logging"
 )
+
+var log = logging.GetLogger()
 
 // getSessionName returns the AWS session name, or defaults to weep if we can't find one.
 func getSessionName(session *sts.STS) string {
@@ -46,8 +50,8 @@ func getSessionName(session *sts.STS) string {
 	return splitId[1]
 }
 
-// getAssumeRoleCredentials uses the provided credentials to assume the role specified by roleArn.
-func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string, string, error) {
+// GetAssumeRoleCredentials uses the provided credentials to assume the role specified by roleArn.
+func GetAssumeRoleCredentials(id, secret, token, roleArn string) (string, string, string, error) {
 	region := viper.GetString("aws.region")
 	staticCreds := credentials.NewStaticCredentials(id, secret, token)
 	awsSession := session.Must(session.NewSessionWithOptions(session.Options{
@@ -73,32 +77,35 @@ func getAssumeRoleCredentials(id, secret, token, roleArn string) (string, string
 	return *stsCreds.Credentials.AccessKeyId, *stsCreds.Credentials.SecretAccessKey, *stsCreds.Credentials.SessionToken, nil
 }
 
-// GetCredentialsC uses the provided Client to request credentials from ConsoleMe then
-// follows the provided chain of roles to assume. Roles are assumed in the order in which
-// they appear in the assumeRole slice.
-func GetCredentialsC(client HTTPClient, role string, ipRestrict bool, assumeRole []string) (*AwsCredentials, error) {
-	resp, err := client.GetRoleCredentials(role, ipRestrict)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, assumeRoleArn := range assumeRole {
-		resp.AccessKeyId, resp.SecretAccessKey, resp.SessionToken, err = getAssumeRoleCredentials(resp.AccessKeyId, resp.SecretAccessKey, resp.SessionToken, assumeRoleArn)
-		if err != nil {
-			return nil, fmt.Errorf("role assumption failed for %s: %s", assumeRoleArn, err)
-		}
-	}
-
-	return resp, nil
+func GetSession() *session.Session {
+	return session.Must(session.NewSession())
 }
 
-// GetCredentials requests credentials from ConsoleMe then follows the provided chain of roles to
-// assume. Roles are assumed in the order in which they appear in the assumeRole slice.
-func GetCredentials(role string, ipRestrict bool, assumeRole []string, region string) (*AwsCredentials, error) {
-	client, err := GetClient(region)
+func GetCallerIdentity(awsSession *session.Session) (*sts.GetCallerIdentityOutput, error) {
+	if awsSession == nil {
+		awsSession = GetSession()
+	}
+	stsSession := sts.New(awsSession)
+	input := &sts.GetCallerIdentityInput{}
+	return stsSession.GetCallerIdentity(input)
+}
+
+func ListAccountAliases(awsSession *session.Session) ([]*string, error) {
+	aliases := make([]*string, 0)
+	pageNum := 0
+	if awsSession == nil {
+		awsSession = GetSession()
+	}
+	iamSession := iam.New(awsSession)
+	input := &iam.ListAccountAliasesInput{}
+	err := iamSession.ListAccountAliasesPages(input, func(page *iam.ListAccountAliasesOutput, lastPage bool) bool {
+		pageNum++
+		fmt.Println(page)
+		aliases = append(aliases, page.AccountAliases...)
+		return !*page.IsTruncated
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	return GetCredentialsC(client, role, ipRestrict, assumeRole)
+	return aliases, nil
 }
