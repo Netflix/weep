@@ -18,7 +18,7 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	if healthy {
 		status = http.StatusOK
 	} else {
-		status = http.StatuspkgServerError
+		status = http.StatusInternalServerError
 	}
 	resp := healthcheckResponse{
 		Status:  status,

@@ -18,7 +18,6 @@ package config
 
 import (
 	"embed"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -32,10 +31,8 @@ var (
 // ReadEmbeddedConfig attempts to read the embedded mTLS config and create a tls.Config
 func ReadEmbeddedConfig() error {
 	if EmbeddedConfigFile == "" {
-		fmt.Println("could not find file")
 		return EmbeddedConfigDisabledError
 	}
-	fmt.Println("hereiam")
 	f, err := EmbeddedConfigs.Open(EmbeddedConfigFile)
 	if err != nil {
 		return errors.Wrap(err, "could not open embedded config")

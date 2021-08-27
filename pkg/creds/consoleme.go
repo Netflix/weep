@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/aws"
+
 	werrors "github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/httpAuth/challenge"
 	"github.com/netflix/weep/pkg/httpAuth/mtls"
@@ -52,7 +54,7 @@ type Account struct {
 // HTTPClient is the interface we expect HTTP clients to implement.
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
-	GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error)
+	GetRoleCredentials(role string, ipRestrict bool) (*aws.Credentials, error)
 	CloseIdleConnections()
 	buildRequest(string, string, io.Reader, string) (*http.Request, error)
 }
@@ -258,11 +260,11 @@ func parseError(statusCode int, rawErrorResponse []byte) error {
 	}
 }
 
-func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*aws.Credentials, error) {
 	return getRoleCredentialsFunc(c, role, ipRestrict)
 }
 
-func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*AwsCredentials, error) {
+func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*aws.Credentials, error) {
 	var credentialsResponse ConsolemeCredentialResponseType
 
 	cmCredRequest := ConsolemeCredentialRequestType{
@@ -328,10 +330,10 @@ func defaultTransport() *http.Transport {
 
 type ClientMock struct {
 	DoFunc                 func(req *http.Request) (*http.Response, error)
-	GetRoleCredentialsFunc func(role string, ipRestrict bool) (*AwsCredentials, error)
+	GetRoleCredentialsFunc func(role string, ipRestrict bool) (*aws.Credentials, error)
 }
 
-func (c *ClientMock) GetRoleCredentials(role string, ipRestrict bool) (*AwsCredentials, error) {
+func (c *ClientMock) GetRoleCredentials(role string, ipRestrict bool) (*aws.Credentials, error) {
 	return getRoleCredentialsFunc(c, role, ipRestrict)
 }
 
@@ -346,7 +348,7 @@ func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
 }
 
 func GetTestClient(responseBody interface{}) (HTTPClient, error) {
-	var responseCredentials *AwsCredentials
+	var responseCredentials *aws.Credentials
 	var responseCode = 200
 	if c, ok := responseBody.(ConsolemeCredentialResponseType); ok {
 		responseCredentials = c.Credentials
@@ -370,12 +372,42 @@ func GetTestClient(responseBody interface{}) (HTTPClient, error) {
 				Body:       r,
 			}, nil
 		},
-		GetRoleCredentialsFunc: func(role string, ipRestrict bool) (*AwsCredentials, error) {
+		GetRoleCredentialsFunc: func(role string, ipRestrict bool) (*aws.Credentials, error) {
 			if responseCredentials != nil {
 				return responseCredentials, nil
 			}
-			return &AwsCredentials{RoleArn: role}, nil
+			return &aws.Credentials{RoleArn: role}, nil
 		},
 	}
 	return client, nil
+}
+
+// GetCredentialsC uses the provided Client to request credentials from ConsoleMe then
+// follows the provided chain of roles to assume. Roles are assumed in the order in which
+// they appear in the assumeRole slice.
+func GetCredentialsC(client HTTPClient, role string, ipRestrict bool, assumeRole []string) (*aws.Credentials, error) {
+	resp, err := client.GetRoleCredentials(role, ipRestrict)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, assumeRoleArn := range assumeRole {
+		resp.AccessKeyId, resp.SecretAccessKey, resp.SessionToken, err = aws.GetAssumeRoleCredentials(resp.AccessKeyId, resp.SecretAccessKey, resp.SessionToken, assumeRoleArn)
+		if err != nil {
+			return nil, fmt.Errorf("role assumption failed for %s: %s", assumeRoleArn, err)
+		}
+	}
+
+	return resp, nil
+}
+
+// GetCredentials requests credentials from ConsoleMe then follows the provided chain of roles to
+// assume. Roles are assumed in the order in which they appear in the assumeRole slice.
+func GetCredentials(role string, ipRestrict bool, assumeRole []string, region string) (*aws.Credentials, error) {
+	client, err := GetClient(region)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetCredentialsC(client, role, ipRestrict, assumeRole)
 }
