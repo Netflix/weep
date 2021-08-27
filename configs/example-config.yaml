@@ -50,4 +50,4 @@ metadata:
     - path: latest/meta-data/local-ipv4
       data: "127.0.0.1"
     - path: latest/meta-data/local-hostname
-      data: ip-127-0-0-1.us-west-2.compute.internal
+      data: ip-127-0-0-1.us-west-2.compute.pkg

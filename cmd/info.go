@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/netflix/weep/internal/metadata"
+	"github.com/netflix/weep/pkg/metadata"
 
 	"gopkg.in/yaml.v2"
 
