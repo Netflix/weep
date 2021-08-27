@@ -47,6 +47,7 @@ var completionLongHelp = `Generate shell completion script for Bash, Zsh, Fish, 
 
 More information: https://hawkins.gitbook.io/consoleme/weep-cli/advanced-configuration/shell-completion
 `
+
 var credentialProcessShortHelp = "Retrieve credentials on the fly via the AWS SDK"
 var credentialProcessLongHelp = `The credential_process command can be used by AWS SDKs to retrieve 
 credentials from Weep on the fly. The --generate flag lets you automatically
@@ -96,6 +97,12 @@ this command will only show console roles. Use the --all flag to also include ap
 roles.
 
 More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/list-eligible-roles
+`
+
+var loginShortHelp = "Log into the AWS Management console"
+var loginLongHelp = `The login command opens a browser window with a link that will log you into the
+AWS Management console using the specified role. You can use the --no-open flag to simply print the console
+link, rather than opening it in a browser.
 `
 
 var serveShortHelp = "Run a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand"
