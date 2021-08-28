@@ -37,12 +37,17 @@ var exportCmd = &cobra.Command{
 	Use:   "export [role_name]",
 	Short: exportShortHelp,
 	Long:  exportLongHelp,
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MaximumNArgs(1),
 	RunE:  runExport,
 }
 
 func runExport(cmd *cobra.Command, args []string) error {
-	role := args[0]
+	// If a role was provided, use it, otherwise prompt
+	role, err := InteractiveRolePrompt(args, region, nil)
+	if err != nil {
+		return err
+	}
+
 	creds, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
 		return err
