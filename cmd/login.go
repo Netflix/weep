@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/netflix/weep/internal/util"
+	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
