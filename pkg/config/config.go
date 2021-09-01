@@ -164,6 +164,15 @@ func MtlsEnabled() bool {
 	return authMethod == "mtls"
 }
 
+// BaseWebURL allows the ConsoleMe URL to be overridden for cases where the API
+// and UI are accessed via different URLs
+func BaseWebURL() string {
+	if override := viper.GetString("consoleme_open_url_override"); override != "" {
+		return override
+	}
+	return viper.GetString("consoleme_url")
+}
+
 var (
 	Config WeepConfig
 )

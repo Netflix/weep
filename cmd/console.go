@@ -17,11 +17,11 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/netflix/weep/pkg/config"
+	"path"
 
 	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -45,7 +45,8 @@ func runConsole(cmd *cobra.Command, args []string) error {
 	}
 
 	// Construct the URL and open/print it; default to HTTPS if not specified
-	url := fmt.Sprintf("%s/role/%s", viper.GetString("consoleme_open_url_override"), role)
+	base_url := config.BaseWebURL()
+	url := path.Join(base_url, "role", role)
 
 	if noOpen {
 		cmd.Println(url)
