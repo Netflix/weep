@@ -25,19 +25,19 @@ import (
 )
 
 func init() {
-	loginCmd.PersistentFlags().BoolVarP(&noOpen, "no-open", "x", false, "print the link, but do not open a browser window")
-	rootCmd.AddCommand(loginCmd)
+	consoleCmd.PersistentFlags().BoolVarP(&noOpen, "no-open", "x", false, "print the link, but do not open a browser window")
+	rootCmd.AddCommand(consoleCmd)
 }
 
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: loginShortHelp,
-	Long:  loginLongHelp,
+var consoleCmd = &cobra.Command{
+	Use:   "console",
+	Short: consoleShortHelp,
+	Long:  consoleLongHelp,
 	Args:  cobra.MaximumNArgs(1),
-	RunE:  runLogin,
+	RunE:  runConsole,
 }
 
-func runLogin(cmd *cobra.Command, args []string) error {
+func runConsole(cmd *cobra.Command, args []string) error {
 	// If a role was provided, use it, otherwise prompt
 	role, err := InteractiveRolePrompt(args, region, nil)
 	if err != nil {
