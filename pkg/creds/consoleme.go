@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/netflix/weep/pkg/config"
 	"io"
 	"io/ioutil"
 	"net"
@@ -31,8 +30,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/netflix/weep/pkg/aws"
 
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/config"
 	werrors "github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/httpAuth/challenge"
 	"github.com/netflix/weep/pkg/httpAuth/mtls"

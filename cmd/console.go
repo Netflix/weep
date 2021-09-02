@@ -17,11 +17,12 @@
 package cmd
 
 import (
-	"github.com/netflix/weep/pkg/config"
 	"path"
 
-	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
+
+	"github.com/netflix/weep/pkg/config"
+	"github.com/netflix/weep/pkg/util"
 )
 
 func init() {
