@@ -151,6 +151,14 @@ func OpenLink(link string) error {
 		return errors.BrowserOpenError
 	}
 
+	// If the user specified additional arguments to pass to the program, parse and insert those now
+	opts := os.Getenv("WEEP_OPEN_LINK_OPTIONS")
+	if opts != "" {
+		for _, opt := range strings.Split(opts, ",") {
+			openUrlCommand = append(openUrlCommand, opt)
+		}
+	}
+
 	if openUrlCommand != nil {
 		cmd := exec.Command(openUrlCommand[0], append(openUrlCommand[1:], link)...)
 		err := cmd.Start()

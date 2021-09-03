@@ -31,7 +31,7 @@ import (
 	"time"
 
 	"github.com/netflix/weep/pkg/aws"
-
+	"github.com/netflix/weep/pkg/config"
 	werrors "github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/httpAuth/challenge"
 	"github.com/netflix/weep/pkg/httpAuth/mtls"
@@ -207,16 +207,7 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	return baseWebURL() + responseParsed.Data["url"], nil
-}
-
-// baseWebURL allows the ConsoleMe URL to be overridden for cases where the API
-// and UI are accessed via different URLs
-func baseWebURL() string {
-	if override := viper.GetString("consoleme_open_url_override"); override != "" {
-		return override
-	}
-	return viper.GetString("consoleme_url")
+	return config.BaseWebURL() + responseParsed.Data["url"], nil
 }
 
 func parseWebError(rawErrorResponse []byte) error {
