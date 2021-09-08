@@ -17,6 +17,7 @@
 package creds
 
 import (
+	"encoding/json"
 	"sync"
 
 	"github.com/netflix/weep/pkg/aws"
@@ -81,11 +82,30 @@ type Credentials struct {
 
 // ConsolemeWebResponse represents the response structure of ConsoleMe's model WebResponse
 type ConsolemeWebResponse struct {
-	Status      string            `json:"status"`
-	Reason      string            `json:"reason"`
-	RedirectURL string            `json:"redirect_url"`
-	StatusCode  int               `json:"status_code"`
-	Message     string            `json:"message"`
-	Errors      []string          `json:"errors"`
-	Data        map[string]string `json:"data"`
+	Status      string                     `json:"status"`
+	Reason      string                     `json:"reason"`
+	RedirectURL string                     `json:"redirect_url"`
+	StatusCode  int                        `json:"status_code"`
+	Message     string                     `json:"message"`
+	Errors      []string                   `json:"errors"`
+	Data        map[string]json.RawMessage `json:"data"`
+}
+
+// ConsolemeEligibleRolesResponse represents the response structure of ConsoleMe's model for detailed eligible roles
+type ConsolemeEligibleRolesResponse struct {
+	Arn           string `json:"arn"`
+	AccountNumber string `json:"account_id"`
+	AccountName   string `json:"account_friendly_name"`
+	RoleName      string `json:"role_name"`
+	Apps          struct {
+		AppDetails []ConsolemeAppDetails `json:"app_details"`
+	} `json:"apps"`
+}
+
+// ConsolemeAppDetails represents the structure of details returned by ConsoleMe about a single app
+type ConsolemeAppDetails struct {
+	Name     string `json:"name"`
+	Owner    string `json:"owner"`
+	OwnerURL string `json:"owner_url"`
+	AppURL   string `json:"app_url"`
 }

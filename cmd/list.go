@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"os"
-	"strconv"
 
 	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
@@ -41,17 +40,15 @@ func roleList() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	roles, err := client.Roles()
+	roles, err := client.RolesExtended()
 	if err != nil {
 		return "", err
 	}
 	var rolesData [][]string
-	// TODO: once corresponding ConsoleMe PR is merged, update to use actual data
-	for i, role := range roles {
-		rolesData = append(rolesData, []string{role, strconv.Itoa((i + 1) * 12345677), "Unknown"})
+	for _, role := range roles {
+		rolesData = append(rolesData, []string{role.AccountName, role.RoleName, role.AccountNumber, role.Arn})
 	}
-	// TODO: once corresponding ConsoleMe PR is merged, update to use actual headers
-	headers := []string{"Role ARN", "Account ID", "Account Friendly name"}
+	headers := []string{"Account Name", "Role Name", "Account ID", "Role ARN"}
 	rolesString := util.RenderTabularData(headers, rolesData)
 	return rolesString, nil
 }
