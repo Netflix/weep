@@ -18,10 +18,10 @@ package cmd
 
 import (
 	"os"
-	"strings"
+	"strconv"
 
 	"github.com/netflix/weep/pkg/creds"
-
+	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +36,7 @@ var listCmd = &cobra.Command{
 	RunE:  runList,
 }
 
-func roleList(all bool) (string, error) {
+func roleList() (string, error) {
 	client, err := creds.GetClient(region)
 	if err != nil {
 		return "", err
@@ -45,25 +45,23 @@ func roleList(all bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var sb strings.Builder
-	if all {
-		sb.WriteString("Available Roles\n")
-	} else {
-		sb.WriteString("Available Console Roles\n")
+	var rolesData [][]string
+	// TODO: once corresponding ConsoleMe PR is merged, update to use actual data
+	for i, role := range roles {
+		rolesData = append(rolesData, []string{role, strconv.Itoa((i + 1) * 12345677), "Unknown"})
 	}
-	for i := range roles {
-		sb.WriteString(roles[i])
-		sb.WriteString("\n")
-	}
-	return sb.String(), nil
+	// TODO: once corresponding ConsoleMe PR is merged, update to use actual headers
+	headers := []string{"Role ARN", "Account ID", "Account Friendly name"}
+	rolesString := util.RenderTabularData(headers, rolesData)
+	return rolesString, nil
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	roles, err := roleList(showAll)
+	rolesData, err := roleList()
 	if err != nil {
 		return err
 	}
 	cmd.SetOut(os.Stdout)
-	cmd.Println(roles)
+	cmd.Println(rolesData)
 	return nil
 }

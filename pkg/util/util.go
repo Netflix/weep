@@ -29,6 +29,7 @@ import (
 
 	"github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/logging"
+	"github.com/olekukonko/tablewriter"
 )
 
 var log = logging.GetLogger()
@@ -185,4 +186,25 @@ func isWSL() bool {
 		}
 	}
 	return false
+}
+
+// RenderTabularData creates a string for given data in a pretty tabular format, with the provided headers
+func RenderTabularData(headers []string, data [][]string) string {
+	tableString := &strings.Builder{}
+	table := tablewriter.NewWriter(tableString)
+	table.SetHeader(headers)
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t")
+	table.SetNoWhiteSpace(true)
+	table.AppendBulk(data)
+	table.Render()
+	return tableString.String()
 }

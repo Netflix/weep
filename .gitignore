@@ -22,3 +22,7 @@ dist/
 # Build files
 build/package/macos/tmp/
 build/package/macos/application/bin/
+
+# Python env (if you have pre-commit installed locally)
+env
+venv
