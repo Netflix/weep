@@ -32,4 +32,5 @@ const (
 	MultipleMatchingRoles          = Error("more than one matching role for search string")
 	NoMatchingRoles                = Error("no matching roles for search string")
 	MalformedRequestError          = Error("malformed request sent to broker")
+	UnexpectedResponseType         = Error("received an unexpected response type")
 )

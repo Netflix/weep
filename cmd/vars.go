@@ -25,6 +25,7 @@ var (
 	destination       string
 	destinationConfig string
 	done              chan int
+	extendedInfo      bool
 	force             bool
 	generate          bool
 	infoDecode        bool
@@ -38,6 +39,7 @@ var (
 	noOpen            bool
 	profileName       string
 	region            string
+	shortInfo         bool
 	showAll           bool
 	shutdown          chan os.Signal
 )

@@ -63,7 +63,7 @@ func PrintWeepInfo(w io.Writer) error {
 		defer closeable.Close()
 	}
 
-	roles, err := roleList(true)
+	roles, err := roleList()
 	if err != nil {
 		log.Errorf("failed to retrieve role list from ConsoleMe: %v", err)
 	} else {

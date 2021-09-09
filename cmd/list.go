@@ -21,11 +21,13 @@ import (
 	"strings"
 
 	"github.com/netflix/weep/pkg/creds"
-
+	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	listCmd.PersistentFlags().BoolVarP(&extendedInfo, "extended-info", "e", false, "include additional information about roles such as associated apps")
+	listCmd.PersistentFlags().BoolVarP(&shortInfo, "short-info", "s", false, "only display the role ARNs")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -36,34 +38,59 @@ var listCmd = &cobra.Command{
 	RunE:  runList,
 }
 
-func roleList(all bool) (string, error) {
+func roleList() (string, error) {
 	client, err := creds.GetClient(region)
 	if err != nil {
 		return "", err
 	}
-	roles, err := client.Roles()
+	roles, err := client.RolesExtended()
 	if err != nil {
 		return "", err
 	}
-	var sb strings.Builder
-	if all {
-		sb.WriteString("Available Roles\n")
+	var rolesData [][]string
+	for _, role := range roles {
+		if shortInfo {
+			rolesData = append(rolesData, []string{role.Arn})
+			continue
+		}
+		curData := []string{role.AccountName, role.RoleName, role.Arn}
+		if extendedInfo {
+			var namesb strings.Builder
+			var ownersb strings.Builder
+			for _, app := range role.Apps.AppDetails {
+				namesb.WriteString(app.Name)
+				namesb.WriteString("\n")
+				ownersb.WriteString(app.Owner)
+				ownersb.WriteString("\n")
+			}
+			appNames := namesb.String()
+			ownerNames := ownersb.String()
+			if len(appNames) > 0 {
+				curData = append(curData, appNames[:len(appNames)-1])
+				curData = append(curData, ownerNames[:len(ownerNames)-1])
+			}
+		}
+		rolesData = append(rolesData, curData)
+	}
+	var headers []string
+	if shortInfo {
+		headers = []string{"Role ARN"}
 	} else {
-		sb.WriteString("Available Console Roles\n")
+		headers = []string{"Account Name", "Role Name", "Role ARN"}
+		if extendedInfo {
+			headers = append(headers, "App", "App Owner")
+		}
 	}
-	for i := range roles {
-		sb.WriteString(roles[i])
-		sb.WriteString("\n")
-	}
-	return sb.String(), nil
+	rolesString := util.RenderTabularData(headers, rolesData)
+	return rolesString, nil
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	roles, err := roleList(showAll)
+	rolesData, err := roleList()
 	if err != nil {
 		return err
 	}
 	cmd.SetOut(os.Stdout)
-	cmd.Println(roles)
+	cmd.Println(rolesData)
 	return nil
 }

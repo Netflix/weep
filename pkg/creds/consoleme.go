@@ -143,8 +143,7 @@ func (c *Client) CloseIdleConnections() {
 	transport.CloseIdleConnections()
 }
 
-// accounts returns all accounts, and allows you to filter the accounts by sub-resources
-// like: /accounts/service/support
+// Roles returns all eligible role ARNs, using v1 of eligible roles endpoint
 func (c *Client) Roles() ([]string, error) {
 	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil, "/api/v1")
 	if err != nil {
@@ -178,7 +177,45 @@ func (c *Client) Roles() ([]string, error) {
 	return roles, nil
 }
 
-// Get resource URL given an ARN, from ConsoleMe
+// RolesExtended returns all eligible role along with additional details, using v2 of eligible roles endpoint
+func (c *Client) RolesExtended() ([]ConsolemeEligibleRolesResponse, error) {
+	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil, "/api/v2")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build request")
+	}
+
+	// Add URL Parameters
+	q := url.Values{}
+	q.Add("all", "true")
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to action request")
+	}
+
+	defer resp.Body.Close()
+	document, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseError(resp.StatusCode, document)
+	}
+
+	var responseParsed ConsolemeWebResponse
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal JSON")
+	}
+	var roles []ConsolemeEligibleRolesResponse
+	if err = json.Unmarshal(responseParsed.Data["roles"], &roles); err != nil {
+		return nil, werrors.UnexpectedResponseType
+	}
+
+	return roles, nil
+}
+
+// GetResourceURL gets resource URL from ConsoleMe given an ARN
 func (c *Client) GetResourceURL(arn string) (string, error) {
 	req, err := c.buildRequest(http.MethodGet, "/get_resource_url", nil, "/api/v2")
 	if err != nil {
@@ -207,7 +244,11 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return "", errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	return config.BaseWebURL() + responseParsed.Data["url"], nil
+	var respURL string
+	if err = json.Unmarshal(responseParsed.Data["url"], &respURL); err != nil {
+		return "", werrors.UnexpectedResponseType
+	}
+	return config.BaseWebURL() + respURL, nil
 }
 
 func parseWebError(rawErrorResponse []byte) error {
