@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"os"
+	"strings"
 
 	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
@@ -25,6 +26,7 @@ import (
 )
 
 func init() {
+	listCmd.PersistentFlags().BoolVarP(&extendedInfo, "extended-info", "e", false, "include additional information about roles such as associated apps")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -46,9 +48,29 @@ func roleList() (string, error) {
 	}
 	var rolesData [][]string
 	for _, role := range roles {
-		rolesData = append(rolesData, []string{role.AccountName, role.RoleName, role.AccountNumber, role.Arn})
+		curData := []string{role.AccountName, role.RoleName, role.AccountNumber, role.Arn}
+		if extendedInfo {
+			var namesb strings.Builder
+			var ownersb strings.Builder
+			for _, app := range role.Apps.AppDetails {
+				namesb.WriteString(app.Name)
+				namesb.WriteString("\n")
+				ownersb.WriteString(app.Owner)
+				ownersb.WriteString("\n")
+			}
+			appNames := namesb.String()
+			ownerNames := ownersb.String()
+			if len(appNames) > 0 {
+				curData = append(curData, appNames[:len(appNames)-1])
+				curData = append(curData, ownerNames[:len(ownerNames)-1])
+			}
+		}
+		rolesData = append(rolesData, curData)
 	}
 	headers := []string{"Account Name", "Role Name", "Account ID", "Role ARN"}
+	if extendedInfo {
+		headers = append(headers, "App", "App Owner")
+	}
 	rolesString := util.RenderTabularData(headers, rolesData)
 	return rolesString, nil
 }

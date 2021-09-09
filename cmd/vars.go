@@ -25,6 +25,7 @@ var (
 	destination       string
 	destinationConfig string
 	done              chan int
+	extendedInfo      bool
 	force             bool
 	generate          bool
 	infoDecode        bool

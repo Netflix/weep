@@ -193,7 +193,7 @@ func RenderTabularData(headers []string, data [][]string) string {
 	tableString := &strings.Builder{}
 	table := tablewriter.NewWriter(tableString)
 	table.SetHeader(headers)
-	table.SetAutoWrapText(false)
+	table.SetAutoWrapText(true)
 	table.SetAutoFormatHeaders(true)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
