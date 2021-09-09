@@ -95,7 +95,7 @@ func (wc *wrappedCertificate) autoRefresh() {
 
 	// this channel will block the autoRefresh function from returning until
 	// it's time for the program to exit (i.e. on an OS interrupt)
-	interrupt := make(chan os.Signal)
+	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	// fsnotify gives us a buuuunch of events when a refresh is done, so this
