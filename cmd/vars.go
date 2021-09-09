@@ -39,6 +39,7 @@ var (
 	noOpen            bool
 	profileName       string
 	region            string
+	shortInfo         bool
 	showAll           bool
 	shutdown          chan os.Signal
 )

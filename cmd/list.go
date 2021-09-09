@@ -27,6 +27,7 @@ import (
 
 func init() {
 	listCmd.PersistentFlags().BoolVarP(&extendedInfo, "extended-info", "e", false, "include additional information about roles such as associated apps")
+	listCmd.PersistentFlags().BoolVarP(&shortInfo, "short-info", "s", false, "only display the role ARNs")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -48,7 +49,11 @@ func roleList() (string, error) {
 	}
 	var rolesData [][]string
 	for _, role := range roles {
-		curData := []string{role.AccountName, role.RoleName, role.AccountNumber, role.Arn}
+		if shortInfo {
+			rolesData = append(rolesData, []string{role.Arn})
+			continue
+		}
+		curData := []string{role.AccountName, role.RoleName, role.Arn}
 		if extendedInfo {
 			var namesb strings.Builder
 			var ownersb strings.Builder
@@ -67,9 +72,14 @@ func roleList() (string, error) {
 		}
 		rolesData = append(rolesData, curData)
 	}
-	headers := []string{"Account Name", "Role Name", "Account ID", "Role ARN"}
-	if extendedInfo {
-		headers = append(headers, "App", "App Owner")
+	var headers []string
+	if shortInfo {
+		headers = []string{"Role ARN"}
+	} else {
+		headers = []string{"Account Name", "Role Name", "Role ARN"}
+		if extendedInfo {
+			headers = append(headers, "App", "App Owner")
+		}
 	}
 	rolesString := util.RenderTabularData(headers, rolesData)
 	return rolesString, nil
