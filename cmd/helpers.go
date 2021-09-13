@@ -66,13 +66,13 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 			maxLen = len(role.AccountName)
 		}
 	}
-
+	maxLenS := strconv.Itoa(maxLen)
 	for _, role := range rolesExtended {
 		account := role.AccountName
 		if account == "Unknown" {
 			account = role.AccountNumber
 		}
-		account = fmt.Sprintf("%-"+strconv.Itoa(maxLen)+"s", account)
+		account = fmt.Sprintf("%-"+maxLenS+"s", account)
 		roles = append(roles, account+"\t"+role.RoleName)
 		// So users can search <account friendly name> <role> or <role> <account friendly name>
 		rolesSearch = append(rolesSearch, role.AccountName+role.Arn+role.AccountName)
