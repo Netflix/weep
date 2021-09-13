@@ -80,7 +80,7 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 
 	// Prompt the user
 	prompt := promptui.Select{
-		Label: "Select Role",
+		Label: "You can search for role name or account name/number or a combination of the two, e.g. prod appname",
 		Items: roles,
 		Size:  16,
 		Searcher: func(input string, index int) bool {
@@ -90,13 +90,12 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 		},
 		StartInSearchMode: true,
 	}
-
-	_, role, err := prompt.Run()
+	idx, _, err := prompt.Run()
 	if err != nil {
 		return "", err
 	}
 
-	return role, nil
+	return rolesExtended[idx].Arn, nil
 }
 
 func isRunningInTerminal() bool {
