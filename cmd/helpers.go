@@ -19,6 +19,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/lithammer/fuzzysearch/fuzzy"
@@ -53,28 +54,48 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 	}
 
 	// Retrieve the list of roles
-	roles, err := client.Roles()
+	rolesExtended, err := client.RolesExtended()
 	if err != nil {
 		return "", err
+	}
+	var roles []string
+	var rolesSearch []string
+	maxLen := 12
+	for _, role := range rolesExtended {
+		if len(role.AccountName) > maxLen {
+			maxLen = len(role.AccountName)
+		}
+	}
+	maxLenS := strconv.Itoa(maxLen)
+	for _, role := range rolesExtended {
+		account := role.AccountName
+		if account == "Unknown" {
+			account = role.AccountNumber
+		}
+		account = fmt.Sprintf("%-"+maxLenS+"s", account)
+		roles = append(roles, account+"\t"+role.RoleName)
+		// So users can search <account friendly name> <role> or <role> <account friendly name>
+		rolesSearch = append(rolesSearch, role.AccountName+role.Arn+role.AccountName)
 	}
 
 	// Prompt the user
 	prompt := promptui.Select{
-		Label: "Select Role",
+		Label: "You can search for role name or account name/number or a combination of the two, e.g. prod appname",
 		Items: roles,
-		Size:  16,
+		Size:  10,
 		Searcher: func(input string, index int) bool {
-			return fuzzy.MatchNormalized(strings.ToLower(input), strings.ToLower(roles[index]))
+			// filter out all spaces
+			input = strings.ReplaceAll(input, " ", "")
+			return fuzzy.MatchNormalizedFold(input, rolesSearch[index])
 		},
 		StartInSearchMode: true,
 	}
-
-	_, role, err := prompt.Run()
+	idx, _, err := prompt.Run()
 	if err != nil {
 		return "", err
 	}
 
-	return role, nil
+	return rolesExtended[idx].Arn, nil
 }
 
 func isRunningInTerminal() bool {
