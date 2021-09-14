@@ -82,7 +82,7 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 	prompt := promptui.Select{
 		Label: "You can search for role name or account name/number or a combination of the two, e.g. prod appname",
 		Items: roles,
-		Size:  16,
+		Size:  10,
 		Searcher: func(input string, index int) bool {
 			// filter out all spaces
 			input = strings.ReplaceAll(input, " ", "")
