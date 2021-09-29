@@ -77,3 +77,10 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 	log.Debug("logging configured")
 	return nil
 }
+
+// TODO: set flag and don't stomp on custom logger
+// RegisterLogger a custom logger
+func RegisterLogger(l *logrus.Logger) {
+	log = l
+	print("Register\n")
+}
