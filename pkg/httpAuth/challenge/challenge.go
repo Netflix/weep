@@ -43,8 +43,6 @@ import (
 	"github.com/manifoldco/promptui"
 
 	"github.com/spf13/viper"
-
-	"github.com/golang/glog"
 )
 
 func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
@@ -296,7 +294,7 @@ func RefreshChallenge() error {
 			)
 		}
 	} else {
-		glog.Infoln("Please open the above URL in a browser and authenticate.")
+		logging.Log.Infoln("Please open the above URL in a browser and authenticate.")
 	}
 
 	// Step 3: Continue polling backend to see if request has been authenticated yet. Poll every 3 seconds for 2 minutes

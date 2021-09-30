@@ -6,7 +6,6 @@ require (
 	github.com/aws/aws-sdk-go v1.40.39
 	github.com/bep/debounce v1.2.0
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/golang/glog v1.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/kardianos/service v1.2.0
 	github.com/lithammer/fuzzysearch v1.1.2
