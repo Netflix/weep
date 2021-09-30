@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"github.com/netflix/weep/pkg/logging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
@@ -29,7 +30,7 @@ var docCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := doc.GenMarkdownTree(rootCmd, "./docs/")
 		if err != nil {
-			log.Fatal(err)
+			logging.Log.Fatal(err)
 		}
 	},
 }

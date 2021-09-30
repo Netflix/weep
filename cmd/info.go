@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/metadata"
 
 	"gopkg.in/yaml.v2"
@@ -39,7 +41,7 @@ var infoCmd = &cobra.Command{
 func marshalStruct(obj interface{}) []byte {
 	out, err := yaml.Marshal(obj)
 	if err != nil {
-		log.Errorf("failed to marshal struct: %v", err)
+		logging.Log.Errorf("failed to marshal struct: %v", err)
 		return nil
 	}
 	return out
@@ -65,7 +67,7 @@ func PrintWeepInfo(w io.Writer) error {
 
 	roles, err := roleList()
 	if err != nil {
-		log.Errorf("failed to retrieve role list from ConsoleMe: %v", err)
+		logging.Log.Errorf("failed to retrieve role list from ConsoleMe: %v", err)
 	} else {
 		_, _ = writer.Write([]byte(roles))
 	}

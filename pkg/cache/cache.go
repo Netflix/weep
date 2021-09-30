@@ -28,7 +28,6 @@ import (
 )
 
 var GlobalCache CredentialCache
-var log = logging.GetLogger()
 
 type CredentialCache struct {
 	sync.RWMutex
@@ -49,13 +48,13 @@ func getCacheSlug(role string, assume []string) string {
 }
 
 func (cc *CredentialCache) Get(searchString string, assumeChain []string) (*creds.RefreshableProvider, error) {
-	log.WithFields(logrus.Fields{
+	logging.Log.WithFields(logrus.Fields{
 		"searchString": searchString,
 		"assumeChain":  assumeChain,
 	}).Info("retrieving credentials")
 	c, ok := cc.get(getCacheSlug(searchString, assumeChain))
 	if ok {
-		log.Debugf("found credentials for %s in cache", searchString)
+		logging.Log.Debugf("found credentials for %s in cache", searchString)
 		return c, nil
 	}
 	return nil, errors.NoCredentialsFoundInCache
@@ -66,7 +65,7 @@ func (cc *CredentialCache) GetOrSet(client creds.HTTPClient, role, region string
 	if err == nil {
 		return c, nil
 	}
-	log.Debugf("no credentials for %s in cache, creating", role)
+	logging.Log.Debugf("no credentials for %s in cache, creating", role)
 
 	c, err = cc.set(client, role, region, assumeChain)
 	if err != nil {
@@ -99,7 +98,7 @@ func (cc *CredentialCache) GetDefault() (*creds.RefreshableProvider, error) {
 func (cc *CredentialCache) DefaultLastUpdated() string {
 	c, err := cc.GetDefault()
 	if err != nil {
-		log.Debugf("cannot get last updated time of default creds: %v", err)
+		logging.Log.Debugf("cannot get last updated time of default creds: %v", err)
 		return ""
 	}
 	return c.LastRefreshed.UTC().Format("2006-01-02T15:04:05Z")
@@ -108,7 +107,7 @@ func (cc *CredentialCache) DefaultLastUpdated() string {
 func (cc *CredentialCache) DefaultArn() string {
 	c, err := cc.GetDefault()
 	if err != nil {
-		log.Debugf("cannot get arn of default creds: %v", err)
+		logging.Log.Debugf("cannot get arn of default creds: %v", err)
 		return ""
 	}
 	return c.RoleArn

@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/cache"
 	"github.com/netflix/weep/pkg/metadata"
 	"github.com/netflix/weep/pkg/util"
@@ -60,6 +62,6 @@ func InstanceIdentityDocumentHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewEncoder(w).Encode(identityDocument)
 	if err != nil {
-		log.Errorf("failed to write response: %v", err)
+		logging.Log.Errorf("failed to write response: %v", err)
 	}
 }

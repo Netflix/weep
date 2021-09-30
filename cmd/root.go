@@ -42,7 +42,6 @@ var (
 			metadata.SetWeepMethod(cmd.CalledAs())
 		},
 	}
-	log = logging.GetLogger()
 )
 
 func init() {
@@ -57,13 +56,13 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
 	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", viper.GetString("aws.region"), "AWS region")
 	if err := viper.BindPFlag("log_level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 	if err := viper.BindPFlag("log_file", rootCmd.PersistentFlags().Lookup("log-file")); err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 	if err := viper.BindPFlag("log_format", rootCmd.PersistentFlags().Lookup("log-format")); err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 }
 
@@ -86,7 +85,7 @@ func Execute() error {
 
 func initConfig() {
 	if err := config.InitConfig(cfgFile); err != nil {
-		log.Fatalf("failed to initialize config: %v", err)
+		logging.Log.Fatalf("failed to initialize config: %v", err)
 	}
 }
 
@@ -94,6 +93,6 @@ func initConfig() {
 func updateLoggingConfig() {
 	err := logging.UpdateConfig(logLevel, logFormat, logFile)
 	if err != nil {
-		log.Errorf("failed to configure logger: %v", err)
+		logging.Log.Errorf("failed to configure logger: %v", err)
 	}
 }

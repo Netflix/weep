@@ -20,11 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/util"
 )
-
-var log = logging.GetLogger()
 
 func BaseHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -29,8 +29,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var log = logging.GetLogger()
-
 func init() {
 	// Set default configuration values here
 	viper.SetTypeByDefaultValue(true)
@@ -83,7 +81,7 @@ func InitConfig(filename string) error {
 	if filename != "" {
 		viper.SetConfigFile(filename)
 		if err := viper.ReadInConfig(); err != nil {
-			log.Errorf("could not open config file %s: %v", filename, err)
+			logging.Log.Errorf("could not open config file %s: %v", filename, err)
 			return err
 		}
 		return nil
@@ -91,7 +89,7 @@ func InitConfig(filename string) error {
 
 	// Read embedded config if available
 	if err := ReadEmbeddedConfig(); err != nil {
-		log.Debugf("unable to read embedded config: %v", err)
+		logging.Log.Debugf("unable to read embedded config: %v", err)
 	}
 
 	configLocations := []string{
@@ -109,14 +107,14 @@ func InitConfig(filename string) error {
 	// TODO: revisit first-run setup
 	//if err := viper.MergeInConfig(); err != nil {
 	//	if _, ok := err.(viper.ConfigFileNotFoundError); ok && config.EmbeddedConfigFile != "" {
-	//		log.Debugf("no config file found, trying to use embedded config")
+	//		logging.Log.Debugf("no config file found, trying to use embedded config")
 	//	} else if isatty.IsTerminal(os.Stdout.Fd()) {
 	//		err = util.FirstRunPrompt()
 	//		if err != nil {
-	//			log.Fatalf("config bootstrap failed: %v", err)
+	//			logging.Log.Fatalf("config bootstrap failed: %v", err)
 	//		}
 	//	} else {
-	//		log.Debugf("unable to read config file: %v", err)
+	//		logging.Log.Debugf("unable to read config file: %v", err)
 	//	}
 	//}
 

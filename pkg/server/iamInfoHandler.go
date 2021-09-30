@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/cache"
 	"github.com/netflix/weep/pkg/util"
 )
@@ -39,6 +41,6 @@ func IamInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewEncoder(w).Encode(iamInfo)
 	if err != nil {
-		log.Errorf("failed to write response: %v", err)
+		logging.Log.Errorf("failed to write response: %v", err)
 	}
 }

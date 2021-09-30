@@ -23,8 +23,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/netflix/weep/pkg/config"
 	"github.com/netflix/weep/pkg/logging"
+
+	"github.com/netflix/weep/pkg/config"
 	"github.com/netflix/weep/pkg/util"
 
 	"github.com/spf13/viper"
@@ -36,8 +37,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 )
 
-var log = logging.GetLogger()
-
 var tlsConfig *tls.Config
 
 func init() {
@@ -45,7 +44,7 @@ func init() {
 		var err error
 		tlsConfig, err = getTLSConfig()
 		if err != nil {
-			log.Fatalf("could not initialize mtls: %v", err)
+			logging.Log.Fatalf("could not initialize mtls: %v", err)
 		}
 	}
 }
@@ -72,7 +71,7 @@ func getTLSConfig() (*tls.Config, error) {
 
 func makeTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config, error) {
 	if certFile == "" || keyFile == "" || caFile == "" {
-		log.Error("MTLS cert, key, or CA file not defined in configuration")
+		logging.Log.Error("MTLS cert, key, or CA file not defined in configuration")
 		return nil, MissingTLSConfigError
 	}
 	caCert, _ := ioutil.ReadFile(caFile)

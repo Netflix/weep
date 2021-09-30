@@ -33,6 +33,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/config"
 	"github.com/netflix/weep/pkg/util"
 
@@ -43,13 +45,12 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/golang/glog"
-	log "github.com/sirupsen/logrus"
 )
 
 func NewHTTPClient(consolemeUrl string) (*http.Client, error) {
 	existingChallengeBody, err := getChallenge()
 	if err != nil {
-		log.Debugf("unable to read existing challenge file: %v", err)
+		logging.Log.Debugf("unable to read existing challenge file: %v", err)
 
 	}
 	if !HasValidJwt(existingChallengeBody) {
@@ -213,7 +214,7 @@ func RefreshChallenge() error {
 	existingChallengeBody, err := getChallenge()
 	var userName = viper.GetString("challenge_settings.user")
 	if err != nil {
-		log.Debugf("unable to read existing challenge file: %v", err)
+		logging.Log.Debugf("unable to read existing challenge file: %v", err)
 
 	}
 	// If credentials are still valid, no need to refresh them.
@@ -261,7 +262,7 @@ func RefreshChallenge() error {
 		return err
 	}
 
-	log.Infof("Opening browser to Challenge URL location: %s", challenge.ChallengeURL)
+	logging.Log.Infof("Opening browser to Challenge URL location: %s", challenge.ChallengeURL)
 
 	// Step 2: Make a web request to ChallengeUrl with user's browser
 	var openUrlCommand []string = nil
@@ -285,11 +286,11 @@ func RefreshChallenge() error {
 			err = cmd.Wait()
 		}
 		if err != nil {
-			log.Errorf("Failed to open browser with '%s': %s.",
+			logging.Log.Errorf("Failed to open browser with '%s': %s.",
 				openUrlCommand[0], err.Error())
-			log.Infoln("*** Could not launch browser window.  Open the above link manually to continue. ***")
+			logging.Log.Infoln("*** Could not launch browser window.  Open the above link manually to continue. ***")
 		} else {
-			log.Infoln(
+			logging.Log.Infoln(
 				"Validation opened in a new browser window. ",
 				"Please check your browser for further authentication steps.",
 			)

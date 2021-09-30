@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/errors"
 )
 
@@ -59,7 +61,7 @@ func (c *tokenCache) startWatcher() {
 func (c *tokenCache) clean() {
 	for token, attr := range c.TokenMap {
 		if attr.Expiration.Before(time.Now()) {
-			log.Debugf("deleting token with expiration %v", attr.Expiration)
+			logging.Log.Debugf("deleting token with expiration %v", attr.Expiration)
 			c.delete(token)
 		}
 	}
@@ -74,11 +76,11 @@ func (c *tokenCache) generateToken(role string, ttlSeconds int) string {
 func (c *tokenCache) checkToken(token string) (bool, int) {
 	attr, err := sessions.Get(token)
 	if err != nil {
-		log.Warning("invalid session token")
+		logging.Log.Warning("invalid session token")
 		return false, 0
 	}
 	if attr.Expiration.Before(time.Now()) {
-		log.Warning("session token is expired")
+		logging.Log.Warning("session token is expired")
 		return false, 0
 	}
 	remainingTtl := time.Now().Sub(attr.Expiration)

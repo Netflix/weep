@@ -3,6 +3,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/spf13/viper"
 
 	"github.com/kardianos/service"
@@ -44,7 +46,7 @@ func runWeepServiceControl(cmd *cobra.Command, args []string) error {
 		}
 		cmd.Printf("successfully ran service %s\n", args[0])
 	}
-	log.Debug("sending done signal")
+	logging.Log.Debug("sending done signal")
 	done <- 0
 	return nil
 }
@@ -58,13 +60,13 @@ func (p *program) Start(s service.Service) error {
 
 func (p *program) run() {
 	var err error
-	log.Info("starting weep service!")
+	logging.Log.Info("starting weep service!")
 	exitCode := 0
 
 	flags := viper.GetStringSlice("service.args")
 	err = rootCmd.ParseFlags(flags)
 	if err != nil {
-		log.Errorf("could not parse flags: %v", err)
+		logging.Log.Errorf("could not parse flags: %v", err)
 	}
 
 	args := viper.GetStringSlice("service.args")
@@ -74,25 +76,25 @@ func (p *program) run() {
 	case "serve":
 		err = runWeepServer(nil, args)
 		if err != nil {
-			log.Error(err)
+			logging.Log.Error(err)
 			exitCode = 1
 		}
 	default:
-		log.Error("unknown command: ", command)
+		logging.Log.Error("unknown command: ", command)
 		exitCode = 1
 	}
-	log.Debug("sending done signal")
+	logging.Log.Debug("sending done signal")
 	done <- exitCode
 }
 
 func (p *program) Stop(s service.Service) error {
 	// Send an interrupt to the shutdown channel so everything will clean itself up
 	// This is seemingly only necessary on Windows, but it shouldn't hurt anything on other platforms.
-	log.Debug("got service stop, sending interrupt")
+	logging.Log.Debug("got service stop, sending interrupt")
 	shutdown <- os.Interrupt
 
 	// Wait for whatever is running to signal that it's done
-	log.Debug("waiting for done signal")
+	logging.Log.Debug("waiting for done signal")
 	<-done
 	return nil
 }
@@ -118,13 +120,13 @@ func initService() {
 
 	weepService, err = service.New(svcProgram, svcConfig)
 	if err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 
 	errs := make(chan error, 5)
 	svcLogger, err = weepService.Logger(errs)
 	if err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 
 	go func() {
