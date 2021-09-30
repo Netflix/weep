@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/server"
 	"github.com/spf13/viper"
 
@@ -27,10 +28,10 @@ func init() {
 	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", viper.GetString("server.address"), "IP address for the ECS credential provider to listen on")
 	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.port"), "port for the ECS credential provider service to listen on")
 	if err := viper.BindPFlag("server.address", serveCmd.PersistentFlags().Lookup("listen-address")); err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 	if err := viper.BindPFlag("server.port", serveCmd.PersistentFlags().Lookup("port")); err != nil {
-		log.Fatal(err)
+		logging.Log.Fatal(err)
 	}
 	rootCmd.AddCommand(serveCmd)
 }

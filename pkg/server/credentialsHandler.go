@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/cache"
 	"github.com/netflix/weep/pkg/util"
 )
@@ -32,20 +34,20 @@ func RoleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err := w.Write([]byte(fmt.Sprintf("%s\n", defaultRole.RoleName))); err != nil {
-		log.Errorf("failed to write response: %v", err)
+		logging.Log.Errorf("failed to write response: %v", err)
 	}
 }
 
 func IMDSHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := cache.GlobalCache.GetDefault()
 	if err != nil {
-		log.Errorf("could not get credentials from cache: %e", err)
+		logging.Log.Errorf("could not get credentials from cache: %e", err)
 		util.WriteError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	credentials, err := c.Retrieve()
 	if err != nil {
-		log.Errorf("could not get credentials: %e", err)
+		logging.Log.Errorf("could not get credentials: %e", err)
 		util.WriteError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -62,6 +64,6 @@ func IMDSHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewEncoder(w).Encode(credentialResponse)
 	if err != nil {
-		log.Errorf("failed to write response: %v", err)
+		logging.Log.Errorf("failed to write response: %v", err)
 	}
 }

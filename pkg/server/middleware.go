@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/session"
 	"github.com/netflix/weep/pkg/util"
 
@@ -49,12 +51,12 @@ func TokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		token := r.Header.Get("x-aws-ec2-metadata-token")
 		if token != "" {
 			if ok, remainingTtl = session.CheckToken(token); !ok {
-				log.Debug("token invalid")
+				logging.Log.Debug("token invalid")
 				util.WriteError(w, "invalid session token", http.StatusForbidden)
 				return
 			}
 		} else if token == "" && viper.GetBool("server.enforce_imdsv2") {
-			log.Info("request forbidden, imdsv2 required")
+			logging.Log.Info("request forbidden, imdsv2 required")
 			util.WriteError(w, "IMDSv2 required, please upgrade your SDK or CLI", http.StatusForbidden)
 			return
 		}
@@ -86,7 +88,7 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			metadataVersion = 2
 		}
 
-		log.WithFields(logrus.Fields{
+		logging.Log.WithFields(logrus.Fields{
 			"user-agent":       ua,
 			"path":             r.URL.Path,
 			"metadata_version": metadataVersion,
@@ -119,7 +121,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		userAgent := r.Header.Get("User-Agent")
 		userAgent = strings.ToLower(userAgent)
 		if strings.Contains(userAgent, "mozilla") {
-			log.Warn("bad user-agent detected")
+			logging.Log.Warn("bad user-agent detected")
 			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
 		}
@@ -128,7 +130,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// These also indicate a likely browser request
 		for h, _ := range r.Header {
 			if deniedHeaders[strings.ToLower(h)] {
-				log.Warnf("%s header detected", h)
+				logging.Log.Warnf("%s header detected", h)
 				util.WriteError(w, "forbidden", http.StatusForbidden)
 				return
 			}
@@ -137,7 +139,7 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Check host header
 		// This should only be 127.0.0.1 or 169.254.169.254
 		if host := r.Header.Get("Host"); host != "" && !allowedHosts[strings.ToLower(host)] {
-			log.Warn("bad host detected")
+			logging.Log.Warn("bad host detected")
 			util.WriteError(w, "forbidden", http.StatusForbidden)
 			return
 		}

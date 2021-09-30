@@ -32,8 +32,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-var log = logging.GetLogger()
-
 type AwsArn struct {
 	Arn               string
 	Partition         string
@@ -96,7 +94,7 @@ func (a AwsArn) ArnString() string {
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {
-		log.Debugf("failed to stat file %s: %v", path, err)
+		logging.Log.Debugf("failed to stat file %s: %v", path, err)
 	}
 	return err == nil
 }
@@ -126,11 +124,11 @@ func CreateFile(filename string, directoryPerm, filePerm fs.FileMode) error {
 // WriteError writes a status code and plaintext error to the provided http.ResponseWriter.
 // The error is written as plaintext so AWS SDKs will display it inline with an error message.
 func WriteError(w http.ResponseWriter, message string, status int) {
-	log.Debugf("writing HTTP error response: %s", message)
+	logging.Log.Debugf("writing HTTP error response: %s", message)
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(message))
 	if err != nil {
-		log.Errorf("could not write error response: %s", err)
+		logging.Log.Errorf("could not write error response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -169,7 +167,7 @@ func OpenLink(link string) error {
 		if err != nil {
 			return err
 		} else {
-			log.Infoln("Link opened in a new browser window.")
+			logging.Log.Infoln("Link opened in a new browser window.")
 		}
 	} else {
 		return errors.BrowserOpenError

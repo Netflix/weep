@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/session"
 	"github.com/netflix/weep/pkg/util"
 
@@ -30,7 +32,7 @@ import (
 func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	ttlString := r.Header.Get("X-aws-ec2-metadata-token-ttl-seconds")
 	ttlSeconds, err := strconv.Atoi(ttlString)
-	log.WithFields(logrus.Fields{
+	logging.Log.WithFields(logrus.Fields{
 		"ttlSeconds": ttlSeconds,
 	}).Debug("generating IMDSv2 token")
 	if err != nil {

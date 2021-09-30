@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/spf13/viper"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -27,23 +29,20 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/netflix/weep/pkg/logging"
 )
-
-var log = logging.GetLogger()
 
 // getSessionName returns the AWS session name, or defaults to weep if we can't find one.
 func getSessionName(session *sts.STS) string {
 	identity, err := session.GetCallerIdentity(&sts.GetCallerIdentityInput{})
 	if err != nil {
-		log.Warnf("could not get user identity; defaulting to weep: %s", err)
+		logging.Log.Warnf("could not get user identity; defaulting to weep: %s", err)
 		return "weep"
 	}
 
 	// split identity.UserId on colon, which should give us a 2-element slice with the principal ID and session name
 	splitId := strings.Split(*identity.UserId, ":")
 	if len(splitId) < 2 {
-		log.Warnf("session name not found; defaulting to weep")
+		logging.Log.Warnf("session name not found; defaulting to weep")
 		return "weep"
 	}
 

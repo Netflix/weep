@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/health"
 )
 
@@ -28,6 +30,6 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
-		log.Errorf("error writing healthcheck response: %v", err)
+		logging.Log.Errorf("error writing healthcheck response: %v", err)
 	}
 }

@@ -43,7 +43,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var log = logging.GetLogger()
 var clientVersion = fmt.Sprintf("%s", metadata.Version)
 
 var userAgent = "weep/" + clientVersion + " Go-http-client/1.1"
@@ -281,10 +280,10 @@ func parseError(statusCode int, rawErrorResponse []byte) error {
 	case "905":
 		return werrors.MutualTLSCertNeedsRefreshError
 	case "invalid_jwt":
-		log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
+		logging.Log.Errorf("Authentication is invalid or has expired. Please restart weep to re-authenticate.")
 		err := challenge.DeleteLocalWeepCredentials()
 		if err != nil {
-			log.Errorf("failed to delete credentials: %v", err)
+			logging.Log.Errorf("failed to delete credentials: %v", err)
 		}
 		return werrors.InvalidJWT
 	default:

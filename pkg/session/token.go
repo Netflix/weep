@@ -1,11 +1,6 @@
 package session
 
-import (
-	"github.com/netflix/weep/pkg/logging"
-)
-
 var sessions *tokenCache
-var log = logging.GetLogger()
 
 func init() {
 	sessions = createCache()

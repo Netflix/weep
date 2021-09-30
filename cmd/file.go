@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/aws"
 
 	"github.com/netflix/weep/pkg/creds"
@@ -61,7 +63,7 @@ func runFile(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if autoRefresh {
-		log.Infof("starting automatic file refresh for %s", role)
+		logging.Log.Infof("starting automatic file refresh for %s", role)
 		go fileRefresher(role, profileName, destination, noIpRestrict, assumeRole)
 		<-shutdown
 	}
@@ -86,18 +88,18 @@ func fileRefresher(role, profile, filename string, noIpRestrict bool, assumeRole
 	for {
 		select {
 		case _ = <-ticker.C:
-			log.Debug("checking credentials")
+			logging.Log.Debug("checking credentials")
 			expiring, err := isExpiring(filename, profile, 10)
 			if err != nil {
-				log.Errorf("error checking credential expiration: %v", err)
+				logging.Log.Errorf("error checking credential expiration: %v", err)
 			}
 			if expiring {
-				log.Info("credentials are expiring soon, refreshing...")
+				logging.Log.Info("credentials are expiring soon, refreshing...")
 				err = updateCredentialsFile(role, profile, filename, noIpRestrict, assumeRole)
 				if err != nil {
-					log.Errorf("error updating credentials: %v", err)
+					logging.Log.Errorf("error updating credentials: %v", err)
 				} else {
-					log.Info("credentials refreshed!")
+					logging.Log.Info("credentials refreshed!")
 				}
 			}
 		}
@@ -107,7 +109,7 @@ func fileRefresher(role, profile, filename string, noIpRestrict bool, assumeRole
 func getDefaultCredentialsFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		log.Fatal("couldn't get default directory")
+		logging.Log.Fatal("couldn't get default directory")
 	}
 	return path.Join(home, ".aws", "credentials")
 }
@@ -115,7 +117,7 @@ func getDefaultCredentialsFile() string {
 func getDefaultAwsConfigFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		log.Fatal("couldn't get default directory")
+		logging.Log.Fatal("couldn't get default directory")
 	}
 	return path.Join(home, ".aws", "config")
 }
@@ -151,12 +153,12 @@ func isExpiring(filename, profile string, thresholdMinutes int) (bool, error) {
 	expirationTime := time.Unix(expirationInt, 0)
 	diff := time.Duration(thresholdMinutes) * time.Minute
 	timeUntilExpiration := expirationTime.Sub(time.Now()).Round(0)
-	log.Debugf("%s until expiration, refresh threshold is %s", timeUntilExpiration, diff)
+	logging.Log.Debugf("%s until expiration, refresh threshold is %s", timeUntilExpiration, diff)
 	if timeUntilExpiration < diff {
-		log.Debug("will refresh")
+		logging.Log.Debug("will refresh")
 		return true, nil
 	}
-	log.Debug("will not refresh")
+	logging.Log.Debug("will not refresh")
 	return false, nil
 }
 

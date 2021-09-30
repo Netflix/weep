@@ -29,7 +29,6 @@ var (
 	certFingerprint  string
 	weepMethod       string
 	weepStartupTime  time.Time
-	log              = logging.GetLogger()
 )
 
 func init() {
@@ -76,7 +75,7 @@ func SetWeepMethod(command string) {
 func hostname() string {
 	h, err := os.Hostname()
 	if err != nil {
-		log.Errorf("failed to get hostname: %v", err)
+		logging.Log.Errorf("failed to get hostname: %v", err)
 	}
 	return h
 }
@@ -84,7 +83,7 @@ func hostname() string {
 func username() string {
 	u, err := user.Current()
 	if err != nil {
-		log.Errorf("failed to get username: %v", err)
+		logging.Log.Errorf("failed to get username: %v", err)
 	}
 	return u.Username
 }
