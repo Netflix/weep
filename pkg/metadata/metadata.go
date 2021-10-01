@@ -21,6 +21,8 @@ import (
 	"os/user"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/pkg/logging"
 )
 
@@ -48,6 +50,10 @@ func GetInstanceInfo() *InstanceInfo {
 		WeepMethod:            weepMethod,
 	}
 	return currentInstanceInfo
+}
+
+func GetBasicMetadata() logrus.Fields {
+	return logrus.Fields{"hostname": hostname(), "username": username(), "version": Version, "method": weepMethod}
 }
 
 func StartupTime() string {

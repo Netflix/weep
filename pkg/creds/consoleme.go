@@ -67,8 +67,6 @@ type Client struct {
 
 // GetClient creates an authenticated ConsoleMe client
 func GetClient(region string) (*Client, error) {
-	cuslog := logging.GetLogger()
-	cuslog.Infoln("Getting client test Jay")
 	var client *Client
 	consoleMeUrl := viper.GetString("consoleme_url")
 	authenticationMethod := viper.GetString("authentication_method")

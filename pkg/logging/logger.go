@@ -12,22 +12,24 @@ import (
 
 var Log *logrus.Logger
 
+var customLoggerRegistered bool
+
 func init() {
 	Log = &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
 		Level:     logrus.InfoLevel,
 	}
+	customLoggerRegistered = false
 }
-
-// GetLogger returns the configured logger for use by the rest of the application.
-//func GetLogger() *logrus.Logger {
-//	return Log
-//}
 
 // UpdateConfig overrides the default logging settings. This function is meant to be
 // used during CLI initialization to update the logger based on config file and CLI args.
 func UpdateConfig(logLevel string, logFormat string, logFile string) error {
+	// Custom logger was registered, don't overwrite logger format
+	if customLoggerRegistered {
+		return nil
+	}
 	// Set the Log level and default to INFO
 	switch logLevel {
 	case "error":
@@ -78,9 +80,8 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 	return nil
 }
 
-// TODO: set flag and don't stomp on custom logger
 // RegisterLogger a custom logger
 func RegisterLogger(l *logrus.Logger) {
-	log = l
-	print("Register\n")
+	Log = l
+	customLoggerRegistered = true
 }
