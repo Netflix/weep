@@ -3,8 +3,10 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/netflix/weep/pkg/logging"
+	"github.com/netflix/weep/pkg/reachability"
 
 	"github.com/netflix/weep/pkg/health"
 )
@@ -22,6 +24,12 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		status = http.StatusInternalServerError
 	}
+
+	reachabilityFlag := r.URL.Query().Get("reachability")
+	if b, err := strconv.ParseBool(reachabilityFlag); err == nil && b {
+		reachability.Notify()
+	}
+
 	resp := healthcheckResponse{
 		Status:  status,
 		Message: reason,
