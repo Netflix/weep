@@ -69,12 +69,13 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		logging.Log.Fatalf("listen failed: %v", err)
+		logging.Log.Errorf("listen failed: %v", err)
+		return err
 	}
 
 	go func() {
 		if err := srv.Serve(ln); err != nil {
-			logging.Log.Fatalf("server failed: %v", err)
+			logging.Log.Errorf("server failed: %v", err)
 		}
 	}()
 
