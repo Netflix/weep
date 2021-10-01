@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/cache"
 	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
@@ -56,13 +58,13 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 	return func(w http.ResponseWriter, r *http.Request) {
 		var client, err = creds.GetClient(region)
 		if err != nil {
-			log.Error(err)
+			logging.Log.Error(err)
 			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		assume, err := parseAssumeRoleQuery(r)
 		if err != nil {
-			log.Error(err)
+			logging.Log.Error(err)
 			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -72,14 +74,14 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 		cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, region, assume)
 		if err != nil {
 			// TODO: handle error better and return a helpful response/status
-			log.Errorf("failed to get credentials: %s", err)
+			logging.Log.Errorf("failed to get credentials: %s", err)
 			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		cachedCredentials, err := cached.Retrieve()
 		if err != nil {
 			// TODO: handle error better and return a helpful response/status
-			log.Errorf("failed to get credentials: %s", err.Error())
+			logging.Log.Errorf("failed to get credentials: %s", err.Error())
 			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -94,7 +96,7 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 
 		err = json.NewEncoder(w).Encode(credentialResponse)
 		if err != nil {
-			log.Errorf("failed to write response: %v", err)
+			logging.Log.Errorf("failed to write response: %v", err)
 		}
 	}
 }

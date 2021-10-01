@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/metadata"
 
 	"github.com/sirupsen/logrus"
@@ -32,7 +34,7 @@ type wrappedCertificate struct {
 // newWrappedCertificate initializes and returns a wrappedCertificate that will auto-
 // refresh on cert/key file changes.
 func newWrappedCertificate(certFile, keyFile string) (*wrappedCertificate, error) {
-	log.WithFields(logrus.Fields{
+	logging.Log.WithFields(logrus.Fields{
 		"certFile": certFile,
 		"keyFile":  keyFile,
 	}).Debug("creating wrapped certificate")
@@ -48,7 +50,7 @@ func newWrappedCertificate(certFile, keyFile string) (*wrappedCertificate, error
 
 // getCertificate is a function to be used as the GetClientCertificate member of a tls.Config
 func (wc *wrappedCertificate) getCertificate(clientHello *tls.CertificateRequestInfo) (*tls.Certificate, error) {
-	log.Debug("getCertificate called")
+	logging.Log.Debug("getCertificate called")
 	wc.RLock()
 	defer wc.RUnlock()
 
@@ -66,29 +68,29 @@ func (wc *wrappedCertificate) watchExpiration() {
 
 // loadCertificate replaces certificate with a keypair loaded in from the filesystem.
 func (wc *wrappedCertificate) loadCertificate() {
-	log.Debug("reloading mTLS certificate")
+	logging.Log.Debug("reloading mTLS certificate")
 	wc.Lock()
 	defer wc.Unlock()
 	cert, err := tls.LoadX509KeyPair(wc.certFile, wc.keyFile)
 	if err != nil {
-		log.Errorf("could not reload mTLS cert: %v", err)
+		logging.Log.Errorf("could not reload mTLS cert: %v", err)
 		return
 	}
 	wc.certificate = &cert
 	wc.x509Certificate, err = x509.ParseCertificate(cert.Certificate[0])
 	if err != nil {
-		log.Errorf("could not parse x509 certificate")
+		logging.Log.Errorf("could not parse x509 certificate")
 	}
 	wc.updateInstanceInfo()
 }
 
 func (wc *wrappedCertificate) autoRefresh() {
-	log.Debug("starting mTLS cert auto-refresher")
+	logging.Log.Debug("starting mTLS cert auto-refresher")
 
 	// create the fsnotify watcher that we'll use to monitor the cert and key files
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Errorf("mTLS cert watcher encountered an error: %v", err)
+		logging.Log.Errorf("mTLS cert watcher encountered an error: %v", err)
 		return
 	}
 	defer watcher.Close()
@@ -108,19 +110,19 @@ func (wc *wrappedCertificate) autoRefresh() {
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
-					log.Warn("problem with mTLS file watcher")
+					logging.Log.Warn("problem with mTLS file watcher")
 					return
 				}
-				log.Debugf("event received: %v", event)
+				logging.Log.Debugf("event received: %v", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					debounced(func() { wc.loadCertificate() })
 				}
 			case watcherError, ok := <-watcher.Errors:
 				if !ok {
-					log.Warn("problem with mTLS file watcher")
+					logging.Log.Warn("problem with mTLS file watcher")
 					return
 				}
-				log.Error(watcherError)
+				logging.Log.Error(watcherError)
 			}
 		}
 	}()
@@ -129,12 +131,12 @@ func (wc *wrappedCertificate) autoRefresh() {
 	for _, file := range []string{wc.certFile, wc.keyFile} {
 		err = watcher.Add(file)
 		if err != nil {
-			log.Fatal(err)
+			logging.Log.Fatal(err)
 		}
 	}
 
 	<-interrupt
-	log.Debug("stopping mTLS cert auto-refresher")
+	logging.Log.Debug("stopping mTLS cert auto-refresher")
 }
 
 func (wc *wrappedCertificate) Fingerprint() string {

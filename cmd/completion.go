@@ -19,6 +19,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/spf13/cobra"
 )
 
@@ -49,7 +51,7 @@ MacOS:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Root().GenBashCompletion(os.Stdout); err != nil {
-			log.Fatal(err)
+			logging.Log.Fatal(err)
 		}
 	},
 }
@@ -72,7 +74,7 @@ You will need to start a new shell for this setup to take effect.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Root().GenZshCompletion(os.Stdout); err != nil {
-			log.Fatal(err)
+			logging.Log.Fatal(err)
 		}
 	},
 }
@@ -90,7 +92,7 @@ $ weep completion fish > ~/.config/fish/completions/weep.fish
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Root().GenFishCompletion(os.Stdout, true); err != nil {
-			log.Fatal(err)
+			logging.Log.Fatal(err)
 		}
 	},
 }
@@ -133,7 +135,7 @@ You will need to start a new shell for this setup to take effect.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Root().GenPowerShellCompletion(os.Stdout); err != nil {
-			log.Fatal(err)
+			logging.Log.Fatal(err)
 		}
 	},
 }

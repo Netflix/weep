@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/aws"
 
 	"github.com/netflix/weep/pkg/creds"
@@ -129,7 +131,7 @@ func printCredentialProcess(credentials *aws.Credentials) {
 
 	b, err := json.Marshal(credentialProcessOutput)
 	if err != nil {
-		log.Error(err)
+		logging.Log.Error(err)
 	}
 	fmt.Printf(string(b))
 }

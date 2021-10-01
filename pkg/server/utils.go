@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/netflix/weep/pkg/logging"
 )
 
 type httpError struct {
@@ -16,6 +18,6 @@ func errorResponse(w http.ResponseWriter, message, code string) {
 		Code:    code,
 	}
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.Errorf("failed to write error response: %v", err)
+		logging.Log.Errorf("failed to write error response: %v", err)
 	}
 }

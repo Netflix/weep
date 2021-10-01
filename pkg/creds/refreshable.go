@@ -21,6 +21,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/aws"
 	"github.com/netflix/weep/pkg/types"
 
@@ -64,14 +66,14 @@ func (rp *RefreshableProvider) AutoRefresh() {
 		case _ = <-ticker.C:
 			_, err := rp.checkAndRefresh(10)
 			if err != nil {
-				log.Error(err.Error())
+				logging.Log.Error(err.Error())
 			}
 		}
 	}
 }
 
 func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
-	log.Debugf("checking credentials for %s", rp.RoleName)
+	logging.Log.Debugf("checking credentials for %s", rp.RoleName)
 	// refresh creds if we're within 10 minutes of them expiring
 	diff := time.Duration(threshold*-1) * time.Minute
 	thresh := rp.Expiration.Add(diff)
@@ -85,14 +87,14 @@ func (rp *RefreshableProvider) checkAndRefresh(threshold int) (bool, error) {
 }
 
 func (rp *RefreshableProvider) refresh() error {
-	log.Debugf("refreshing credentials for %s", rp.RoleArn)
+	logging.Log.Debugf("refreshing credentials for %s", rp.RoleArn)
 	var err error
 	var newCreds *aws.Credentials
 
 	rp.Lock()
 	defer rp.Unlock()
 
-	log.WithFields(logrus.Fields{
+	logging.Log.WithFields(logrus.Fields{
 		"roleName":     rp.RoleName,
 		"roleArn":      rp.RoleArn,
 		"noIpRestrict": rp.NoIpRestrict,
@@ -101,7 +103,7 @@ func (rp *RefreshableProvider) refresh() error {
 	newCreds, err = GetCredentialsC(rp.client, rp.RoleArn, rp.NoIpRestrict, rp.AssumeChain)
 	if err != nil {
 		if err == errors.MutualTLSCertNeedsRefreshError {
-			log.Error(err)
+			logging.Log.Error(err)
 			// The http.Client, with the best of intentions, will hold the connection open,
 			// meaning that an auto-updated cert won't be used by the client.
 			rp.client.CloseIdleConnections()
@@ -124,7 +126,7 @@ func (rp *RefreshableProvider) refresh() error {
 	if rp.value.ProviderName == "" {
 		rp.value.ProviderName = "WeepRefreshableProvider"
 	}
-	log.Debugf("successfully refreshed credentials for %s", rp.RoleArn)
+	logging.Log.Debugf("successfully refreshed credentials for %s", rp.RoleArn)
 	return nil
 }
 

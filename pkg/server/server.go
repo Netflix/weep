@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/cache"
 	"github.com/netflix/weep/pkg/creds"
 
@@ -26,7 +28,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router.HandleFunc("/healthcheck", HealthcheckHandler)
 
 	if role != "" {
-		log.Infof("Configuring weep IMDS service for role %s", role)
+		logging.Log.Infof("Configuring weep IMDS service for role %s", role)
 		client, err := creds.GetClient(region)
 		if err != nil {
 			return err
@@ -55,7 +57,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router.HandleFunc("/{path:.*}", TaskMetadataMiddleware(NotFoundHandler))
 
 	go func() {
-		log.Info("starting weep on ", listenAddr)
+		logging.Log.Info("starting weep on ", listenAddr)
 		srv := &http.Server{
 			ReadTimeout:       1 * time.Second,
 			WriteTimeout:      10 * time.Second,
@@ -65,12 +67,12 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 			Handler:           router,
 		}
 		if err := srv.ListenAndServe(); err != nil {
-			log.Fatalf("server failed: %v", err)
+			logging.Log.Fatalf("server failed: %v", err)
 		}
 	}()
 
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
-	log.Print("shutdown signal received, stopping server...")
+	logging.Log.Print("shutdown signal received, stopping server...")
 	return nil
 }
