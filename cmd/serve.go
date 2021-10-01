@@ -28,10 +28,10 @@ func init() {
 	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", viper.GetString("server.address"), "IP address for the ECS credential provider to listen on")
 	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.port"), "port for the ECS credential provider service to listen on")
 	if err := viper.BindPFlag("server.address", serveCmd.PersistentFlags().Lookup("listen-address")); err != nil {
-		logging.Log.Fatal(err)
+		logging.Log.Error(err)
 	}
 	if err := viper.BindPFlag("server.port", serveCmd.PersistentFlags().Lookup("port")); err != nil {
-		logging.Log.Fatal(err)
+		logging.Log.Error(err)
 	}
 	rootCmd.AddCommand(serveCmd)
 }

@@ -44,7 +44,8 @@ func init() {
 		var err error
 		tlsConfig, err = getTLSConfig()
 		if err != nil {
-			logging.Log.Fatalf("could not initialize mtls: %v", err)
+			logging.Log.Errorf("could not initialize mtls: %v", err)
+			tlsConfig = &tls.Config{}
 		}
 	}
 }
