@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/netflix/weep/pkg/cache"
+	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/reachability"
 
