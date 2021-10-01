@@ -32,7 +32,10 @@ var weepServiceControl = &cobra.Command{
 }
 
 func runWeepServiceControl(cmd *cobra.Command, args []string) error {
-	initService()
+	err := initService()
+	if err != nil {
+		return err
+	}
 	if len(args[0]) > 0 {
 		// hijack a run command and run the service
 		if args[0] == "run" {
@@ -99,7 +102,7 @@ func (p *program) Stop(s service.Service) error {
 	return nil
 }
 
-func initService() {
+func initService() error {
 	var err error
 
 	svcProgram = &program{}
@@ -120,13 +123,13 @@ func initService() {
 
 	weepService, err = service.New(svcProgram, svcConfig)
 	if err != nil {
-		logging.Log.Fatal(err)
+		return err
 	}
 
 	errs := make(chan error, 5)
 	svcLogger, err = weepService.Logger(errs)
 	if err != nil {
-		logging.Log.Fatal(err)
+		return err
 	}
 
 	go func() {
@@ -137,4 +140,5 @@ func initService() {
 			}
 		}
 	}()
+	return nil
 }

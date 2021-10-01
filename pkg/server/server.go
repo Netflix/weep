@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/netflix/weep/pkg/logging"
-
 	"github.com/netflix/weep/pkg/cache"
 	"github.com/netflix/weep/pkg/creds"
+	"github.com/netflix/weep/pkg/logging"
+	"github.com/netflix/weep/pkg/reachability"
 
 	"github.com/gorilla/mux"
 )
@@ -27,7 +27,9 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router := mux.NewRouter()
 	router.HandleFunc("/healthcheck", HealthcheckHandler)
 
-	if role != "" {
+	isServingIMDS := role != ""
+
+	if isServingIMDS {
 		logging.Log.Infof("Configuring weep IMDS service for role %s", role)
 		client, err := creds.GetClient(region)
 		if err != nil {
@@ -56,20 +58,33 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router.HandleFunc("/ecs/{role:.*}", TaskMetadataMiddleware(getCredentialHandler(region)))
 	router.HandleFunc("/{path:.*}", TaskMetadataMiddleware(NotFoundHandler))
 
+	logging.Log.Info("starting weep on ", listenAddr)
+	srv := &http.Server{
+		ReadTimeout:       1 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		Handler:           router,
+	}
+
+	ln, err := net.Listen("tcp", listenAddr)
+	if err != nil {
+		logging.Log.Errorf("listen failed: %v", err)
+		return err
+	}
+
 	go func() {
-		logging.Log.Info("starting weep on ", listenAddr)
-		srv := &http.Server{
-			ReadTimeout:       1 * time.Second,
-			WriteTimeout:      10 * time.Second,
-			IdleTimeout:       30 * time.Second,
-			ReadHeaderTimeout: 2 * time.Second,
-			Addr:              listenAddr,
-			Handler:           router,
-		}
-		if err := srv.ListenAndServe(); err != nil {
-			logging.Log.Fatalf("server failed: %v", err)
+		if err := srv.Serve(ln); err != nil {
+			logging.Log.Errorf("server failed: %v", err)
 		}
 	}()
+
+	if isServingIMDS {
+		go func() {
+			logging.Log.Debug("Testing IMDS reachability")
+			reachability.TestReachability()
+		}()
+	}
 
 	// Check for interrupt signal and exit cleanly
 	<-shutdown

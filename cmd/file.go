@@ -109,7 +109,8 @@ func fileRefresher(role, profile, filename string, noIpRestrict bool, assumeRole
 func getDefaultCredentialsFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		logging.Log.Fatal("couldn't get default directory")
+		logging.Log.Error("couldn't get home directory")
+		return ""
 	}
 	return path.Join(home, ".aws", "credentials")
 }
@@ -117,7 +118,8 @@ func getDefaultCredentialsFile() string {
 func getDefaultAwsConfigFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		logging.Log.Fatal("couldn't get default directory")
+		logging.Log.Error("couldn't get home directory")
+		return ""
 	}
 	return path.Join(home, ".aws", "config")
 }
