@@ -56,17 +56,22 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router.HandleFunc("/ecs/{role:.*}", TaskMetadataMiddleware(getCredentialHandler(region)))
 	router.HandleFunc("/{path:.*}", TaskMetadataMiddleware(NotFoundHandler))
 
+	logging.Log.Info("starting weep on ", listenAddr)
+	srv := &http.Server{
+		ReadTimeout:       1 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		Handler:           router,
+	}
+
+	ln, err := net.Listen("tcp", listenAddr)
+	if err != nil {
+		logging.Log.Fatalf("listen failed: %v", err)
+	}
+
 	go func() {
-		logging.Log.Info("starting weep on ", listenAddr)
-		srv := &http.Server{
-			ReadTimeout:       1 * time.Second,
-			WriteTimeout:      10 * time.Second,
-			IdleTimeout:       30 * time.Second,
-			ReadHeaderTimeout: 2 * time.Second,
-			Addr:              listenAddr,
-			Handler:           router,
-		}
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.Serve(ln); err != nil {
 			logging.Log.Fatalf("server failed: %v", err)
 		}
 	}()
