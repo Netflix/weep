@@ -8,9 +8,7 @@ import (
 	"time"
 
 	"github.com/netflix/weep/pkg/logging"
-
-	"github.com/netflix/weep/pkg/cache"
-	"github.com/netflix/weep/pkg/creds"
+	"github.com/netflix/weep/pkg/reachability"
 
 	"github.com/gorilla/mux"
 )
@@ -27,7 +25,9 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router := mux.NewRouter()
 	router.HandleFunc("/healthcheck", HealthcheckHandler)
 
-	if role != "" {
+	isServingIMDS := role != ""
+
+	if isServingIMDS {
 		logging.Log.Infof("Configuring weep IMDS service for role %s", role)
 		client, err := creds.GetClient(region)
 		if err != nil {
@@ -75,6 +75,13 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 			logging.Log.Fatalf("server failed: %v", err)
 		}
 	}()
+
+	if isServingIMDS {
+		go func() {
+			logging.Log.Debug("Testing IMDS reachability")
+			reachability.TestReachability()
+		}()
+	}
 
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
