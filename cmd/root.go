@@ -40,7 +40,9 @@ var (
 			// This runs before any subcommand, and cmd.CalledAs() returns the subcommand
 			// that was called. We want to use this for the weep method in the instance info.
 			metadata.SetWeepMethod(cmd.CalledAs())
-			logging.Log.WithFields(metadata.GetBasicMetadata()).Infoln("Incoming weep command")
+			// Add basic metadata to ALL future logs
+			metadata.AddMetadataToLogger()
+			logging.Log.Infoln("Incoming weep command")
 		},
 	}
 )

@@ -52,8 +52,9 @@ func GetInstanceInfo() *InstanceInfo {
 	return currentInstanceInfo
 }
 
-func GetBasicMetadata() logrus.Fields {
-	return logrus.Fields{"hostname": hostname(), "username": username(), "version": Version, "method": weepMethod}
+func AddMetadataToLogger() {
+	// TODO what other data would be useful?
+	logging.Log = logging.Log.WithFields(logrus.Fields{"hostname": hostname(), "username": username(), "weep_version": Version, "method": weepMethod})
 }
 
 func StartupTime() string {

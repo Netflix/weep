@@ -112,6 +112,7 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	role := args[0]
 	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
+		logging.Log.Warnln(err)
 		return err
 	}
 	printCredentialProcess(credentials)
