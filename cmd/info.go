@@ -41,7 +41,8 @@ var infoCmd = &cobra.Command{
 func marshalStruct(obj interface{}) []byte {
 	out, err := yaml.Marshal(obj)
 	if err != nil {
-		logging.Log.Errorf("failed to marshal struct: %v", err)
+		logging.LogError(err, "failed to marshal struct")
+		fmt.Printf("failed to marshal struct: %v\n", err)
 		return nil
 	}
 	return out
@@ -67,7 +68,8 @@ func PrintWeepInfo(w io.Writer) error {
 
 	roles, err := roleList()
 	if err != nil {
-		logging.Log.Errorf("failed to retrieve role list from ConsoleMe: %v", err)
+		logging.LogError(err, "Error retrieving role list from ConsoleMe")
+		fmt.Printf("failed to retrieve role list from ConsoleMe: %v\n", err)
 	} else {
 		_, _ = writer.Write([]byte(roles))
 	}

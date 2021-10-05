@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/pkg/logging"
 
 	"github.com/netflix/weep/pkg/aws"
@@ -104,22 +106,30 @@ func generateCredentialProcessConfig(destination string) error {
 
 func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	if generate {
-		return generateCredentialProcessConfig(destination)
+		logging.Log.Infoln("Generate credential_process")
+		err := generateCredentialProcessConfig(destination)
+		if err != nil {
+			logging.LogError(err, "Error generating credential_process")
+			return err
+		}
+		return nil
 	}
 	if len(args) == 0 {
-		return fmt.Errorf("role_name not provided")
-	}
-	role := args[0]
-	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
-	if err != nil {
-		logging.Log.Warnln(err)
+		err := fmt.Errorf("role_name not provided")
+		logging.LogError(err, "Error getting role")
 		return err
 	}
-	printCredentialProcess(credentials)
-	return nil
+	role := args[0]
+	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Getting credentials")
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
+	if err != nil {
+		logging.LogError(err, "Error getting credentials")
+		return err
+	}
+	return printCredentialProcess(credentials)
 }
 
-func printCredentialProcess(credentials *aws.Credentials) {
+func printCredentialProcess(credentials *aws.Credentials) error {
 	expirationTimeFormat := credentials.Expiration.Format(time.RFC3339)
 
 	credentialProcessOutput := &creds.CredentialProcess{
@@ -132,7 +142,9 @@ func printCredentialProcess(credentials *aws.Credentials) {
 
 	b, err := json.Marshal(credentialProcessOutput)
 	if err != nil {
-		logging.Log.Error(err)
+		logging.LogError(err, "Error parsing credential response")
+		return err
 	}
 	fmt.Printf(string(b))
+	return nil
 }

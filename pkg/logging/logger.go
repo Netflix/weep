@@ -31,16 +31,16 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 	if customLoggerRegistered {
 		return nil
 	}
-	// Set the Log level and default to INFO
+	// Set the Log level and default to WARN
 	switch logLevel {
 	case "error":
 		Log.Logger.SetLevel(logrus.ErrorLevel)
-	case "warn":
-		Log.Logger.SetLevel(logrus.WarnLevel)
 	case "debug":
 		Log.Logger.SetLevel(logrus.DebugLevel)
-	default:
+	case "info":
 		Log.Logger.SetLevel(logrus.InfoLevel)
+	default:
+		Log.Logger.SetLevel(logrus.WarnLevel)
 	}
 
 	// Set the Log format.  Default to Text

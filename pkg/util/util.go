@@ -167,7 +167,7 @@ func OpenLink(link string) error {
 		if err != nil {
 			return err
 		} else {
-			logging.Log.Infoln("Link opened in a new browser window.")
+			fmt.Println("Link opened in a new browser window.")
 		}
 	} else {
 		return errors.BrowserOpenError

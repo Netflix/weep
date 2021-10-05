@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/pkg/logging"
 
 	"github.com/netflix/weep/pkg/aws"
@@ -55,6 +57,7 @@ func runFile(cmd *cobra.Command, args []string) error {
 	// If a role was provided, use it, otherwise prompt
 	role, err := InteractiveRolePrompt(args, region, nil)
 	if err != nil {
+		logging.LogError(err, "Error getting role")
 		return err
 	}
 
@@ -63,7 +66,8 @@ func runFile(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if autoRefresh {
-		logging.Log.Infof("starting automatic file refresh for %s", role)
+		logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Starting automatic file refresh")
+		fmt.Printf("starting automatic file refresh for %s", role)
 		go fileRefresher(role, profileName, destination, noIpRestrict, assumeRole)
 		<-shutdown
 	}
@@ -71,12 +75,15 @@ func runFile(cmd *cobra.Command, args []string) error {
 }
 
 func updateCredentialsFile(role, profile, filename string, noIpRestrict bool, assumeRole []string) error {
+	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Getting credentials")
 	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
+		logging.LogError(err, "Error getting credentials")
 		return err
 	}
 	err = writeCredentialsFile(credentials, profile, filename)
 	if err != nil {
+		logging.LogError(err, "Error writing credentials to file")
 		return err
 	}
 	return nil
@@ -91,15 +98,16 @@ func fileRefresher(role, profile, filename string, noIpRestrict bool, assumeRole
 			logging.Log.Debug("checking credentials")
 			expiring, err := isExpiring(filename, profile, 10)
 			if err != nil {
-				logging.Log.Errorf("error checking credential expiration: %v", err)
+				logging.LogError(err, "Error checking credential expiration")
+				fmt.Printf("error checking credential expiration: %v", err)
 			}
 			if expiring {
-				logging.Log.Info("credentials are expiring soon, refreshing...")
+				logging.Log.Debug("credentials are expiring soon, refreshing...")
 				err = updateCredentialsFile(role, profile, filename, noIpRestrict, assumeRole)
 				if err != nil {
-					logging.Log.Errorf("error updating credentials: %v", err)
+					fmt.Printf("error updating credentials: %v", err)
 				} else {
-					logging.Log.Info("credentials refreshed!")
+					logging.Log.Debug("credentials refreshed!")
 				}
 			}
 		}
@@ -109,7 +117,7 @@ func fileRefresher(role, profile, filename string, noIpRestrict bool, assumeRole
 func getDefaultCredentialsFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		logging.Log.Error("couldn't get home directory")
+		logging.LogError(err, "Couldn't get home directory")
 		return ""
 	}
 	return path.Join(home, ".aws", "credentials")
@@ -118,7 +126,7 @@ func getDefaultCredentialsFile() string {
 func getDefaultAwsConfigFile() string {
 	home, err := homedir.Dir()
 	if err != nil {
-		logging.Log.Error("couldn't get home directory")
+		logging.LogError(err, "Couldn't get home directory")
 		return ""
 	}
 	return path.Join(home, ".aws", "config")

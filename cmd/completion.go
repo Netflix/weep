@@ -19,6 +19,9 @@ package cmd
 import (
 	"os"
 
+	"github.com/netflix/weep/pkg/logging"
+	"github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +51,13 @@ MacOS:
   $ weep completion bash > /usr/local/etc/bash_completion.d/weep
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cmd.Root().GenBashCompletion(os.Stdout)
+		logging.Log.WithFields(logrus.Fields{"shell": "bash"}).Infoln("Generate completion")
+		err := cmd.Root().GenBashCompletion(os.Stdout)
+		if err != nil {
+			logging.LogError(err, "Error generating completion")
+			return err
+		}
+		return nil
 	},
 }
 
@@ -69,7 +78,13 @@ $ weep completion zsh > "${fpath[1]}/_weep"
 You will need to start a new shell for this setup to take effect.
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cmd.Root().GenZshCompletion(os.Stdout)
+		logging.Log.WithFields(logrus.Fields{"shell": "zsh"}).Infoln("Generate completion")
+		err := cmd.Root().GenZshCompletion(os.Stdout)
+		if err != nil {
+			logging.LogError(err, "Error generating completion")
+			return err
+		}
+		return nil
 	},
 }
 
@@ -85,7 +100,13 @@ To load completions for each session, execute once:
 $ weep completion fish > ~/.config/fish/completions/weep.fish
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cmd.Root().GenFishCompletion(os.Stdout, true)
+		logging.Log.WithFields(logrus.Fields{"shell": "fish"}).Infoln("Generate completion")
+		err := cmd.Root().GenFishCompletion(os.Stdout, true)
+		if err != nil {
+			logging.LogError(err, "Error generating completion")
+			return err
+		}
+		return nil
 	},
 }
 
@@ -126,7 +147,13 @@ PS> weep completion powershell > weep.ps1
 You will need to start a new shell for this setup to take effect.
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cmd.Root().GenPowerShellCompletion(os.Stdout)
+		logging.Log.WithFields(logrus.Fields{"shell": "powershell"}).Infoln("Generate completion")
+		err := cmd.Root().GenPowerShellCompletion(os.Stdout)
+		if err != nil {
+			logging.LogError(err, "Error generating completion")
+			return err
+		}
+		return nil
 	},
 }
 
