@@ -3,6 +3,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/pkg/logging"
 
 	"github.com/spf13/viper"
@@ -34,6 +36,7 @@ var weepServiceControl = &cobra.Command{
 func runWeepServiceControl(cmd *cobra.Command, args []string) error {
 	err := initService()
 	if err != nil {
+		logging.LogError(err, "Error initializing service")
 		return err
 	}
 	if len(args[0]) > 0 {
@@ -45,8 +48,10 @@ func runWeepServiceControl(cmd *cobra.Command, args []string) error {
 		}
 		err := service.Control(weepService, args[0])
 		if err != nil {
+			logging.LogError(err, "Error running service control")
 			return err
 		}
+		logging.Log.WithFields(logrus.Fields{"service": args[0]}).Infoln("Success running service")
 		cmd.Printf("successfully ran service %s\n", args[0])
 	}
 	logging.Log.Debug("sending done signal")

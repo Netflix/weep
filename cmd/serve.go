@@ -19,6 +19,7 @@ package cmd
 import (
 	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/server"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"github.com/spf13/cobra"
@@ -28,10 +29,10 @@ func init() {
 	serveCmd.PersistentFlags().StringVarP(&listenAddr, "listen-address", "a", viper.GetString("server.address"), "IP address for the ECS credential provider to listen on")
 	serveCmd.PersistentFlags().IntVarP(&listenPort, "port", "p", viper.GetInt("server.port"), "port for the ECS credential provider service to listen on")
 	if err := viper.BindPFlag("server.address", serveCmd.PersistentFlags().Lookup("listen-address")); err != nil {
-		logging.Log.Error(err)
+		logging.LogError(err, "Error parsing")
 	}
 	if err := viper.BindPFlag("server.port", serveCmd.PersistentFlags().Lookup("port")); err != nil {
-		logging.Log.Error(err)
+		logging.LogError(err, "Error parsing")
 	}
 	rootCmd.AddCommand(serveCmd)
 }
@@ -51,5 +52,6 @@ func runWeepServer(cmd *cobra.Command, args []string) error {
 	}
 	address := viper.GetString("server.address")
 	port := viper.GetInt("server.port")
+	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Running serve")
 	return server.Run(address, port, role, region, shutdown)
 }

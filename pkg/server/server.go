@@ -59,6 +59,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 	router.HandleFunc("/{path:.*}", TaskMetadataMiddleware(NotFoundHandler))
 
 	logging.Log.Info("starting weep on ", listenAddr)
+	fmt.Printf("starting weep on %s\n", listenAddr)
 	srv := &http.Server{
 		ReadTimeout:       1 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -88,6 +89,6 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	// Check for interrupt signal and exit cleanly
 	<-shutdown
-	logging.Log.Print("shutdown signal received, stopping server...")
+	fmt.Println("shutdown signal received, stopping server..")
 	return nil
 }

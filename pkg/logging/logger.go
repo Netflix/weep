@@ -27,10 +27,6 @@ func init() {
 // UpdateConfig overrides the default logging settings. This function is meant to be
 // used during CLI initialization to update the logger based on config file and CLI args.
 func UpdateConfig(logLevel string, logFormat string, logFile string) error {
-	// Custom logger was registered, don't overwrite logger format
-	if customLoggerRegistered {
-		return nil
-	}
 	// Set the Log level and default to WARN
 	switch logLevel {
 	case "error":
@@ -40,7 +36,10 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 	case "info":
 		Log.Logger.SetLevel(logrus.InfoLevel)
 	default:
-		Log.Logger.SetLevel(logrus.WarnLevel)
+		// only want to overwrite in the default case if it's not a custom logger
+		if !customLoggerRegistered {
+			Log.Logger.SetLevel(logrus.WarnLevel)
+		}
 	}
 
 	// Set the Log format.  Default to Text
@@ -48,6 +47,15 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		Log.Logger.SetFormatter(&logrus.TextFormatter{})
+	}
+
+	// Custom logger was registered, don't overwrite logger format
+	if customLoggerRegistered {
+		// If user has explicitly requested a log level, set output to be visible
+		if logLevel != "" {
+			Log.Logger.SetOutput(os.Stderr)
+		}
+		return nil
 	}
 
 	var w io.Writer
