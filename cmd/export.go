@@ -21,6 +21,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/netflix/weep/pkg/logging"
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/pkg/aws"
 
 	"github.com/netflix/weep/pkg/creds"
@@ -45,14 +48,16 @@ func runExport(cmd *cobra.Command, args []string) error {
 	// If a role was provided, use it, otherwise prompt
 	role, err := InteractiveRolePrompt(args, region, nil)
 	if err != nil {
+		logging.LogError(err, "Error getting role")
 		return err
 	}
-
-	creds, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
+	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Getting credentials")
+	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
+		logging.LogError(err, "Error getting credentials")
 		return err
 	}
-	printExport(creds)
+	printExport(credentials)
 	return nil
 }
 

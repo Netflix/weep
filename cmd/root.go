@@ -40,6 +40,9 @@ var (
 			// This runs before any subcommand, and cmd.CalledAs() returns the subcommand
 			// that was called. We want to use this for the weep method in the instance info.
 			metadata.SetWeepMethod(cmd.CalledAs())
+			// Add basic metadata to ALL future logs
+			metadata.AddMetadataToLogger(args)
+			logging.Log.Infoln("Incoming weep command")
 		},
 	}
 )
@@ -56,13 +59,13 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
 	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", viper.GetString("aws.region"), "AWS region")
 	if err := viper.BindPFlag("log_level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
-		logging.Log.Error(err)
+		logging.LogError(err, "Error parsing")
 	}
 	if err := viper.BindPFlag("log_file", rootCmd.PersistentFlags().Lookup("log-file")); err != nil {
-		logging.Log.Error(err)
+		logging.LogError(err, "Error parsing")
 	}
 	if err := viper.BindPFlag("log_format", rootCmd.PersistentFlags().Lookup("log-format")); err != nil {
-		logging.Log.Error(err)
+		logging.LogError(err, "Error parsing")
 	}
 }
 
@@ -85,7 +88,7 @@ func Execute() error {
 
 func initConfig() {
 	if err := config.InitConfig(cfgFile); err != nil {
-		logging.Log.Errorf("failed to initialize config: %v", err)
+		logging.LogError(err, "failed to initialize config")
 	}
 }
 
@@ -93,6 +96,6 @@ func initConfig() {
 func updateLoggingConfig() {
 	err := logging.UpdateConfig(logLevel, logFormat, logFile)
 	if err != nil {
-		logging.Log.Errorf("failed to configure logger: %v", err)
+		logging.LogError(err, "failed to configure logger")
 	}
 }

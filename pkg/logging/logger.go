@@ -10,41 +10,52 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var Log *logrus.Logger
+var Log *logrus.Entry
+
+var customLoggerRegistered bool
 
 func init() {
-	Log = &logrus.Logger{
+	Log = &logrus.Entry{Logger: &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
 		Level:     logrus.InfoLevel,
+	},
 	}
+	customLoggerRegistered = false
 }
-
-// GetLogger returns the configured logger for use by the rest of the application.
-//func GetLogger() *logrus.Logger {
-//	return Log
-//}
 
 // UpdateConfig overrides the default logging settings. This function is meant to be
 // used during CLI initialization to update the logger based on config file and CLI args.
 func UpdateConfig(logLevel string, logFormat string, logFile string) error {
-	// Set the Log level and default to INFO
+	// Set the Log level and default to WARN
 	switch logLevel {
 	case "error":
-		Log.SetLevel(logrus.ErrorLevel)
-	case "warn":
-		Log.SetLevel(logrus.WarnLevel)
+		Log.Logger.SetLevel(logrus.ErrorLevel)
 	case "debug":
-		Log.SetLevel(logrus.DebugLevel)
+		Log.Logger.SetLevel(logrus.DebugLevel)
+	case "info":
+		Log.Logger.SetLevel(logrus.InfoLevel)
 	default:
-		Log.SetLevel(logrus.InfoLevel)
+		// only want to overwrite in the default case if it's not a custom logger
+		if !customLoggerRegistered {
+			Log.Logger.SetLevel(logrus.WarnLevel)
+		}
 	}
 
 	// Set the Log format.  Default to Text
 	if logFormat == "json" {
-		Log.SetFormatter(&logrus.JSONFormatter{})
+		Log.Logger.SetFormatter(&logrus.JSONFormatter{})
 	} else {
-		Log.SetFormatter(&logrus.TextFormatter{})
+		Log.Logger.SetFormatter(&logrus.TextFormatter{})
+	}
+
+	// Custom logger was registered, don't overwrite logger format
+	if customLoggerRegistered {
+		// If user has explicitly requested a log level, set output to be visible
+		if logLevel != "" {
+			Log.Logger.SetOutput(os.Stderr)
+		}
+		return nil
 	}
 
 	var w io.Writer
@@ -52,7 +63,7 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 		logDir := filepath.Dir(logFile)
 		if _, err := os.Stat(logDir); os.IsNotExist(err) {
 			// Log directory doesn't exist. Try to make it exist.
-			Log.Debugf("attempting to create Log directory %s", logDir)
+			Log.Logger.Debugf("attempting to create Log directory %s", logDir)
 			err := os.MkdirAll(logDir, os.ModePerm)
 			if err != nil {
 				return errors.Wrap(err, "could not create Log directory")
@@ -62,7 +73,7 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
 			// No go. Bail out to stderr.
-			Log.SetOutput(os.Stderr)
+			Log.Logger.SetOutput(os.Stderr)
 			return errors.Wrapf(err, "could not open %s for logging, defaulting to stderr", logFile)
 		} else if service.Interactive() {
 			// No error opening the file, and we know that this is an interactive session.
@@ -73,7 +84,18 @@ func UpdateConfig(logLevel string, logFormat string, logFile string) error {
 			w = file
 		}
 	}
-	Log.SetOutput(w)
-	Log.Debug("logging configured")
+	Log.Logger.SetOutput(w)
+	Log.Logger.Debug("logging configured")
 	return nil
+}
+
+// RegisterLogger a custom logger
+func RegisterLogger(l *logrus.Entry) {
+	Log = l
+	customLoggerRegistered = true
+}
+
+// LogError is a helper function that allows for errors to be logged easily
+func LogError(err error, message string) {
+	Log.WithFields(logrus.Fields{"error": err.Error()}).Warnln(message)
 }

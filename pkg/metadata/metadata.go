@@ -21,6 +21,8 @@ import (
 	"os/user"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/netflix/weep/pkg/logging"
 )
 
@@ -29,10 +31,12 @@ var (
 	certFingerprint  string
 	weepMethod       string
 	weepStartupTime  time.Time
+	metadataAdded    bool
 )
 
 func init() {
 	weepStartupTime = time.Now()
+	metadataAdded = false
 }
 
 // GetInstanceInfo populates and returns an InstanceInfo, most likely to be used as
@@ -48,6 +52,15 @@ func GetInstanceInfo() *InstanceInfo {
 		WeepMethod:            weepMethod,
 	}
 	return currentInstanceInfo
+}
+
+func AddMetadataToLogger(args []string) {
+	if metadataAdded {
+		// metadata has already been added to logger
+		return
+	}
+	logging.Log = logging.Log.WithFields(logrus.Fields{"hostname": hostname(), "username": username(), "weep_version": Version, "method": weepMethod, "args": args})
+	metadataAdded = true
 }
 
 func StartupTime() string {

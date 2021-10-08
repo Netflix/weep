@@ -19,6 +19,8 @@ package cmd
 import (
 	"errors"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 
@@ -43,18 +45,22 @@ func runOpen(cmd *cobra.Command, args []string) error {
 	arn_parsed, err := util.ArnParse(args[0])
 
 	if err != nil {
+		logging.LogError(err, "Error parsing ARN")
 		return err
 	}
 	if (arn_parsed.Service == "sns" || arn_parsed.Service == "sqs") && arn_parsed.Region == "" {
+		logging.LogError(err, "Error missing required region in ARN")
 		return errors.New("Resource type sns and sqs require region in the arn")
 	}
 	var resourceURL string
 	client, err := creds.GetClient(region)
 	if err != nil {
+		logging.LogError(err, "Error getting client")
 		return err
 	}
 	resourceURL, err = client.GetResourceURL(args[0])
 	if err != nil {
+		logging.LogError(err, "Error getting resource URL")
 		return err
 	}
 	if noOpen {
@@ -64,6 +70,7 @@ func runOpen(cmd *cobra.Command, args []string) error {
 		cmd.Printf("Opening browser to link: %s\n", resourceURL)
 		err = util.OpenLink(resourceURL)
 		if err != nil {
+			logging.LogError(err, "Error opening link")
 			cmd.PrintErrln(err.Error())
 		}
 	}

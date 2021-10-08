@@ -19,6 +19,9 @@ package cmd
 import (
 	"path"
 
+	"github.com/netflix/weep/pkg/logging"
+	"github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 
 	"github.com/netflix/weep/pkg/config"
@@ -42,9 +45,10 @@ func runConsole(cmd *cobra.Command, args []string) error {
 	// If a role was provided, use it, otherwise prompt
 	role, err := InteractiveRolePrompt(args, region, nil)
 	if err != nil {
+		logging.LogError(err, "Error getting role")
 		return err
 	}
-
+	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Role selected")
 	// Construct the URL and open/print it; default to HTTPS if not specified
 	base_url := config.BaseWebURL()
 	url := path.Join(base_url, "role", role)
@@ -54,6 +58,7 @@ func runConsole(cmd *cobra.Command, args []string) error {
 	} else {
 		err := util.OpenLink(url)
 		if err != nil {
+			logging.LogError(err, "Error opening link")
 			return err
 		}
 	}

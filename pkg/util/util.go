@@ -133,7 +133,7 @@ func WriteError(w http.ResponseWriter, message string, status int) {
 	}
 }
 
-// Attempt to open a link in browser, if supported
+// OpenLink attempts to open a link in browser, if supported
 func OpenLink(link string) error {
 	var openUrlCommand []string = nil
 	switch runtime.GOOS {
@@ -167,7 +167,7 @@ func OpenLink(link string) error {
 		if err != nil {
 			return err
 		} else {
-			logging.Log.Infoln("Link opened in a new browser window.")
+			fmt.Println("Link opened in a new browser window.")
 		}
 	} else {
 		return errors.BrowserOpenError

@@ -20,6 +20,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/netflix/weep/pkg/logging"
+
 	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
@@ -88,6 +90,7 @@ func roleList() (string, error) {
 func runList(cmd *cobra.Command, args []string) error {
 	rolesData, err := roleList()
 	if err != nil {
+		logging.LogError(err, "Error generating roles for weep list")
 		return err
 	}
 	cmd.SetOut(os.Stdout)
