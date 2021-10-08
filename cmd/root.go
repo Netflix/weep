@@ -41,7 +41,7 @@ var (
 			// that was called. We want to use this for the weep method in the instance info.
 			metadata.SetWeepMethod(cmd.CalledAs())
 			// Add basic metadata to ALL future logs
-			metadata.AddMetadataToLogger()
+			metadata.AddMetadataToLogger(args)
 			logging.Log.Infoln("Incoming weep command")
 		},
 	}
