@@ -113,7 +113,7 @@ func initService() error {
 	svcProgram = &program{}
 
 	var args []string
-	for _, key := range []string{"service.flags", "service.args", "service.run"} {
+	for _, key := range []string{"service.flags", "service.run"} {
 		configArgs := viper.GetStringSlice(key)
 		if len(configArgs) > 0 {
 			args = append(args, configArgs...)
