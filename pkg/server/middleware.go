@@ -92,7 +92,7 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			"user-agent":       ua,
 			"path":             r.URL.Path,
 			"metadata_version": metadataVersion,
-		}).Info()
+		}).Info("Running AWS Header Middleware")
 		next.ServeHTTP(w, r)
 	}
 }
