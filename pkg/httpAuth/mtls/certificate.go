@@ -110,7 +110,6 @@ func (wc *wrappedCertificate) autoRefresh() {
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
-					logging.Log.Warn("problem with mTLS file watcher")
 					return
 				}
 				logging.Log.Debugf("event received: %v", event)
@@ -119,10 +118,9 @@ func (wc *wrappedCertificate) autoRefresh() {
 				}
 			case watcherError, ok := <-watcher.Errors:
 				if !ok {
-					logging.Log.Warn("problem with mTLS file watcher")
 					return
 				}
-				logging.Log.Error(watcherError)
+				logging.LogError(watcherError, "problem with mTLS file watcher")
 			}
 		}
 	}()
