@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package creds
+package v1
 
 import (
 	"encoding/json"
@@ -29,9 +29,9 @@ import (
 
 type RefreshableProvider struct {
 	sync.RWMutex
-	value         credentials.Value
-	client        HTTPClient
-	retries       int
+	value   credentials.Value
+	client  HTTPClient
+	retries int
 	retryDelay    int
 	Expiration    types.Time
 	LastRefreshed types.Time

@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package creds
+package v1
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/netflix/weep/pkg/creds/v2/consoleme/challenge"
+	"github.com/netflix/weep/pkg/creds/v2/consoleme/mtls"
 	"io"
 	"io/ioutil"
 	"net"
@@ -33,8 +35,6 @@ import (
 	"github.com/netflix/weep/pkg/aws"
 	"github.com/netflix/weep/pkg/config"
 	werrors "github.com/netflix/weep/pkg/errors"
-	"github.com/netflix/weep/pkg/httpAuth/challenge"
-	"github.com/netflix/weep/pkg/httpAuth/mtls"
 	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/metadata"
 

@@ -18,19 +18,19 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/netflix/weep/pkg/creds/v1"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/manifoldco/promptui"
-	"github.com/netflix/weep/pkg/creds"
 )
 
 // InteractiveRolePrompt will present the user with a fuzzy-searchable list of roles if
 // - We are currently attached to an interactive tty
 // - The user has not disabled them through the WEEP_DISABLE_INTERACTIVE_PROMPTS option
-func InteractiveRolePrompt(args []string, region string, client *creds.Client) (string, error) {
+func InteractiveRolePrompt(args []string, region string, client *v1.Client) (string, error) {
 	// If a role was provided, just use that
 	if len(args) > 0 {
 		return args[0], nil
@@ -47,7 +47,7 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 	// If a client was not provided, create one using the provided region
 	if client == nil {
 		var err error
-		client, err = creds.GetClient(region)
+		client, err = v1.GetClient(region)
 		if err != nil {
 			return "", err
 		}

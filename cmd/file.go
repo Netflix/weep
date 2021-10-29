@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/netflix/weep/pkg/creds/v1"
 	"path"
 	"strconv"
 	"time"
@@ -28,7 +29,6 @@ import (
 
 	"github.com/netflix/weep/pkg/aws"
 
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 
 	"gopkg.in/ini.v1"
@@ -76,7 +76,7 @@ func runFile(cmd *cobra.Command, args []string) error {
 
 func updateCredentialsFile(role, profile, filename string, noIpRestrict bool, assumeRole []string) error {
 	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Getting credentials")
-	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
+	credentials, err := v1.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
 		logging.LogError(err, "Error getting credentials")
 		return err

@@ -2,13 +2,13 @@ package server
 
 import (
 	"fmt"
+	"github.com/netflix/weep/pkg/creds/v1"
 	"net"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/netflix/weep/pkg/cache"
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/reachability"
 
@@ -31,7 +31,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	if isServingIMDS {
 		logging.Log.Infof("Configuring weep IMDS service for role %s", role)
-		client, err := creds.GetClient(region)
+		client, err := v1.GetClient(region)
 		if err != nil {
 			return err
 		}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package creds
+package v1
 
 import (
 	"fmt"

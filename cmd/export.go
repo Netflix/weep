@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/netflix/weep/pkg/creds/v1"
 	"os"
 	"strings"
 
@@ -25,8 +26,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/netflix/weep/pkg/aws"
-
-	"github.com/netflix/weep/pkg/creds"
 
 	"github.com/spf13/cobra"
 )
@@ -52,7 +51,7 @@ func runExport(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Getting credentials")
-	credentials, err := creds.GetCredentials(role, noIpRestrict, assumeRole, "")
+	credentials, err := v1.GetCredentials(role, noIpRestrict, assumeRole, "")
 	if err != nil {
 		logging.LogError(err, "Error getting credentials")
 		return err

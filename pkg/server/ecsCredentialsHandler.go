@@ -19,13 +19,13 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/netflix/weep/pkg/creds/v1"
 	"net/http"
 	"strings"
 
 	"github.com/netflix/weep/pkg/logging"
 
 	"github.com/netflix/weep/pkg/cache"
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -56,7 +56,7 @@ func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
 
 func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var client, err = creds.GetClient(region)
+		var client, err = v1.GetClient(region)
 		if err != nil {
 			logging.Log.Error(err)
 			util.WriteError(w, err.Error(), http.StatusBadRequest)

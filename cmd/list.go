@@ -17,12 +17,13 @@
 package cmd
 
 import (
+	"context"
+	"github.com/netflix/weep/pkg/creds/v2/consoleme"
 	"os"
 	"strings"
 
 	"github.com/netflix/weep/pkg/logging"
 
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 	"github.com/spf13/cobra"
 )
@@ -41,11 +42,8 @@ var listCmd = &cobra.Command{
 }
 
 func roleList() (string, error) {
-	client, err := creds.GetClient(region)
-	if err != nil {
-		return "", err
-	}
-	roles, err := client.RolesExtended()
+	provider := consoleme.NewProvider()
+	roles, err := provider.ListExtended(context.TODO())
 	if err != nil {
 		return "", err
 	}
