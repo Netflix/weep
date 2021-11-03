@@ -153,38 +153,58 @@ func getTLSDirs() ([]string, error) {
 }
 
 func getClientCertificatePaths(configDirs []string) (string, string, string, bool, error) {
-	// If cert, key, and catrust are paths that exist, we'll just use those
+	certs := viper.GetStringSlice("mtls_settings.certs")
+	if certs == nil {
+		certs = make([]string, 0)
+	}
+	// Backward compatibility, still allow the old key
 	cert := viper.GetString("mtls_settings.cert")
+	if cert != "" {
+		certs = append(certs, cert)
+	}
+	keys := viper.GetStringSlice("mtls_settings.keys")
+	if keys == nil {
+		keys = make([]string, 0)
+	}
+	// Backward compatibility, still allow the old key
 	key := viper.GetString("mtls_settings.key")
+	if key != "" {
+		keys = append(keys, key)
+	}
 	caFile := viper.GetString("mtls_settings.catrust")
 	insecure := viper.GetBool("mtls_settings.insecure")
-	if util.FileExists(cert) && util.FileExists(key) && util.FileExists(caFile) {
-		return cert, key, caFile, insecure, nil
-	}
 
-	var foundCertPath, foundKeyPath, foundCaPath string
-	// Otherwise, look for the files in the list of dirs from the config
-	for _, metatronDir := range configDirs {
-		certPath := filepath.Join(metatronDir, cert)
-		if foundCertPath == "" && util.FileExists(certPath) {
-			foundCertPath = certPath
+	for _, cert := range certs {
+		for _, key := range keys {
+			// If cert, key, and catrust are paths that exist, we'll just use those
+			if util.FileExists(cert) && util.FileExists(key) && util.FileExists(caFile) {
+				return cert, key, caFile, insecure, nil
+			}
+
+			var foundCertPath, foundKeyPath, foundCaPath string
+			// Otherwise, look for the files in the list of dirs from the config
+			for _, metatronDir := range configDirs {
+				certPath := filepath.Join(metatronDir, cert)
+				if foundCertPath == "" && util.FileExists(certPath) {
+					foundCertPath = certPath
+				}
+
+				keyPath := filepath.Join(metatronDir, key)
+				if foundKeyPath == "" && util.FileExists(keyPath) {
+					foundKeyPath = keyPath
+				}
+
+				caPath := filepath.Join(metatronDir, caFile)
+				if foundCaPath == "" && util.FileExists(caPath) {
+					foundCaPath = caPath
+				}
+			}
+
+			if foundCertPath != "" && foundKeyPath != "" && foundCaPath != "" {
+				// We have all the files we need!
+				return foundCertPath, foundKeyPath, foundCaPath, insecure, nil
+			}
 		}
-
-		keyPath := filepath.Join(metatronDir, key)
-		if foundKeyPath == "" && util.FileExists(keyPath) {
-			foundKeyPath = keyPath
-		}
-
-		caPath := filepath.Join(metatronDir, caFile)
-		if foundCaPath == "" && util.FileExists(caPath) {
-			foundCaPath = caPath
-		}
 	}
-
-	if foundCertPath != "" && foundKeyPath != "" && foundCaPath != "" {
-		// We have all the files we need!
-		return foundCertPath, foundKeyPath, foundCaPath, insecure, nil
-	}
-
 	return "", "", "", false, config.ClientCertificatesNotFoundError
 }

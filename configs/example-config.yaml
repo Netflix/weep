@@ -25,8 +25,12 @@ swag: # Optionally use SWAG (https://github.com/Netflix-Skunkworks/swag-api) for
 #  user: you@example.com
 mtls_settings: # only needed if authentication_method is mtls
   old_cert_message: mTLS certificate is too old, please run [refresh command]
-  cert: mtls.crt
-  key: mtls.key
+  certs:
+    - mtls1.crt
+    - mtls2.crt
+  keys:
+    - mtls1.key
+    - mtls2.key
   catrust: mtlsCA.pem
   insecure: false
   darwin: # weep will look in platform-specific directories for the three files specified above
