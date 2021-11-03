@@ -25,7 +25,6 @@ import (
 	"github.com/netflix/weep/pkg/logging"
 
 	"github.com/netflix/weep/pkg/cache"
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
@@ -56,12 +55,6 @@ func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
 
 func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var client, err = creds.GetClient(region)
-		if err != nil {
-			logging.Log.Error(err)
-			util.WriteError(w, err.Error(), http.StatusBadRequest)
-			return
-		}
 		assume, err := parseAssumeRoleQuery(r)
 		if err != nil {
 			logging.Log.Error(err)
@@ -71,7 +64,7 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 		vars := mux.Vars(r)
 		requestedRole := vars["role"]
 
-		cached, err := cache.GlobalCache.GetOrSet(client, requestedRole, region, assume)
+		cached, err := cache.GlobalCache.GetOrSet(requestedRole, region, assume)
 		if err != nil {
 			// TODO: handle error better and return a helpful response/status
 			logging.Log.Errorf("failed to get credentials: %s", err)

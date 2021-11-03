@@ -17,8 +17,10 @@
 package creds
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/netflix/weep/pkg/logging"
@@ -37,7 +39,7 @@ import (
 
 // NewRefreshableProvider creates an AWS credential provider that will automatically refresh credentials
 // when they are close to expiring
-func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
+func NewRefreshableProvider(role, region string, assumeChain []string, noIpRestrict bool) (*RefreshableProvider, error) {
 	splitRole := strings.Split(role, "/")
 	roleName := splitRole[len(splitRole)-1]
 	rp := &RefreshableProvider{
@@ -46,7 +48,6 @@ func NewRefreshableProvider(client HTTPClient, role, region string, assumeChain 
 		Region:       region,
 		NoIpRestrict: noIpRestrict,
 		AssumeChain:  assumeChain,
-		client:       client,
 	}
 	err := rp.refresh()
 	if err != nil {
@@ -100,13 +101,13 @@ func (rp *RefreshableProvider) refresh() error {
 		"noIpRestrict": rp.NoIpRestrict,
 		"assumeChain":  rp.AssumeChain,
 	}).Debug("requesting new credentials")
-	newCreds, err = GetCredentialsC(rp.client, rp.RoleArn, rp.NoIpRestrict, rp.AssumeChain)
+	newCreds, err = Get(context.TODO(), rp.RoleArn, rp.NoIpRestrict, rp.AssumeChain)
 	if err != nil {
 		if err == errors.MutualTLSCertNeedsRefreshError {
 			logging.Log.Error(err)
 			// The http.Client, with the best of intentions, will hold the connection open,
 			// meaning that an auto-updated cert won't be used by the client.
-			rp.client.CloseIdleConnections()
+			currentProvider.CloseIdleConnections(context.TODO())
 			return fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
 		} else {
 			return err
@@ -140,4 +141,18 @@ func (rp *RefreshableProvider) Retrieve() (credentials.Value, error) {
 // IsExpired always returns false because we should never have expired credentials
 func (rp *RefreshableProvider) IsExpired() bool {
 	return false
+}
+
+type RefreshableProvider struct {
+	sync.RWMutex
+	value         credentials.Value
+	retries       int
+	retryDelay    int
+	Expiration    types.Time
+	LastRefreshed types.Time
+	Region        string
+	RoleName      string
+	RoleArn       string
+	NoIpRestrict  bool
+	AssumeChain   []string
 }

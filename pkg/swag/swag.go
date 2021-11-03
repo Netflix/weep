@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netflix/weep/pkg/httpAuth/mtls"
+	"github.com/netflix/weep/pkg/creds/consoleme/mtls"
+
 	"github.com/spf13/viper"
 )
 

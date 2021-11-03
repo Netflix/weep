@@ -43,7 +43,7 @@ var consoleCmd = &cobra.Command{
 
 func runConsole(cmd *cobra.Command, args []string) error {
 	// If a role was provided, use it, otherwise prompt
-	role, err := InteractiveRolePrompt(args, region, nil)
+	role, err := InteractiveRolePrompt(args)
 	if err != nil {
 		logging.LogError(err, "Error getting role")
 		return err

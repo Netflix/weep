@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/netflix/weep/pkg/cache"
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/reachability"
 
@@ -31,11 +30,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	if isServingIMDS {
 		logging.Log.Infof("Configuring weep IMDS service for role %s", role)
-		client, err := creds.GetClient(region)
-		if err != nil {
-			return err
-		}
-		err = cache.GlobalCache.SetDefault(client, role, region, make([]string, 0))
+		err := cache.GlobalCache.SetDefault(role, region, make([]string, 0))
 		if err != nil {
 			return err
 		}

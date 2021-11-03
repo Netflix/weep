@@ -20,10 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/netflix/weep/pkg/aws"
-	"github.com/netflix/weep/pkg/types"
-
 	"github.com/netflix/weep/pkg/creds"
+
 	"github.com/netflix/weep/pkg/errors"
 )
 
@@ -191,19 +189,7 @@ func TestCredentialCache_SetDefault(t *testing.T) {
 	}
 	expectedRole := "a"
 	expectedExpiration := time.Unix(1, 0).Round(0)
-	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-		Credentials: &aws.Credentials{
-			AccessKeyId:     "a",
-			SecretAccessKey: "b",
-			SessionToken:    "c",
-			Expiration:      types.Time(time.Unix(1, 0)),
-			RoleArn:         "e",
-		},
-	})
-	if err != nil {
-		t.Errorf("test setup failure: %e", err)
-	}
-	err = testCache.SetDefault(testClient, expectedRole, "b", make([]string, 0))
+	err := testCache.SetDefault(expectedRole, "b", make([]string, 0))
 	if err != nil {
 		t.Errorf("test failure: %e", err)
 	}
@@ -219,19 +205,7 @@ func TestCredentialCache_DefaultLastUpdated(t *testing.T) {
 	testCache := CredentialCache{
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
-	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-		Credentials: &aws.Credentials{
-			AccessKeyId:     "a",
-			SecretAccessKey: "b",
-			SessionToken:    "c",
-			Expiration:      types.Time(time.Unix(1, 0)),
-			RoleArn:         "e",
-		},
-	})
-	if err != nil {
-		t.Errorf("test setup failure: %e", err)
-	}
-	err = testCache.SetDefault(testClient, "a", "b", make([]string, 0))
+	err := testCache.SetDefault("a", "b", make([]string, 0))
 	if err != nil {
 		t.Errorf("test failure: %e", err)
 	}
@@ -262,19 +236,7 @@ func TestCredentialCache_DefaultArn(t *testing.T) {
 	testCache := CredentialCache{
 		RoleCredentials: map[string]*creds.RefreshableProvider{},
 	}
-	testClient, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-		Credentials: &aws.Credentials{
-			AccessKeyId:     "a",
-			SecretAccessKey: "b",
-			SessionToken:    "c",
-			Expiration:      types.Time(time.Unix(1, 0)),
-			RoleArn:         "e",
-		},
-	})
-	if err != nil {
-		t.Errorf("test setup failure: %e", err)
-	}
-	err = testCache.SetDefault(testClient, "a", "b", make([]string, 0))
+	err := testCache.SetDefault("a", "b", make([]string, 0))
 	if err != nil {
 		t.Errorf("test failure: %e", err)
 	}
@@ -341,20 +303,7 @@ func TestCredentialCache_GetOrSet(t *testing.T) {
 		testCache := CredentialCache{
 			RoleCredentials: tc.CacheContents,
 		}
-		client, err := creds.GetTestClient(creds.ConsolemeCredentialResponseType{
-			Credentials: &aws.Credentials{
-				AccessKeyId:     "a",
-				SecretAccessKey: "b",
-				SessionToken:    "c",
-				Expiration:      types.Time(time.Unix(1, 0)),
-				RoleArn:         tc.ExpectedResult.RoleArn,
-			},
-		})
-		if err != nil {
-			t.Errorf("test setup failure: %e", err)
-			continue
-		}
-		result, actualError := testCache.GetOrSet(client, tc.SearchString, tc.Region, tc.AssumeChain)
+		result, actualError := testCache.GetOrSet(tc.SearchString, tc.Region, tc.AssumeChain)
 		if actualError != tc.ExpectedError {
 			t.Errorf("%s failed: expected %v error, got %v", tc.Description, tc.ExpectedError, actualError)
 			continue

@@ -17,11 +17,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
+
+	"github.com/netflix/weep/pkg/creds"
 
 	"github.com/netflix/weep/pkg/logging"
 
-	"github.com/netflix/weep/pkg/creds"
 	"github.com/netflix/weep/pkg/util"
 
 	"github.com/spf13/cobra"
@@ -53,12 +55,7 @@ func runOpen(cmd *cobra.Command, args []string) error {
 		return errors.New("Resource type sns and sqs require region in the arn")
 	}
 	var resourceURL string
-	client, err := creds.GetClient(region)
-	if err != nil {
-		logging.LogError(err, "Error getting client")
-		return err
-	}
-	resourceURL, err = client.GetResourceURL(args[0])
+	resourceURL, err = creds.ResourceURL(context.TODO(), args[0])
 	if err != nil {
 		logging.LogError(err, "Error getting resource URL")
 		return err

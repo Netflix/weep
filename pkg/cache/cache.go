@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/netflix/weep/pkg/creds"
+
 	"github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/logging"
 
@@ -60,14 +61,14 @@ func (cc *CredentialCache) Get(searchString string, assumeChain []string) (*cred
 	return nil, errors.NoCredentialsFoundInCache
 }
 
-func (cc *CredentialCache) GetOrSet(client creds.HTTPClient, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
+func (cc *CredentialCache) GetOrSet(role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	c, err := cc.Get(role, assumeChain)
 	if err == nil {
 		return c, nil
 	}
 	logging.Log.Debugf("no credentials for %s in cache, creating", role)
 
-	c, err = cc.set(client, role, region, assumeChain)
+	c, err = cc.set(role, region, assumeChain)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +76,8 @@ func (cc *CredentialCache) GetOrSet(client creds.HTTPClient, role, region string
 	return c, nil
 }
 
-func (cc *CredentialCache) SetDefault(client creds.HTTPClient, role, region string, assumeChain []string) error {
-	_, err := cc.set(client, role, region, assumeChain)
+func (cc *CredentialCache) SetDefault(role, region string, assumeChain []string) error {
+	_, err := cc.set(role, region, assumeChain)
 	if err != nil {
 		return err
 	}
@@ -120,8 +121,8 @@ func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {
 	return c, ok
 }
 
-func (cc *CredentialCache) set(client creds.HTTPClient, role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
-	c, err := creds.NewRefreshableProvider(client, role, region, assumeChain, false)
+func (cc *CredentialCache) set(role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
+	c, err := creds.NewRefreshableProvider(role, region, assumeChain, false)
 	if err != nil {
 		return nil, err
 	}
