@@ -18,9 +18,10 @@ package cmd
 
 import (
 	"context"
-	"github.com/netflix/weep/pkg/creds/v2/consoleme"
 	"os"
 	"strings"
+
+	"github.com/netflix/weep/pkg/creds/consoleme"
 
 	"github.com/netflix/weep/pkg/logging"
 

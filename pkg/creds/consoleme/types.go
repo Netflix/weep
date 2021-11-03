@@ -2,6 +2,7 @@ package consoleme
 
 import (
 	"encoding/json"
+
 	"github.com/netflix/weep/pkg/aws"
 	"github.com/netflix/weep/pkg/metadata"
 )
@@ -34,4 +35,3 @@ type credentialRequest struct {
 	NoIpRestricton bool                   `json:"no_ip_restrictions"`
 	Metadata       *metadata.InstanceInfo `json:"metadata,omitempty"`
 }
-

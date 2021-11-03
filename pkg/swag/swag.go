@@ -3,8 +3,9 @@ package swag
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/netflix/weep/pkg/creds/v2/consoleme/mtls"
 	"net/http"
+
+	"github.com/netflix/weep/pkg/creds/consoleme/mtls"
 
 	"github.com/spf13/viper"
 )

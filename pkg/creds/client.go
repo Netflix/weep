@@ -1,9 +1,10 @@
-package v2
+package creds
 
 import (
-	"github.com/netflix/weep/pkg/aws"
 	"io"
 	"net/http"
+
+	"github.com/netflix/weep/pkg/aws"
 )
 
 type IWeepClient interface {

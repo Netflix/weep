@@ -17,9 +17,10 @@
 package cache
 
 import (
-	"github.com/netflix/weep/pkg/creds/v1"
 	"strings"
 	"sync"
+
+	"github.com/netflix/weep/pkg/creds"
 
 	"github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/logging"
@@ -31,13 +32,13 @@ var GlobalCache CredentialCache
 
 type CredentialCache struct {
 	sync.RWMutex
-	RoleCredentials map[string]*v1.RefreshableProvider
+	RoleCredentials map[string]*creds.RefreshableProvider
 	DefaultRole     string
 }
 
 func init() {
 	GlobalCache = CredentialCache{
-		RoleCredentials: make(map[string]*v1.RefreshableProvider),
+		RoleCredentials: make(map[string]*creds.RefreshableProvider),
 	}
 }
 
@@ -47,7 +48,7 @@ func getCacheSlug(role string, assume []string) string {
 	return strings.Join(elements, "/")
 }
 
-func (cc *CredentialCache) Get(searchString string, assumeChain []string) (*v1.RefreshableProvider, error) {
+func (cc *CredentialCache) Get(searchString string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	logging.Log.WithFields(logrus.Fields{
 		"searchString": searchString,
 		"assumeChain":  assumeChain,
@@ -60,14 +61,14 @@ func (cc *CredentialCache) Get(searchString string, assumeChain []string) (*v1.R
 	return nil, errors.NoCredentialsFoundInCache
 }
 
-func (cc *CredentialCache) GetOrSet(client v1.HTTPClient, role, region string, assumeChain []string) (*v1.RefreshableProvider, error) {
+func (cc *CredentialCache) GetOrSet(role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
 	c, err := cc.Get(role, assumeChain)
 	if err == nil {
 		return c, nil
 	}
 	logging.Log.Debugf("no credentials for %s in cache, creating", role)
 
-	c, err = cc.set(client, role, region, assumeChain)
+	c, err = cc.set(role, region, assumeChain)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +76,8 @@ func (cc *CredentialCache) GetOrSet(client v1.HTTPClient, role, region string, a
 	return c, nil
 }
 
-func (cc *CredentialCache) SetDefault(client v1.HTTPClient, role, region string, assumeChain []string) error {
-	_, err := cc.set(client, role, region, assumeChain)
+func (cc *CredentialCache) SetDefault(role, region string, assumeChain []string) error {
+	_, err := cc.set(role, region, assumeChain)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (cc *CredentialCache) SetDefault(client v1.HTTPClient, role, region string,
 	return nil
 }
 
-func (cc *CredentialCache) GetDefault() (*v1.RefreshableProvider, error) {
+func (cc *CredentialCache) GetDefault() (*creds.RefreshableProvider, error) {
 	if cc.DefaultRole == "" {
 		return nil, errors.NoDefaultRoleSet
 	}
@@ -113,15 +114,15 @@ func (cc *CredentialCache) DefaultArn() string {
 	return c.RoleArn
 }
 
-func (cc *CredentialCache) get(slug string) (*v1.RefreshableProvider, bool) {
+func (cc *CredentialCache) get(slug string) (*creds.RefreshableProvider, bool) {
 	cc.RLock()
 	defer cc.RUnlock()
 	c, ok := cc.RoleCredentials[slug]
 	return c, ok
 }
 
-func (cc *CredentialCache) set(client v1.HTTPClient, role, region string, assumeChain []string) (*v1.RefreshableProvider, error) {
-	c, err := v1.NewRefreshableProvider(client, role, region, assumeChain, false)
+func (cc *CredentialCache) set(role, region string, assumeChain []string) (*creds.RefreshableProvider, error) {
+	c, err := creds.NewRefreshableProvider(role, region, assumeChain, false)
 	if err != nil {
 		return nil, err
 	}

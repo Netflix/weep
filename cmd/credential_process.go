@@ -17,10 +17,14 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/netflix/weep/pkg/creds/v1"
 	"time"
+
+	"github.com/netflix/weep/pkg/types"
+
+	"github.com/netflix/weep/pkg/creds"
 
 	"github.com/sirupsen/logrus"
 
@@ -89,11 +93,7 @@ func generateCredentialProcessConfig(destination string) error {
 	if destination == "" {
 		return fmt.Errorf("no destination provided")
 	}
-	client, err := v1.GetClient(region)
-	if err != nil {
-		return err
-	}
-	roles, err := client.Roles()
+	roles, err := creds.List(context.TODO())
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	}
 	role := args[0]
 	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Getting credentials")
-	credentials, err := v1.GetCredentials(role, noIpRestrict, assumeRole, "")
+	credentials, err := creds.Get(context.TODO(), role, noIpRestrict, assumeRole)
 	if err != nil {
 		logging.LogError(err, "Error getting credentials")
 		return err
@@ -132,7 +132,7 @@ func runCredentialProcess(cmd *cobra.Command, args []string) error {
 func printCredentialProcess(credentials *aws.Credentials) error {
 	expirationTimeFormat := credentials.Expiration.Format(time.RFC3339)
 
-	credentialProcessOutput := &v1.CredentialProcess{
+	credentialProcessOutput := &types.CredentialProcess{
 		Version:         1,
 		AccessKeyId:     credentials.AccessKeyId,
 		SecretAccessKey: credentials.SecretAccessKey,

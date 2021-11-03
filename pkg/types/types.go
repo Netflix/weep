@@ -2,6 +2,7 @@ package types
 
 import (
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -52,4 +53,40 @@ func (t Time) Time() time.Time {
 // String returns t as a formatted string
 func (t Time) String() string {
 	return t.Time().String()
+}
+
+type CredentialProcess struct {
+	Version         int    `json:"Version"`
+	AccessKeyId     string `json:"AccessKeyId"`
+	SecretAccessKey string `json:"SecretAccessKey"`
+	SessionToken    string `json:"SessionToken"`
+	Expiration      string `json:"Expiration"`
+}
+
+type Credentials struct {
+	Role                string
+	NoIpRestrict        bool
+	metaDataCredentials *Credentials
+	MetadataRegion      string
+	LastRenewal         Time
+	mu                  sync.Mutex
+}
+
+// RoleDetails represents the response structure of Weep's model for detailed eligible roles
+type RoleDetails struct {
+	Arn           string `json:"arn"`
+	AccountNumber string `json:"account_id"`
+	AccountName   string `json:"account_friendly_name"`
+	RoleName      string `json:"role_name"`
+	Apps          struct {
+		AppDetails []AppDetails `json:"app_details"`
+	} `json:"apps"`
+}
+
+// AppDetails represents the structure of details returned by ConsoleMe about a single app
+type AppDetails struct {
+	Name     string `json:"name"`
+	Owner    string `json:"owner"`
+	OwnerURL string `json:"owner_url"`
+	AppURL   string `json:"app_url"`
 }

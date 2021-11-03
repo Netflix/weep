@@ -3,19 +3,21 @@ package consoleme
 import (
 	"context"
 	"fmt"
-	"github.com/netflix/weep/pkg/aws"
-	v2 "github.com/netflix/weep/pkg/creds/v2"
-	"github.com/netflix/weep/pkg/creds/v2/consoleme/challenge"
-	"github.com/netflix/weep/pkg/creds/v2/consoleme/mtls"
-	"github.com/spf13/viper"
 	"net"
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/netflix/weep/pkg/types"
+
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/creds/consoleme/challenge"
+	"github.com/netflix/weep/pkg/creds/consoleme/mtls"
+	"github.com/spf13/viper"
 )
 
 type CredentialProvider struct {
-	client *http.Client
+	client       *http.Client
 	forceRefresh bool
 }
 
@@ -84,7 +86,7 @@ func (c *CredentialProvider) List(ctx context.Context) ([]string, error) {
 	return retrieveRoles(ctx, c.client)
 }
 
-func (c *CredentialProvider) ListExtended(ctx context.Context) ([]v2.RoleDetails, error) {
+func (c *CredentialProvider) ListExtended(ctx context.Context) ([]types.RoleDetails, error) {
 	if err := c.ensureClient(); err != nil {
 		return nil, err
 	}
@@ -98,7 +100,6 @@ func (c *CredentialProvider) ResourceURL(ctx context.Context, arn string) (strin
 	return retrieveResourceURL(ctx, c.client, arn)
 }
 
-
-
-
-
+func (c *CredentialProvider) CloseIdleConnections(ctx context.Context) {
+	c.client.CloseIdleConnections()
+}

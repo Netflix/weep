@@ -5,25 +5,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/netflix/weep/pkg/aws"
-	"github.com/netflix/weep/pkg/config"
-	v2 "github.com/netflix/weep/pkg/creds/v2"
-	"github.com/netflix/weep/pkg/creds/v2/consoleme/challenge"
-	werrors "github.com/netflix/weep/pkg/errors"
-	"github.com/netflix/weep/pkg/logging"
-	"github.com/netflix/weep/pkg/metadata"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/netflix/weep/pkg/types"
+
+	"github.com/netflix/weep/pkg/aws"
+	"github.com/netflix/weep/pkg/config"
+	"github.com/netflix/weep/pkg/creds/consoleme/challenge"
+	werrors "github.com/netflix/weep/pkg/errors"
+	"github.com/netflix/weep/pkg/logging"
+	"github.com/netflix/weep/pkg/metadata"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 var (
-	weepVersion   = fmt.Sprintf("%s", metadata.Version)
-	userAgent     = "weep/" + weepVersion + " Go-http-client/1.1"
+	weepVersion = fmt.Sprintf("%s", metadata.Version)
+	userAgent   = "weep/" + weepVersion + " Go-http-client/1.1"
 )
 
 func buildRequest(ctx context.Context, method, resource string, body io.Reader, apiPrefix string) (*http.Request, error) {
@@ -163,7 +165,7 @@ func retrieveRoles(ctx context.Context, client *http.Client) ([]string, error) {
 	return roles, nil
 }
 
-func retrieveRolesExtended(ctx context.Context, client *http.Client) ([]v2.RoleDetails, error) {
+func retrieveRolesExtended(ctx context.Context, client *http.Client) ([]types.RoleDetails, error) {
 	req, err := buildRequest(ctx, http.MethodGet, "/get_roles", nil, "/api/v2")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
@@ -192,7 +194,7 @@ func retrieveRolesExtended(ctx context.Context, client *http.Client) ([]v2.RoleD
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	var roles []v2.RoleDetails
+	var roles []types.RoleDetails
 	if err = json.Unmarshal(responseParsed.Data["roles"], &roles); err != nil {
 		return nil, werrors.UnexpectedResponseType
 	}
