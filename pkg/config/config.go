@@ -48,6 +48,7 @@ func init() {
 	viper.SetDefault("swag.enable", false)
 	viper.SetDefault("swag.use_mtls", false)
 	viper.SetDefault("swag.url", "")
+	viper.SetDefault("errors.custom_messages_enabled", false)
 
 	// Set aliases for backward-compatibility
 	viper.RegisterAlias("server.ecs_credential_provider_port", "server.port")
