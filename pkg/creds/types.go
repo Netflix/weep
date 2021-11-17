@@ -109,3 +109,19 @@ type ConsolemeAppDetails struct {
 	OwnerURL string `json:"owner_url"`
 	AppURL   string `json:"app_url"`
 }
+
+//// ConsolemeResourceSearchResponse represents the full response when searching resources in ConsoleMe
+//type ConsolemeResourceSearchResponse struct {
+//
+//}
+
+// ConsolemeResourceSearchResponseElement represents a single element in the response for searching resources
+type ConsolemeResourceSearchResponseElement struct {
+	Title string `json:"title"`
+}
+
+// ConsolemeAccountDetails represents the details for an account
+type ConsolemeAccountDetails struct {
+	AccountNumber string `json:"account_id"`
+	AccountName   string `json:"account_friendly_name"`
+}

@@ -295,6 +295,56 @@ func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*aws.Credenti
 	return getRoleCredentialsFunc(c, role, ipRestrict)
 }
 
+func (c *Client) GetAccounts(query string) ([]ConsolemeAccountDetails, error) {
+	resp, err := c.searchResources("account", query, 1000)
+	if err != nil {
+		return nil, err
+	}
+	var accounts []ConsolemeAccountDetails
+	for _, account := range resp {
+		idx := strings.Index(account.Title, "(")
+		accountName := account.Title[0 : idx-1]
+		accountNum := account.Title[idx+1 : strings.Index(account.Title, ")")]
+		accounts = append(accounts, ConsolemeAccountDetails{AccountName: accountName, AccountNumber: accountNum})
+	}
+	return accounts, nil
+}
+
+func (c *Client) searchResources(resourceType string, query string, limit int) ([]ConsolemeResourceSearchResponseElement, error) {
+	req, err := c.buildRequest(http.MethodGet, "/policies/typeahead", nil, "/api/v1")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build request")
+	}
+
+	// Add URL Parameters
+	q := url.Values{}
+	q.Add("search", query)
+	q.Add("resource", resourceType)
+	q.Add("limit", strconv.Itoa(limit))
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to action request")
+	}
+
+	defer resp.Body.Close()
+	document, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseWebError(document)
+	}
+
+	var responseParsed []ConsolemeResourceSearchResponseElement
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal JSON")
+	}
+
+	return responseParsed, nil
+}
+
 func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*aws.Credentials, error) {
 	var credentialsResponse ConsolemeCredentialResponseType
 

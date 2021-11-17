@@ -107,6 +107,12 @@ roles.
 More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/list-eligible-roles
 `
 
+var searchShortHelp = "Search for resources through ConsoleMe"
+var searchLongHelp = `The search command allows users to search for resources via ConsoleMe. Currently, only
+searching for account is supported.
+
+`
+
 var serveShortHelp = "Run a local ECS Credential Provider endpoint that serves and caches credentials for roles on demand"
 var serveLongHelp = `The serve command runs a local webserver that serves the /ecs/ path. When the
 AWS_CONTAINER_CREDENTIALS_FULL_URI environment variable is set to a URL, the 
