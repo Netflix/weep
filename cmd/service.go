@@ -124,6 +124,10 @@ func initService() error {
 		DisplayName: "Weep",
 		Description: "The ConsoleMe CLI",
 		Arguments:   args,
+		Option: service.KeyValue{
+			"OnFailure":              "restart", // Windows only
+			"OnFailureDelayDuration": "1m",      // Windows only
+		},
 	}
 
 	weepService, err = service.New(svcProgram, svcConfig)
