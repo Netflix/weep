@@ -16,12 +16,6 @@
 
 package errors
 
-import (
-	"fmt"
-
-	"github.com/spf13/viper"
-)
-
 type Error string
 
 func (e Error) Error() string { return string(e) }
@@ -40,30 +34,3 @@ const (
 	MalformedRequestError          = Error("malformed request sent to broker")
 	UnexpectedResponseType         = Error("received an unexpected response type")
 )
-
-func HandleError(err error) {
-	if !viper.GetBool("errors.custom_messages_enabled") || viper.GetString("errors.base_help_url") == "" {
-		return
-	}
-	base_url := viper.GetString("errors.base_help_url")
-	current_error_url := base_url + viper.GetString("errors.help_url_suffix.default")
-	switch err {
-	case NoMatchingRoles:
-		current_error_url = base_url + viper.GetString("errors.help_url_suffix.no_matching_roles")
-		fmt.Println("It looks like you are missing access to that role.")
-	case MutualTLSCertNeedsRefreshError:
-		current_error_url = ""
-		if viper.GetString("mtls_settings.refresh_command") != "" {
-			fmt.Println("Refreshing your MTLS certificate now...")
-			// TODO: figure out best way to do this part
-		} else {
-			fmt.Println("mtls_settings.old_cert_message")
-		}
-	case MultipleMatchingRoles:
-		//TODO
-	}
-
-	if current_error_url != "" {
-		fmt.Printf("Please visit %s for help with your error.\n", current_error_url)
-	}
-}
