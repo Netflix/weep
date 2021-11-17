@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/util"
+
 	"github.com/netflix/weep/pkg/aws"
 	"github.com/netflix/weep/pkg/config"
 	werrors "github.com/netflix/weep/pkg/errors"
@@ -177,7 +179,7 @@ func (c *Client) Roles() ([]string, error) {
 }
 
 // RolesExtended returns all eligible role along with additional details, using v2 of eligible roles endpoint
-func (c *Client) RolesExtended() ([]ConsolemeEligibleRolesResponse, error) {
+func (c *Client) RolesExtended() ([]ConsolemeRolesResponse, error) {
 	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil, "/api/v2")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
@@ -206,7 +208,7 @@ func (c *Client) RolesExtended() ([]ConsolemeEligibleRolesResponse, error) {
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	var roles []ConsolemeEligibleRolesResponse
+	var roles []ConsolemeRolesResponse
 	if err = json.Unmarshal(responseParsed.Data["roles"], &roles); err != nil {
 		return nil, werrors.UnexpectedResponseType
 	}
@@ -308,6 +310,20 @@ func (c *Client) GetAccounts(query string) ([]ConsolemeAccountDetails, error) {
 		accounts = append(accounts, ConsolemeAccountDetails{AccountName: accountName, AccountNumber: accountNum})
 	}
 	return accounts, nil
+}
+
+func (c *Client) GetRolesInAccount(query string, accountNumber string) ([]ConsolemeRolesResponse, error) {
+	query = "arn:aws:iam::" + accountNumber + ":role/" + query
+	resp, err := c.searchResources("iam_arn", query, 5000)
+	if err != nil {
+		return nil, err
+	}
+	var roles []ConsolemeRolesResponse
+	for _, role := range resp {
+		arn, _ := util.ArnParse(role.Title)
+		roles = append(roles, ConsolemeRolesResponse{Arn: role.Title, RoleName: arn.Resource})
+	}
+	return roles, nil
 }
 
 func (c *Client) searchResources(resourceType string, query string, limit int) ([]ConsolemeResourceSearchResponseElement, error) {

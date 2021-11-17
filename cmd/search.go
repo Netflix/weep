@@ -25,14 +25,14 @@ import (
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
-	Use:    "search [account]",
+	Use:    "search [account|role]",
 	Short:  searchShortHelp,
 	Long:   searchLongHelp,
 	Hidden: true,
 }
 
 var accountSearchCmd = &cobra.Command{
-	Use:   "account",
+	Use:   "account [query_string]",
 	Short: "Search for an account through ConsoleMe",
 	Long:  searchLongHelp,
 	Args:  cobra.MaximumNArgs(1),
@@ -41,7 +41,7 @@ var accountSearchCmd = &cobra.Command{
 		if len(args) == 1 {
 			query = args[0]
 		}
-		account, err := InteractiveAccountsPrompt(query, region, nil)
+		account, err := InteractiveAccountsPrompt(query, region, nil, false)
 		if err != nil {
 			logging.LogError(err, "Error getting account")
 			return err
@@ -51,7 +51,30 @@ var accountSearchCmd = &cobra.Command{
 	},
 }
 
+var roleSearchCmd = &cobra.Command{
+	Use:   "role [query_string]",
+	Short: "Search for a role in an account through ConsoleMe",
+	Long:  searchLongHelp,
+	Args:  cobra.MaximumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		query := ""
+		if len(args) == 1 {
+			query = args[0]
+		}
+		fmt.Println("Please the select the account you want to search:")
+		account, err := InteractiveAccountsPrompt("", region, nil, true)
+		if err != nil {
+			logging.LogError(err, "Error getting account")
+			return err
+		}
+		role, err := InteractiveRoleInAccountPrompt(query, region, nil, account)
+		fmt.Println(role)
+		return nil
+	},
+}
+
 func init() {
 	searchCmd.AddCommand(accountSearchCmd)
+	searchCmd.AddCommand(roleSearchCmd)
 	rootCmd.AddCommand(searchCmd)
 }

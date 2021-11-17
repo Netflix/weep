@@ -109,7 +109,7 @@ More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/list-el
 
 var searchShortHelp = "Search for resources through ConsoleMe"
 var searchLongHelp = `The search command allows users to search for resources via ConsoleMe. Currently, only
-searching for account is supported.
+searching for accounts or roles is supported.
 
 `
 

@@ -86,6 +86,12 @@ func Execute() error {
 	return nil
 }
 
+func AddCustomCommands(commands []*cobra.Command) {
+	for _, command := range commands {
+		rootCmd.AddCommand(command)
+	}
+}
+
 func initConfig() {
 	if err := config.InitConfig(cfgFile); err != nil {
 		logging.LogError(err, "failed to initialize config")
