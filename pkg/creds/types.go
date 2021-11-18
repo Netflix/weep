@@ -110,11 +110,6 @@ type ConsolemeAppDetails struct {
 	AppURL   string `json:"app_url"`
 }
 
-//// ConsolemeResourceSearchResponse represents the full response when searching resources in ConsoleMe
-//type ConsolemeResourceSearchResponse struct {
-//
-//}
-
 // ConsolemeResourceSearchResponseElement represents a single element in the response for searching resources
 type ConsolemeResourceSearchResponseElement struct {
 	Title string `json:"title"`
