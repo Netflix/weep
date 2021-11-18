@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/util"
+
 	"github.com/netflix/weep/pkg/aws"
 	"github.com/netflix/weep/pkg/config"
 	werrors "github.com/netflix/weep/pkg/errors"
@@ -177,7 +179,7 @@ func (c *Client) Roles() ([]string, error) {
 }
 
 // RolesExtended returns all eligible role along with additional details, using v2 of eligible roles endpoint
-func (c *Client) RolesExtended() ([]ConsolemeEligibleRolesResponse, error) {
+func (c *Client) RolesExtended() ([]ConsolemeRolesResponse, error) {
 	req, err := c.buildRequest(http.MethodGet, "/get_roles", nil, "/api/v2")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
@@ -206,7 +208,7 @@ func (c *Client) RolesExtended() ([]ConsolemeEligibleRolesResponse, error) {
 	if err := json.Unmarshal(document, &responseParsed); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	var roles []ConsolemeEligibleRolesResponse
+	var roles []ConsolemeRolesResponse
 	if err = json.Unmarshal(responseParsed.Data["roles"], &roles); err != nil {
 		return nil, werrors.UnexpectedResponseType
 	}
@@ -248,6 +250,34 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 		return "", werrors.UnexpectedResponseType
 	}
 	return config.BaseWebURL() + respURL, nil
+}
+
+// GenericGet makes a GET request to the request URL
+func (c *Client) GenericGet(resource string, apiPrefix string) (map[string]json.RawMessage, error) {
+	req, err := c.buildRequest(http.MethodGet, resource, nil, apiPrefix)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build request")
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to action request")
+	}
+
+	defer resp.Body.Close()
+	document, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseWebError(document)
+	}
+	var responseParsed ConsolemeWebResponse
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal JSON")
+	}
+
+	return responseParsed.Data, nil
 }
 
 func parseWebError(rawErrorResponse []byte) error {
@@ -293,6 +323,70 @@ func parseError(statusCode int, rawErrorResponse []byte) error {
 
 func (c *Client) GetRoleCredentials(role string, ipRestrict bool) (*aws.Credentials, error) {
 	return getRoleCredentialsFunc(c, role, ipRestrict)
+}
+
+func (c *Client) GetAccounts(query string) ([]ConsolemeAccountDetails, error) {
+	resp, err := c.searchResources("account", query, 1000)
+	if err != nil {
+		return nil, err
+	}
+	var accounts []ConsolemeAccountDetails
+	for _, account := range resp {
+		idx := strings.Index(account.Title, "(")
+		accountName := account.Title[0 : idx-1]
+		accountNum := account.Title[idx+1 : strings.Index(account.Title, ")")]
+		accounts = append(accounts, ConsolemeAccountDetails{AccountName: accountName, AccountNumber: accountNum})
+	}
+	return accounts, nil
+}
+
+func (c *Client) GetRolesInAccount(query string, accountNumber string) ([]ConsolemeRolesResponse, error) {
+	query = "arn:aws:iam::" + accountNumber + ":role/" + query
+	resp, err := c.searchResources("iam_arn", query, 5000)
+	if err != nil {
+		return nil, err
+	}
+	var roles []ConsolemeRolesResponse
+	for _, role := range resp {
+		arn, _ := util.ArnParse(role.Title)
+		roles = append(roles, ConsolemeRolesResponse{Arn: role.Title, RoleName: arn.Resource})
+	}
+	return roles, nil
+}
+
+func (c *Client) searchResources(resourceType string, query string, limit int) ([]ConsolemeResourceSearchResponseElement, error) {
+	req, err := c.buildRequest(http.MethodGet, "/policies/typeahead", nil, "/api/v1")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build request")
+	}
+
+	// Add URL Parameters
+	q := url.Values{}
+	q.Add("search", query)
+	q.Add("resource", resourceType)
+	q.Add("limit", strconv.Itoa(limit))
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to action request")
+	}
+
+	defer resp.Body.Close()
+	document, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseWebError(document)
+	}
+
+	var responseParsed []ConsolemeResourceSearchResponseElement
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal JSON")
+	}
+
+	return responseParsed, nil
 }
 
 func getRoleCredentialsFunc(c HTTPClient, role string, ipRestrict bool) (*aws.Credentials, error) {

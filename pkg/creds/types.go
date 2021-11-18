@@ -91,8 +91,8 @@ type ConsolemeWebResponse struct {
 	Data        map[string]json.RawMessage `json:"data"`
 }
 
-// ConsolemeEligibleRolesResponse represents the response structure of ConsoleMe's model for detailed eligible roles
-type ConsolemeEligibleRolesResponse struct {
+// ConsolemeRolesResponse represents the response structure of ConsoleMe's model for detailed roles
+type ConsolemeRolesResponse struct {
 	Arn           string `json:"arn"`
 	AccountNumber string `json:"account_id"`
 	AccountName   string `json:"account_friendly_name"`
@@ -108,4 +108,15 @@ type ConsolemeAppDetails struct {
 	Owner    string `json:"owner"`
 	OwnerURL string `json:"owner_url"`
 	AppURL   string `json:"app_url"`
+}
+
+// ConsolemeResourceSearchResponseElement represents a single element in the response for searching resources
+type ConsolemeResourceSearchResponseElement struct {
+	Title string `json:"title"`
+}
+
+// ConsolemeAccountDetails represents the details for an account
+type ConsolemeAccountDetails struct {
+	AccountNumber string `json:"account_id"`
+	AccountName   string `json:"account_friendly_name"`
 }
