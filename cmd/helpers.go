@@ -78,7 +78,7 @@ func InteractiveRolePrompt(args []string, region string, client *creds.Client) (
 // InteractiveAccountsPrompt will present the user with a fuzzy-searchable list of accounts if
 // - We are currently attached to an interactive tty
 // - The user has not disabled them through the WEEP_DISABLE_INTERACTIVE_PROMPTS option
-func InteractiveAccountsPrompt(query string, region string, client *creds.Client, numberOnly bool) (string, error) {
+func InteractiveAccountsPrompt(query string, client *creds.Client, numberOnly bool) (string, error) {
 
 	var err error
 	client, err = preInteractiveCheck(region, client)
@@ -122,7 +122,7 @@ func InteractiveAccountsPrompt(query string, region string, client *creds.Client
 // InteractiveRoleInAccountPrompt will present the user with a fuzzy-searchable list of roles in an account if
 // - We are currently attached to an interactive tty
 // - The user has not disabled them through the WEEP_DISABLE_INTERACTIVE_PROMPTS option
-func InteractiveRoleInAccountPrompt(query string, region string, client *creds.Client, account string) (string, error) {
+func InteractiveRoleInAccountPrompt(query string, client *creds.Client, account string) (string, error) {
 
 	var err error
 	client, err = preInteractiveCheck(region, client)
@@ -149,6 +149,20 @@ func InteractiveRoleInAccountPrompt(query string, region string, client *creds.C
 	}
 
 	return roles[idx].Arn, nil
+}
+
+// InteractiveGenericSelectorPrompt will present the user with fuzzy-searchable list of generic selections if
+// - We are currently attached to an interactive tty
+// - The user has not disabled them through the WEEP_DISABLE_INTERACTIVE_PROMPTS option
+func InteractiveGenericSelectorPrompt(label string, display []string, query []string) (int, error) {
+	if !isRunningInTerminal() {
+		return 0, fmt.Errorf("cannot prompt for input")
+	}
+
+	if os.Getenv("WEEP_DISABLE_INTERACTIVE_PROMPTS") == "1" {
+		return 0, fmt.Errorf("interactive prompts are disabled")
+	}
+	return runPrompt(label, display, query)
 }
 
 func isRunningInTerminal() bool {

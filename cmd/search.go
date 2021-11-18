@@ -41,7 +41,7 @@ var accountSearchCmd = &cobra.Command{
 		if len(args) == 1 {
 			query = args[0]
 		}
-		account, err := InteractiveAccountsPrompt(query, region, nil, false)
+		account, err := InteractiveAccountsPrompt(query, nil, false)
 		if err != nil {
 			logging.LogError(err, "Error getting account")
 			return err
@@ -62,12 +62,12 @@ var roleSearchCmd = &cobra.Command{
 			query = args[0]
 		}
 		fmt.Println("Please the select the account you want to search:")
-		account, err := InteractiveAccountsPrompt("", region, nil, true)
+		account, err := InteractiveAccountsPrompt("", nil, true)
 		if err != nil {
 			logging.LogError(err, "Error getting account")
 			return err
 		}
-		role, err := InteractiveRoleInAccountPrompt(query, region, nil, account)
+		role, err := InteractiveRoleInAccountPrompt(query, nil, account)
 		fmt.Println(role)
 		return nil
 	},

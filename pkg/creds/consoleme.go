@@ -252,6 +252,34 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 	return config.BaseWebURL() + respURL, nil
 }
 
+// GenericGet makes a GET request to the request URL
+func (c *Client) GenericGet(resource string, apiPrefix string) (map[string]json.RawMessage, error) {
+	req, err := c.buildRequest(http.MethodGet, resource, nil, apiPrefix)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build request")
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to action request")
+	}
+
+	defer resp.Body.Close()
+	document, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read response body")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseWebError(document)
+	}
+	var responseParsed ConsolemeWebResponse
+	if err := json.Unmarshal(document, &responseParsed); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal JSON")
+	}
+
+	return responseParsed.Data, nil
+}
+
 func parseWebError(rawErrorResponse []byte) error {
 	var errorResponse ConsolemeWebResponse
 	if err := json.Unmarshal(rawErrorResponse, &errorResponse); err != nil {
