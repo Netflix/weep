@@ -19,29 +19,33 @@ package cmd
 import "os"
 
 var (
-	assumeRole        []string
-	autoRefresh       bool
-	cfgFile           string
-	destination       string
-	destinationConfig string
-	done              chan int
-	extendedInfo      bool
-	force             bool
-	generate          bool
-	infoDecode        bool
-	infoRaw           bool
-	listenAddr        string
-	listenPort        int
-	logFile           string
-	logFormat         string
-	logLevel          string
-	noIpRestrict      bool
-	noOpen            bool
-	profileName       string
-	region            string
-	shortInfo         bool
-	showAll           bool
-	shutdown          chan os.Signal
+	accountFilter              string
+	assumeRole                 []string
+	autoRefresh                bool
+	awsProfiles                map[string]string
+	cfgFile                    string
+	destination                string
+	destinationConfig          string
+	done                       chan int
+	extendedInfo               bool
+	force                      bool
+	generate                   bool
+	infoDecode                 bool
+	infoRaw                    bool
+	listenAddr                 string
+	listenPort                 int
+	logFile                    string
+	logFormat                  string
+	logLevel                   string
+	noIpRestrict               bool
+	noOpen                     bool
+	profileName                string
+	region                     string
+	shortInfo                  bool
+	showAll                    bool
+	showConfiguredProfilesOnly bool
+	showInstanceProfilesOnly   bool
+	shutdown                   chan os.Signal
 )
 
 var completionShortHelp = "Generate completion script"
