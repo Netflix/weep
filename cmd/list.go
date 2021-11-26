@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -30,6 +31,11 @@ import (
 func init() {
 	listCmd.PersistentFlags().BoolVarP(&extendedInfo, "extended-info", "e", false, "include additional information about roles such as associated apps")
 	listCmd.PersistentFlags().BoolVarP(&shortInfo, "short-info", "s", false, "only display the role ARNs")
+	listCmd.PersistentFlags().StringVarP(&accountFilter, "account", "a", "", "filter by aws account number or account name")
+	listCmd.PersistentFlags().BoolVar(&showAll, "all", true, "show user profiles as well as instance profiles")
+	listCmd.PersistentFlags().BoolVar(&showInstanceProfilesOnly, "instance", false, "show only instance roles")
+	listCmd.PersistentFlags().BoolVar(&showConfiguredProfilesOnly, "profiles", false, "show only configured roles")
+	listCmd.PersistentFlags().StringToStringVar(&awsProfiles, "aws-profiles", nil, "")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -50,7 +56,35 @@ func roleList() (string, error) {
 		return "", err
 	}
 	var rolesData [][]string
+
+	awsProfilesARNs := make(map[string]bool)
+	if showConfiguredProfilesOnly {
+		if awsProfiles == nil {
+			return "", fmt.Errorf("cannot filter by aws-profiles, as no aws-profiles were found")
+		}
+		for _, arn := range awsProfiles {
+			awsProfilesARNs[arn] = true
+		}
+	}
+	fmt.Println(awsProfilesARNs)
 	for _, role := range roles {
+		if accountFilter != "" {
+			// accountFilter could be account number OR account friendly name
+			if accountFilter != role.AccountNumber && accountFilter != role.AccountName {
+				// matches neither, skip this role
+				continue
+			}
+		}
+		if showInstanceProfilesOnly {
+			if !strings.HasSuffix(role.Arn, "InstanceProfile") {
+				continue
+			}
+		}
+		if showConfiguredProfilesOnly {
+			if _, ok := awsProfilesARNs[role.Arn]; !ok {
+				continue
+			}
+		}
 		if shortInfo {
 			rolesData = append(rolesData, []string{role.Arn})
 			continue
