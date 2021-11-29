@@ -66,7 +66,6 @@ func roleList() (string, error) {
 			awsProfilesARNs[arn] = true
 		}
 	}
-	fmt.Println(awsProfilesARNs)
 	for _, role := range roles {
 		if accountFilter != "" {
 			// accountFilter could be account number OR account friendly name
