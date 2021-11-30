@@ -17,6 +17,7 @@
 package config
 
 import (
+	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -169,6 +170,20 @@ func BaseWebURL() string {
 		return override
 	}
 	return viper.GetString("consoleme_url")
+}
+
+func MergeExtraConfigFile(extraConfigFile string) error {
+	f, err := os.Open(extraConfigFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if err = viper.MergeConfig(f); err != nil {
+		return errors.Wrap(err, "could not merge extra config")
+	}
+
+	return nil
 }
 
 var (

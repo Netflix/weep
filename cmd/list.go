@@ -17,9 +17,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"github.com/netflix/weep/pkg/logging"
 
@@ -35,7 +36,6 @@ func init() {
 	listCmd.PersistentFlags().BoolVar(&showAll, "all", true, "show user profiles as well as instance profiles")
 	listCmd.PersistentFlags().BoolVar(&showInstanceProfilesOnly, "instance", false, "show only instance roles")
 	listCmd.PersistentFlags().BoolVar(&showConfiguredProfilesOnly, "profiles", false, "show only configured roles")
-	listCmd.PersistentFlags().StringToStringVar(&awsProfiles, "aws-profiles", nil, "")
 	rootCmd.AddCommand(listCmd)
 }
 
@@ -58,10 +58,8 @@ func roleList() (string, error) {
 	var rolesData [][]string
 
 	awsProfilesARNs := make(map[string]bool)
+	awsProfiles := viper.GetStringMapString("aws-profiles")
 	if showConfiguredProfilesOnly {
-		if awsProfiles == nil {
-			return "", fmt.Errorf("cannot filter by aws-profiles, as no aws-profiles were found")
-		}
 		for _, arn := range awsProfiles {
 			awsProfilesARNs[arn] = true
 		}

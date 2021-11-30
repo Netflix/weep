@@ -22,12 +22,12 @@ var (
 	accountFilter              string
 	assumeRole                 []string
 	autoRefresh                bool
-	awsProfiles                map[string]string
 	cfgFile                    string
 	destination                string
 	destinationConfig          string
 	done                       chan int
 	extendedInfo               bool
+	extraConfigFile            string
 	force                      bool
 	generate                   bool
 	infoDecode                 bool

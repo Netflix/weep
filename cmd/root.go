@@ -36,13 +36,20 @@ var (
 		Long:              "Weep is a CLI tool that manages AWS access via ConsoleMe for local development.",
 		DisableAutoGenTag: true,
 		SilenceUsage:      true,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// This runs before any subcommand, and cmd.CalledAs() returns the subcommand
 			// that was called. We want to use this for the weep method in the instance info.
 			metadata.SetWeepMethod(cmd.CalledAs())
 			// Add basic metadata to ALL future logs
 			metadata.AddMetadataToLogger(args)
 			logging.Log.Infoln("Incoming weep command")
+			if extraConfigFile != "" {
+				err := config.MergeExtraConfigFile(extraConfigFile)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
 		},
 	}
 )
@@ -58,6 +65,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", viper.GetString("log_file"), "log file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "log level (debug, info, warn)")
 	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", viper.GetString("aws.region"), "AWS region")
+	rootCmd.PersistentFlags().StringVar(&extraConfigFile, "extra-config-file", "", "extra-config-file <yaml_file>")
 	if err := viper.BindPFlag("log_level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
 		logging.LogError(err, "Error parsing")
 	}
