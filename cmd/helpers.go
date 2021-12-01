@@ -17,6 +17,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strconv"
@@ -163,6 +164,20 @@ func InteractiveGenericSelectorPrompt(label string, display []string, query []st
 		return 0, fmt.Errorf("interactive prompts are disabled")
 	}
 	return runPrompt(label, display, query)
+}
+
+// GetUserInput gets user input from stdin
+func GetUserInput(label string) (string, error) {
+	if !isRunningInTerminal() {
+		return "", fmt.Errorf("cannot prompt for input")
+	}
+	fmt.Print(label)
+	inputReader := bufio.NewReader(os.Stdin)
+	input, err := inputReader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return input, nil
 }
 
 func isRunningInTerminal() bool {

@@ -254,7 +254,16 @@ func (c *Client) GetResourceURL(arn string) (string, error) {
 
 // GenericGet makes a GET request to the request URL
 func (c *Client) GenericGet(resource string, apiPrefix string) (map[string]json.RawMessage, error) {
-	req, err := c.buildRequest(http.MethodGet, resource, nil, apiPrefix)
+	return c.genericRequest(http.MethodGet, resource, apiPrefix, nil)
+}
+
+// GenericPost makes a POST request to the request URL
+func (c *Client) GenericPost(resource string, apiPrefix string, b *bytes.Buffer) (map[string]json.RawMessage, error) {
+	return c.genericRequest(http.MethodPost, resource, apiPrefix, b)
+}
+
+func (c *Client) genericRequest(method string, resource string, apiPrefix string, b io.Reader) (map[string]json.RawMessage, error) {
+	req, err := c.buildRequest(method, resource, b, apiPrefix)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build request")
 	}
