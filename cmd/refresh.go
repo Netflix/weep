@@ -52,6 +52,11 @@ var refreshCmd = &cobra.Command{
 			return fmt.Errorf("unable to find profile %s in 'aws-profiles' property. You can also run with -r role_name <optional_profile_name>", profileName)
 		}
 
+		awsCredentialsFile := viper.GetString("aws-credential-file")
+		if awsCredentialsFile != "" {
+			destination = awsCredentialsFile
+		}
+
 		argsPass := []string{roleRefreshARN}
 		// explicit refresh command means force overwrite the profile
 		force = true
