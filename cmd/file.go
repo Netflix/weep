@@ -65,6 +65,8 @@ func runFile(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Profile %s for role \"%s\" updated\n", profileName, role)
+	fmt.Printf("Credentials written to %s\n", destination)
 	if autoRefresh {
 		logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Starting automatic file refresh")
 		fmt.Printf("starting automatic file refresh for %s", role)
