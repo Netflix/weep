@@ -33,7 +33,7 @@ func init() {
 	listCmd.PersistentFlags().BoolVarP(&extendedInfo, "extended-info", "e", false, "include additional information about roles such as associated apps")
 	listCmd.PersistentFlags().BoolVarP(&shortInfo, "short-info", "s", false, "only display the role ARNs")
 	listCmd.PersistentFlags().StringVarP(&accountFilter, "account", "a", "", "filter by aws account number or account name")
-	listCmd.PersistentFlags().BoolVarP(&showAll, "all", "A", true, "show all available roles (default option)")
+	listCmd.PersistentFlags().BoolVar(&showAll, "all", true, "show all available roles (default option)")
 	listCmd.PersistentFlags().BoolVarP(&showInstanceProfilesOnly, "instance", "i", false, "show only instance roles")
 	listCmd.PersistentFlags().BoolVarP(&showConfiguredProfilesOnly, "profiles", "p", false, "show only configured roles")
 	rootCmd.AddCommand(listCmd)
