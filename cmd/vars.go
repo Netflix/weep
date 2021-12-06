@@ -41,6 +41,7 @@ var (
 	noOpen                     bool
 	profileName                string
 	region                     string
+	roleRefreshARN             string
 	shortInfo                  bool
 	showAll                    bool
 	showConfiguredProfilesOnly bool
