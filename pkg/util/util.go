@@ -206,3 +206,12 @@ func RenderTabularData(headers []string, data [][]string) string {
 	table.Render()
 	return tableString.String()
 }
+
+func StringInSlice(elem string, list []string) bool {
+	for _, elemInList := range list {
+		if elem == elemInList {
+			return true
+		}
+	}
+	return false
+}
