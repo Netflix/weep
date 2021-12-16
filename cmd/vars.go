@@ -42,11 +42,13 @@ var (
 	profileName                string
 	region                     string
 	roleRefreshARN             string
+	shellInfo                  string
 	shortInfo                  bool
 	showAll                    bool
 	showConfiguredProfilesOnly bool
 	showInstanceProfilesOnly   bool
 	shutdown                   chan os.Signal
+	useShellFlag               bool
 )
 
 var completionShortHelp = "Generate completion script"

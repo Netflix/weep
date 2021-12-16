@@ -57,7 +57,12 @@ func runExport(cmd *cobra.Command, args []string) error {
 		logging.LogError(err, "Error getting credentials")
 		return err
 	}
-	printExport(credentials)
+	if !useShellFlag {
+		// user hasn't explicitly passed in a shell
+		printExport(credentials)
+	} else {
+		printExportForShell(shellInfo, credentials)
+	}
 	return nil
 }
 
@@ -72,13 +77,31 @@ func isFish() bool {
 	}
 }
 
+// User hasn't specified a shell, attempt to guess it
 func printExport(creds *aws.Credentials) {
 	if isFish() {
 		// fish has a different way of setting variables than bash/zsh and others
-		fmt.Printf("set -x AWS_ACCESS_KEY_ID %s && set -x AWS_SECRET_ACCESS_KEY %s && set -x AWS_SESSION_TOKEN %s\n",
-			creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken)
+		printExportForShell("fish", creds)
 	} else {
-		fmt.Printf("export AWS_ACCESS_KEY_ID=%s && export AWS_SECRET_ACCESS_KEY=%s && export AWS_SESSION_TOKEN=%s\n",
-			creds.AccessKeyId, creds.SecretAccessKey, creds.SessionToken)
+		// defaults to bash
+		printExportForShell("bash", creds)
+	}
+}
+
+// Prints out the export command for a specific shell, as defined by user
+func printExportForShell(shell string, creds *aws.Credentials) {
+	fmt.Println(exportVar(shell, "AWS_ACCESS_KEY_ID", creds.AccessKeyId))
+	fmt.Println(exportVar(shell, "AWS_SECRET_ACCESS_KEY", creds.SecretAccessKey))
+	fmt.Println(exportVar(shell, "AWS_SESSION_TOKEN", creds.SessionToken))
+}
+
+func exportVar(shell, name, value string) string {
+	switch shell {
+	case "fish":
+		return fmt.Sprintf("set -gx %s %q;", name, value)
+	case "csh", "tcsh":
+		return fmt.Sprintf("setenv %s %q;", name, value)
+	default: // "sh", "bash", "ksh", "zsh":
+		return fmt.Sprintf("export %s=%q", name, value)
 	}
 }
