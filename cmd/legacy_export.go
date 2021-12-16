@@ -26,14 +26,14 @@ import (
 )
 
 func init() {
-	exportWrapperCmd.PersistentFlags().StringVarP(&roleRefreshARN, "role", "z", "", "role")
-	exportWrapperCmd.PersistentFlags().StringVar(&shellInfo, "shell", "bash", "--shell=sh|bash|ksh|zsh|fish|csh|tcsh")
-	rootCmd.AddCommand(exportWrapperCmd)
+	legacyExportCmd.PersistentFlags().StringVarP(&roleRefreshARN, "role", "z", "", "role")
+	legacyExportCmd.PersistentFlags().StringVar(&shellInfo, "shell", "bash", "--shell=sh|bash|ksh|zsh|fish|csh|tcsh")
+	legacyCmd.AddCommand(legacyExportCmd)
 }
 
 // wrapper to allow for backwards-compatibility for commands that implement the export functionality currently
-var exportWrapperCmd = &cobra.Command{
-	Use:    "export-wrapper [profile]",
+var legacyExportCmd = &cobra.Command{
+	Use:    "export [profile]",
 	Short:  exportShortHelp,
 	Hidden: true,
 	Args:   cobra.MaximumNArgs(1),
