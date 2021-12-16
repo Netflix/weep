@@ -31,6 +31,7 @@ func init() {
 	rootCmd.AddCommand(exportWrapperCmd)
 }
 
+// wrapper to allow for backwards-compatibility for commands that implement the export functionality currently
 var exportWrapperCmd = &cobra.Command{
 	Use:    "export-wrapper [profile]",
 	Short:  exportShortHelp,
