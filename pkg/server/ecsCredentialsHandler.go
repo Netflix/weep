@@ -58,13 +58,13 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 	return func(w http.ResponseWriter, r *http.Request) {
 		var client, err = creds.GetClient(region)
 		if err != nil {
-			logging.Log.Error(err)
+			logging.LogError(err, "error getting credentials")
 			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		assume, err := parseAssumeRoleQuery(r)
 		if err != nil {
-			logging.Log.Error(err)
+			logging.LogError(err, "error parsing assume role query")
 			util.WriteError(w, err.Error(), http.StatusBadRequest)
 			return
 		}

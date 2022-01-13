@@ -72,7 +72,7 @@ func getTLSConfig() (*tls.Config, error) {
 
 func makeTLSConfig(certFile, keyFile, caFile string, insecure bool) (*tls.Config, error) {
 	if certFile == "" || keyFile == "" || caFile == "" {
-		logging.Log.Error("MTLS cert, key, or CA file not defined in configuration")
+		logging.LogError(fmt.Errorf("mTLS cert, key, or CA file not defined in configuration"), "mTLS could not be initialized")
 		return nil, MissingTLSConfigError
 	}
 	caCert, _ := ioutil.ReadFile(caFile)

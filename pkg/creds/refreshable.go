@@ -66,7 +66,7 @@ func (rp *RefreshableProvider) AutoRefresh() {
 		case _ = <-ticker.C:
 			_, err := rp.checkAndRefresh(10)
 			if err != nil {
-				logging.Log.Error(err.Error())
+				logging.LogError(err, "failed to refresh credentials")
 			}
 		}
 	}
