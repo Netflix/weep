@@ -160,7 +160,7 @@ func SetUser(user string) error {
 
 func MtlsEnabled() bool {
 	authMethod := viper.GetString("authentication_method")
-	return authMethod == "mtls"
+	return authMethod == "mtls" && viper.GetBool("mtls_settings.enabled")
 }
 
 // BaseWebURL allows the ConsoleMe URL to be overridden for cases where the API

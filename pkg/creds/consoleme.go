@@ -98,8 +98,7 @@ func GetClient(region string) (*Client, error) {
 		if err != nil {
 			return client, err
 		}
-	}
-	if authenticationMethod == "mtls" {
+	} else if authenticationMethod == "mtls" {
 		mtlsClient, err := mtls.NewHTTPClient()
 		if err != nil {
 			return client, err
