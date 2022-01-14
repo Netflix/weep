@@ -51,9 +51,6 @@ var userAgent = "weep/" + clientVersion + " Go-http-client/1.1"
 var clientFactoryOverride ClientFactory
 var preflightFunctions = make([]RequestPreflight, 0)
 
-type Account struct {
-}
-
 // HTTPClient is the interface we expect HTTP clients to implement.
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -71,12 +68,17 @@ type Client struct {
 
 type ClientFactory func() (*http.Client, error)
 
+// RegisterClientFactory overrides Weep's standard config-based ConsoleMe client
+// creation with a ClientFactory. This function will be called during the creation
+// of all ConsoleMe clients.
 func RegisterClientFactory(factory ClientFactory) {
 	clientFactoryOverride = factory
 }
 
 type RequestPreflight func(req *http.Request) error
 
+// RegisterRequestPreflight adds a RequestPreflight function which will be called in the
+// order of registration during the creation of a ConsoleMe request.
 func RegisterRequestPreflight(preflight RequestPreflight) {
 	preflightFunctions = append(preflightFunctions, preflight)
 }
