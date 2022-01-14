@@ -31,7 +31,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 
 	if isServingIMDS {
 		logging.Log.Infof("Configuring weep IMDS service for role %s", role)
-		client, err := creds.GetClient(region)
+		client, err := creds.GetClient()
 		if err != nil {
 			return err
 		}

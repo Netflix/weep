@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/netflix/weep/pkg/httpAuth/mtls"
+	"github.com/netflix/weep/pkg/creds"
+
 	"github.com/spf13/viper"
 )
 
@@ -15,7 +16,11 @@ type SwagResponse struct {
 
 func getClient() (*http.Client, error) {
 	if viper.GetBool("swag.use_mtls") {
-		return mtls.NewHTTPClient()
+		consoleMeClient, err := creds.GetClient()
+		if err != nil {
+			return nil, err
+		}
+		return &consoleMeClient.Client, nil
 	}
 	return http.DefaultClient, nil
 }

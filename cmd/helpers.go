@@ -197,7 +197,7 @@ func preInteractiveCheck(region string, client *creds.Client) (*creds.Client, er
 	// If a client was not provided, create one using the provided region
 	if client == nil {
 		var err error
-		client, err = creds.GetClient(region)
+		client, err = creds.GetClient()
 		if err != nil {
 			return nil, err
 		}

@@ -47,7 +47,7 @@ var listCmd = &cobra.Command{
 }
 
 func roleList() (string, error) {
-	client, err := creds.GetClient(region)
+	client, err := creds.GetClient()
 	if err != nil {
 		return "", err
 	}

@@ -30,13 +30,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/netflix/weep/pkg/httpAuth"
+	"github.com/netflix/weep/pkg/httpAuth/custom"
+
 	"github.com/netflix/weep/pkg/util"
 
 	"github.com/netflix/weep/pkg/aws"
 	"github.com/netflix/weep/pkg/config"
 	werrors "github.com/netflix/weep/pkg/errors"
 	"github.com/netflix/weep/pkg/httpAuth/challenge"
-	"github.com/netflix/weep/pkg/httpAuth/mtls"
 	"github.com/netflix/weep/pkg/logging"
 	"github.com/netflix/weep/pkg/metadata"
 
@@ -48,8 +50,6 @@ import (
 var clientVersion = fmt.Sprintf("%s", metadata.Version)
 
 var userAgent = "weep/" + clientVersion + " Go-http-client/1.1"
-var clientFactoryOverride ClientFactory
-var preflightFunctions = make([]RequestPreflight, 0)
 
 // HTTPClient is the interface we expect HTTP clients to implement.
 type HTTPClient interface {
@@ -66,65 +66,15 @@ type Client struct {
 	Region string
 }
 
-type ClientFactory func() (*http.Client, error)
-
-// RegisterClientFactory overrides Weep's standard config-based ConsoleMe client
-// creation with a ClientFactory. This function will be called during the creation
-// of all ConsoleMe clients.
-func RegisterClientFactory(factory ClientFactory) {
-	clientFactoryOverride = factory
-}
-
-type RequestPreflight func(req *http.Request) error
-
-// RegisterRequestPreflight adds a RequestPreflight function which will be called in the
-// order of registration during the creation of a ConsoleMe request.
-func RegisterRequestPreflight(preflight RequestPreflight) {
-	preflightFunctions = append(preflightFunctions, preflight)
-}
-
 // GetClient creates an authenticated ConsoleMe client
-func GetClient(region string) (*Client, error) {
+func GetClient() (*Client, error) {
 	var client *Client
 	consoleMeUrl := viper.GetString("consoleme_url")
-	authenticationMethod := viper.GetString("authentication_method")
-
-	if clientFactoryOverride != nil {
-		customClient, err := clientFactoryOverride()
-		if err != nil {
-			return client, err
-		}
-		client, err = NewClient(consoleMeUrl, "", customClient)
-		if err != nil {
-			return client, err
-		}
-	} else if authenticationMethod == "mtls" {
-		mtlsClient, err := mtls.NewHTTPClient()
-		if err != nil {
-			return client, err
-		}
-		client, err = NewClient(consoleMeUrl, "", mtlsClient)
-		if err != nil {
-			return client, err
-		}
-	} else if authenticationMethod == "challenge" {
-		err := challenge.RefreshChallenge()
-		if err != nil {
-			return client, err
-		}
-		httpClient, err := challenge.NewHTTPClient(consoleMeUrl)
-		if err != nil {
-			return client, err
-		}
-		client, err = NewClient(consoleMeUrl, "", httpClient)
-		if err != nil {
-			return client, err
-		}
-	} else {
-		return nil, fmt.Errorf("Authentication method unsupported or not provided.")
+	httpClient, err := httpAuth.GetAuthenticatedClient()
+	if err != nil {
+		return client, err
 	}
-
-	return client, nil
+	return NewClient(consoleMeUrl, "", httpClient)
 }
 
 // NewClient takes a ConsoleMe hostname and *http.Client, and returns a
@@ -147,18 +97,6 @@ func NewClient(hostname string, region string, httpc *http.Client) (*Client, err
 	return c, nil
 }
 
-func runPreflightFunctions(req *http.Request) error {
-	var err error
-	if preflightFunctions != nil {
-		for _, preflight := range preflightFunctions {
-			if err = preflight(req); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (c *Client) buildRequest(method string, resource string, body io.Reader, apiPrefix string) (*http.Request, error) {
 	urlStr := c.Host + apiPrefix + resource
 	req, err := http.NewRequest(method, urlStr, body)
@@ -167,7 +105,7 @@ func (c *Client) buildRequest(method string, resource string, body io.Reader, ap
 	}
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Add("Content-Type", "application/json")
-	err = runPreflightFunctions(req)
+	err = custom.RunPreflightFunctions(req)
 	if err != nil {
 		return nil, err
 	}
@@ -579,7 +517,7 @@ func GetCredentialsC(client HTTPClient, role string, ipRestrict bool, assumeRole
 // GetCredentials requests credentials from ConsoleMe then follows the provided chain of roles to
 // assume. Roles are assumed in the order in which they appear in the assumeRole slice.
 func GetCredentials(role string, ipRestrict bool, assumeRole []string, region string) (*aws.Credentials, error) {
-	client, err := GetClient(region)
+	client, err := GetClient()
 	if err != nil {
 		return nil, err
 	}
