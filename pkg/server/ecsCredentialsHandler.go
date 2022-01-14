@@ -56,7 +56,7 @@ func parseAssumeRoleQuery(r *http.Request) ([]string, error) {
 
 func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var client, err = creds.GetClient(region)
+		var client, err = creds.GetClient()
 		if err != nil {
 			logging.Log.Error(err)
 			util.WriteError(w, err.Error(), http.StatusBadRequest)

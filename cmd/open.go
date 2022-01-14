@@ -53,7 +53,7 @@ func runOpen(cmd *cobra.Command, args []string) error {
 		return errors.New("Resource type sns and sqs require region in the arn")
 	}
 	var resourceURL string
-	client, err := creds.GetClient(region)
+	client, err := creds.GetClient()
 	if err != nil {
 		logging.LogError(err, "Error getting client")
 		return err

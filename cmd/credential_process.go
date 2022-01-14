@@ -89,7 +89,7 @@ func generateCredentialProcessConfig(destination string) error {
 	if destination == "" {
 		return fmt.Errorf("no destination provided")
 	}
-	client, err := creds.GetClient(region)
+	client, err := creds.GetClient()
 	if err != nil {
 		return err
 	}
