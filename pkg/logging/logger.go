@@ -97,5 +97,5 @@ func RegisterLogger(l *logrus.Entry) {
 
 // LogError is a helper function that allows for errors to be logged easily
 func LogError(err error, message string) {
-	Log.WithFields(logrus.Fields{"error": err.Error()}).Warnln(message)
+	Log.WithError(err).Errorln(message)
 }

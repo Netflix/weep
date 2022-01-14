@@ -129,7 +129,7 @@ func (wc *wrappedCertificate) autoRefresh() {
 	for _, file := range []string{wc.certFile, wc.keyFile} {
 		err = watcher.Add(file)
 		if err != nil {
-			logging.Log.Error(err)
+			logging.LogError(err, "failed to add file to watcher")
 		}
 	}
 
