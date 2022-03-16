@@ -125,6 +125,7 @@ func CreateFile(filename string, directoryPerm, filePerm fs.FileMode) error {
 // The error is written as plaintext so AWS SDKs will display it inline with an error message.
 func WriteError(w http.ResponseWriter, message string, status int) {
 	logging.Log.Debugf("writing HTTP error response: %s", message)
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(message))
 	if err != nil {

@@ -33,6 +33,7 @@ func RoleHandler(w http.ResponseWriter, r *http.Request) {
 		util.WriteError(w, "error", 500)
 		return
 	}
+	w.Header().Set("Content-Type", "text/plain")
 	if _, err := w.Write([]byte(fmt.Sprintf("%s\n", defaultRole.RoleName))); err != nil {
 		logging.Log.Errorf("failed to write response: %v", err)
 	}
