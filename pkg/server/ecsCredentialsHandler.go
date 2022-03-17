@@ -94,6 +94,7 @@ func getCredentialHandler(region string) func(http.ResponseWriter, *http.Request
 			Token:           fmt.Sprintf("%s", cachedCredentials.SessionToken),
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(credentialResponse)
 		if err != nil {
 			logging.Log.Errorf("failed to write response: %v", err)

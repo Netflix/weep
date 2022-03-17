@@ -35,7 +35,7 @@ import (
 
 // InstanceMetadataMiddleware is a convenience wrapper that chains TokenMiddleware, BrowserFilterMiddleware, and AWSHeaderMiddleware
 func InstanceMetadataMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return TokenMiddleware(TaskMetadataMiddleware(next))
+	return BrowserFilterMiddleware(TokenMiddleware(AWSHeaderMiddleware(next)))
 }
 
 // TaskMetadataMiddleware is a convenience wrapper that chains BrowserFilterMiddleware and AWSHeaderMiddleware
@@ -75,7 +75,6 @@ func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("ETag", strconv.FormatInt(rand.Int63n(10000000000), 10))
 		w.Header().Set("Last-Modified", time.Now().UTC().Format("2006-01-02T15:04:05Z")) // TODO: set this to cred refresh time
 		w.Header().Set("Server", "EC2ws")
-		w.Header().Set("Content-Type", "text/plain")
 
 		ua := r.Header.Get("User-Agent")
 		metadataVersion := 1

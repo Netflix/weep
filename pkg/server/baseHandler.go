@@ -47,6 +47,7 @@ reservation-id
 security-groups
 services/`
 
+	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprint(w, baseMetadata)
 }
 
@@ -56,6 +57,7 @@ func BaseVersionHandler(w http.ResponseWriter, r *http.Request) {
 meta-data
 user-data`
 
+	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintln(w, baseVersionPath)
 }
 

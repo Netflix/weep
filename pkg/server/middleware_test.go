@@ -119,7 +119,7 @@ func TestAWSHeaderMiddleware(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 	t.Logf("test case: %s", description)
-	bfmHandler := InstanceMetadataMiddleware(nextHandler)
+	bfmHandler := AWSHeaderMiddleware(nextHandler)
 	req := httptest.NewRequest("GET", "http://localhost", nil)
 	rec := httptest.NewRecorder()
 	bfmHandler.ServeHTTP(rec, req)
@@ -134,9 +134,6 @@ func TestAWSHeaderMiddleware(t *testing.T) {
 	}
 	if server := rec.Header().Get("Server"); server != "EC2ws" {
 		t.Errorf("%s failed: got Server header %s, expected %s", description, server, "EC2ws")
-	}
-	if contentType := rec.Header().Get("Content-Type"); contentType != "text/plain" {
-		t.Errorf("%s failed: got Content-Type header %s, expected %s", description, contentType, "text/plain")
 	}
 }
 
@@ -167,9 +164,21 @@ func TestCredentialServiceMiddleware(t *testing.T) {
 			if server := rec.Header().Get("Server"); server != "EC2ws" {
 				t.Errorf("%s failed: got Server header %s, expected %s", tc.Description, server, "EC2ws")
 			}
-			if contentType := rec.Header().Get("Content-Type"); contentType != "text/plain" {
-				t.Errorf("%s failed: got Content-Type header %s, expected %s", tc.Description, contentType, "text/plain")
-			}
 		}
+	}
+}
+
+func TestTokenMiddleware(t *testing.T) {
+	description := "aws token middleware"
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	t.Logf("test case: %s", description)
+	bfmHandler := TokenMiddleware(nextHandler)
+	req := httptest.NewRequest("GET", "http://localhost", nil)
+	rec := httptest.NewRecorder()
+	bfmHandler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Errorf("%s failed: got status %d, expected %d", description, rec.Code, http.StatusOK)
 	}
 }
