@@ -130,7 +130,7 @@ something like this:
 AWS_CONTAINER_CREDENTIALS_FULL_URI=http://localhost:9091/ecs/SuperCoolRole \
         aws sts get-caller-identity
 
-If you just want to use a single role, use the --role argument to specify which one and it 
+If you just want to use a single role, use the 'role' positional argument to specify which one and it
 will be served the same way credentials are served in an EC2 instance. There’s no need
 to set an environment variable for this.
 
