@@ -137,8 +137,8 @@ function cleanup() {
 }
 
 combine_binaries "$BIN_DIR/weep-universal" \
-  dist/bin/weep_darwin_amd64/weep \
-  dist/bin/weep_darwin_arm64/weep
+  dist/bin/darwin_amd64_v1/weep \
+  dist/bin/darwin_arm64/weep
 sign_binary "$BIN_DIR/weep-universal"
 prep_package
 build_package
