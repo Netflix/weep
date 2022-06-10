@@ -19,6 +19,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -38,6 +39,7 @@ import (
 func init() {
 	CredentialProcessCmd.PersistentFlags().BoolVarP(&generate, "generate", "g", false, "generate ~/.aws/config with credential process config")
 	CredentialProcessCmd.PersistentFlags().StringVarP(&destinationConfig, "output", "o", getDefaultAwsConfigFile(), "output file for AWS config")
+	CredentialProcessCmd.PersistentFlags().BoolVarP(&prettyPrint, "pretty", "p", false, "when combined with --generate/-g, use 'account_name-role_name' format for generated profiles instead of arn")
 	rootCmd.AddCommand(CredentialProcessCmd)
 }
 
@@ -49,7 +51,7 @@ var CredentialProcessCmd = &cobra.Command{
 	RunE:  runCredentialProcess,
 }
 
-func writeConfigFile(roles []string, destination string) error {
+func writeConfigFile(roles []creds.ConsolemeRolesResponse, destination string) error {
 	var configINI *ini.File
 	var err error
 
@@ -72,9 +74,18 @@ func writeConfigFile(roles []string, destination string) error {
 		configINI = ini.Empty()
 	}
 
+	replacer := strings.NewReplacer("_", "-", " ", "-")
+
 	for _, r := range roles {
-		profileName := fmt.Sprintf("profile %s", r)
-		command := fmt.Sprintf("weep credential_process %s", r)
+		var profileName string
+		if prettyPrint {
+			accountName := strings.ToLower(replacer.Replace(r.AccountName))
+			roleName := strings.ToLower(replacer.Replace(r.RoleName))
+			profileName = fmt.Sprintf("profile %s-%s", accountName, roleName)
+		} else {
+			profileName = fmt.Sprintf("profile %s", r.Arn)
+		}
+		command := fmt.Sprintf("weep credential_process %s", r.Arn)
 		configINI.Section(profileName).Key("credential_process").SetValue(command)
 	}
 	err = configINI.SaveTo(destinationConfig)
@@ -93,7 +104,7 @@ func generateCredentialProcessConfig(destination string) error {
 	if err != nil {
 		return err
 	}
-	roles, err := client.Roles()
+	roles, err := client.RolesExtended()
 	if err != nil {
 		return err
 	}
