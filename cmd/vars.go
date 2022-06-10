@@ -40,6 +40,7 @@ var (
 	noIpRestrict               bool
 	noOpen                     bool
 	profileName                string
+	prettyPrint                bool
 	region                     string
 	roleRefreshARN             string
 	shellInfo                  string
