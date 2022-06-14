@@ -1,28 +1,21 @@
-## weep file
+## weep whoami
 
-Retrieve credentials and save them to a credentials file
+Print information about current AWS credentials
 
 ### Synopsis
 
-The file command writes role credentials to the AWS credentials file, usually 
-~/.aws/credentials. Since these credentials are static, you’ll have to re-run the command
-every hour to get new credentials.
-
-More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-file
-
+The whoami command retrieves information about your AWS credentials from AWS STS using the default
+credential provider chain. If SWAG (https://github.com/Netflix-Skunkworks/swag-api) is enabled, weep will
+attempt to enrich the output with additional data.
 
 ```
-weep file [role_name] [flags]
+weep whoami [flags]
 ```
 
 ### Options
 
 ```
-  -f, --force            overwrite existing profile without prompting
-  -h, --help             help for file
-  -o, --output string    output file for credentials (default "/Users/jdhulia/.aws/credentials")
-  -p, --profile string   profile name (default "default")
-  -R, --refresh          automatically refresh credentials in file
+  -h, --help   help for whoami
 ```
 
 ### Options inherited from parent commands

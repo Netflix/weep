@@ -1,28 +1,18 @@
-## weep file
+## weep search
 
-Retrieve credentials and save them to a credentials file
+Search for resources through ConsoleMe
 
 ### Synopsis
 
-The file command writes role credentials to the AWS credentials file, usually 
-~/.aws/credentials. Since these credentials are static, you’ll have to re-run the command
-every hour to get new credentials.
-
-More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-file
+The search command allows users to search for resources via ConsoleMe. Currently, only
+searching for accounts or roles is supported.
 
 
-```
-weep file [role_name] [flags]
-```
 
 ### Options
 
 ```
-  -f, --force            overwrite existing profile without prompting
-  -h, --help             help for file
-  -o, --output string    output file for credentials (default "/Users/jdhulia/.aws/credentials")
-  -p, --profile string   profile name (default "default")
-  -R, --refresh          automatically refresh credentials in file
+  -h, --help   help for search
 ```
 
 ### Options inherited from parent commands
@@ -41,4 +31,6 @@ weep file [role_name] [flags]
 ### SEE ALSO
 
 * [weep](weep.md)	 - weep helps you get the most out of ConsoleMe credentials
+* [weep search account](weep_search_account.md)	 - Search for an account through ConsoleMe
+* [weep search role](weep_search_role.md)	 - Search for a role in an account through ConsoleMe
 

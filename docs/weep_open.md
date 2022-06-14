@@ -1,28 +1,23 @@
-## weep file
+## weep open
 
-Retrieve credentials and save them to a credentials file
+Generate (and open) a ConsoleMe link for a given ARN
 
 ### Synopsis
 
-The file command writes role credentials to the AWS credentials file, usually 
-~/.aws/credentials. Since these credentials are static, you’ll have to re-run the command
-every hour to get new credentials.
-
-More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-file
+The open command generates the link for supported resources in ConsoleMe. By default, this command 
+also attempts to open the browser after generating the link. Use the --no-open flag to prevent opening. 
+The supported resources match those that are supported by ConsoleMe. IAM roles, s3, sqs and sns resources open in the ConsoleMe editor, while other supported resources attempt to redirect to the AWS Console using the right role.
 
 
 ```
-weep file [role_name] [flags]
+weep open <arn> [flags]
 ```
 
 ### Options
 
 ```
-  -f, --force            overwrite existing profile without prompting
-  -h, --help             help for file
-  -o, --output string    output file for credentials (default "/Users/jdhulia/.aws/credentials")
-  -p, --profile string   profile name (default "default")
-  -R, --refresh          automatically refresh credentials in file
+  -h, --help      help for open
+  -x, --no-open   don't automatically open links
 ```
 
 ### Options inherited from parent commands
