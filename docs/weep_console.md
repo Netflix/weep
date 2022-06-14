@@ -1,28 +1,23 @@
-## weep file
+## weep console
 
-Retrieve credentials and save them to a credentials file
+Log into the AWS Management console
 
 ### Synopsis
 
-The file command writes role credentials to the AWS credentials file, usually 
-~/.aws/credentials. Since these credentials are static, you’ll have to re-run the command
-every hour to get new credentials.
-
-More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-file
+The login command opens a browser window with a link that will log you into the
+AWS Management console using the specified role. You can use the --no-open flag to simply print the console
+link, rather than opening it in a browser.
 
 
 ```
-weep file [role_name] [flags]
+weep console [flags]
 ```
 
 ### Options
 
 ```
-  -f, --force            overwrite existing profile without prompting
-  -h, --help             help for file
-  -o, --output string    output file for credentials (default "/Users/jdhulia/.aws/credentials")
-  -p, --profile string   profile name (default "default")
-  -R, --refresh          automatically refresh credentials in file
+  -h, --help      help for console
+  -x, --no-open   print the link, but do not open a browser window
 ```
 
 ### Options inherited from parent commands

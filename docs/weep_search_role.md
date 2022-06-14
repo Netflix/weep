@@ -1,23 +1,22 @@
-## weep export
+## weep search role
 
-Retrieve credentials to be exported as environment variables
+Search for a role in an account through ConsoleMe
 
 ### Synopsis
 
-The export command retrieves credentials for a role and prints a shell command to export 
-the credentials to environment variables.
+The search command allows users to search for resources via ConsoleMe. Currently, only
+searching for accounts or roles is supported.
 
-More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-export
 
 
 ```
-weep export [role_name] [flags]
+weep search role [query_string] [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for export
+  -h, --help   help for role
 ```
 
 ### Options inherited from parent commands
@@ -35,5 +34,5 @@ weep export [role_name] [flags]
 
 ### SEE ALSO
 
-* [weep](weep.md)	 - weep helps you get the most out of ConsoleMe credentials
+* [weep search](weep_search.md)	 - Search for resources through ConsoleMe
 

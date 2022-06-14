@@ -1,6 +1,16 @@
 ## weep credential_process
 
-Retrieve credentials and writes them in credential_process format
+Retrieve credentials on the fly via the AWS SDK
+
+### Synopsis
+
+The credential_process command can be used by AWS SDKs to retrieve 
+credentials from Weep on the fly. The --generate flag lets you automatically
+generate an AWS configuration with profiles for all of your available roles, or 
+you can manually update your configuration (see the link below to learn how).
+
+More information: https://hawkins.gitbook.io/consoleme/weep-cli/commands/credential-process
+
 
 ```
 weep credential_process [role_name] [flags]
@@ -9,10 +19,10 @@ weep credential_process [role_name] [flags]
 ### Options
 
 ```
-  -h, --help                help for credential_process
-  -g, --generate            generate ~/.aws/config with credential process config
-  -o, --output string       output file for AWS config (default "~/.aws/config")
-  -p, --pretty              when combined with --generate/-g, use 'account_name-role_name' format for generated profiles instead of arn
+  -g, --generate        generate ~/.aws/config with credential process config
+  -h, --help            help for credential_process
+  -o, --output string   output file for AWS config (default "/Users/jdhulia/.aws/config")
+  -p, --pretty          when combined with --generate/-g, use 'account_name-role_name' format for generated profiles instead of arn
 ```
 
 ### Options inherited from parent commands

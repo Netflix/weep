@@ -28,7 +28,7 @@ var searchCmd = &cobra.Command{
 	Use:    "search [account|role]",
 	Short:  searchShortHelp,
 	Long:   searchLongHelp,
-	Hidden: true,
+	Hidden: false,
 }
 
 var accountSearchCmd = &cobra.Command{
