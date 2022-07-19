@@ -59,15 +59,15 @@ func writeConfigFile(roles []creds.ConsolemeRolesResponse, destination string) e
 	ini.PrettyFormat = false
 	ini.PrettyEqual = true
 
-	if util.FileExists(destination) {
+	if util.FileExists(destinationConfig) {
 		// There's an existing config file, so we'll load it in and update the existing contents
-		configINI, err = ini.Load(destination)
+		configINI, err = ini.Load(destinationConfig)
 		if err != nil {
 			return err
 		}
 	} else {
 		// Config file doesn't exist yet. Create it with the same perms as awscli
-		err = util.CreateFile(destination, 0700, 0600)
+		err = util.CreateFile(destinationConfig, 0700, 0600)
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func writeConfigFile(roles []creds.ConsolemeRolesResponse, destination string) e
 }
 
 func generateCredentialProcessConfig(destination string) error {
-	if destination == "" {
+	if destinationConfig == "" {
 		return fmt.Errorf("no destination provided")
 	}
 	client, err := creds.GetClient()
@@ -108,7 +108,7 @@ func generateCredentialProcessConfig(destination string) error {
 	if err != nil {
 		return err
 	}
-	err = writeConfigFile(roles, destination)
+	err = writeConfigFile(roles, destinationConfig)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func generateCredentialProcessConfig(destination string) error {
 func runCredentialProcess(cmd *cobra.Command, args []string) error {
 	if generate {
 		logging.Log.Infoln("Generate credential_process")
-		err := generateCredentialProcessConfig(destination)
+		err := generateCredentialProcessConfig(destinationConfig)
 		if err != nil {
 			logging.LogError(err, "Error generating credential_process")
 			return err
