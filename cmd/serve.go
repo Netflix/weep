@@ -53,5 +53,5 @@ func runWeepServer(cmd *cobra.Command, args []string) error {
 	address := viper.GetString("server.address")
 	port := viper.GetInt("server.port")
 	logging.Log.WithFields(logrus.Fields{"role": role}).Infoln("Running serve")
-	return server.Run(address, port, role, region, shutdown)
+	return server.Run(address, port, role, region, assumeRole, shutdown)
 }
