@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Run(host string, port int, role, region string, shutdown chan os.Signal) error {
+func Run(host string, port int, role, region string, assumeChain []string, shutdown chan os.Signal) error {
 	ipaddress := net.ParseIP(host)
 
 	if ipaddress == nil {
@@ -35,7 +35,7 @@ func Run(host string, port int, role, region string, shutdown chan os.Signal) er
 		if err != nil {
 			return err
 		}
-		err = cache.GlobalCache.SetDefault(client, role, region, make([]string, 0))
+		err = cache.GlobalCache.SetDefault(client, role, region, assumeChain)
 		if err != nil {
 			return err
 		}
