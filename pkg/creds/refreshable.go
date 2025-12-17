@@ -17,7 +17,7 @@
 package creds
 
 import (
-	"fmt"
+	stdErrors "errors"
 	"strings"
 	"time"
 
@@ -107,7 +107,7 @@ func (rp *RefreshableProvider) refresh() error {
 			// The http.Client, with the best of intentions, will hold the connection open,
 			// meaning that an auto-updated cert won't be used by the client.
 			rp.client.CloseIdleConnections()
-			return fmt.Errorf(viper.GetString("mtls_settings.old_cert_message"))
+			return stdErrors.New(viper.GetString("mtls_settings.old_cert_message"))
 		} else {
 			return err
 		}

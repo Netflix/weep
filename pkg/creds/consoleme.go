@@ -273,7 +273,7 @@ func parseWebError(rawErrorResponse []byte) error {
 	if err := json.Unmarshal(rawErrorResponse, &errorResponse); err != nil {
 		return errors.Wrap(err, "failed to unmarshal JSON")
 	}
-	return fmt.Errorf(strings.Join(errorResponse.Errors, "\n"))
+	return errors.New(strings.Join(errorResponse.Errors, "\n"))
 }
 
 func parseError(statusCode int, rawErrorResponse []byte) error {

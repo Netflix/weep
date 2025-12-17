@@ -156,6 +156,6 @@ func printCredentialProcess(credentials *aws.Credentials) error {
 		logging.LogError(err, "Error parsing credential response")
 		return err
 	}
-	fmt.Printf(string(b))
+	fmt.Print(string(b))
 	return nil
 }

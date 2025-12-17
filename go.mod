@@ -1,6 +1,6 @@
 module github.com/netflix/weep
 
-go 1.17
+go 1.24
 
 require (
 	github.com/aws/aws-sdk-go v1.40.39
