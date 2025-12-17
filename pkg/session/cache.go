@@ -14,8 +14,7 @@ import (
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
 
 type tokenCache struct {
-	sync.RWMutex
-	TokenMap
+	sync.Map
 }
 
 type tokenAttributes struct {
@@ -40,9 +39,7 @@ func randomString(n int) string {
 }
 
 func createCache() *tokenCache {
-	c := &tokenCache{
-		TokenMap: make(map[string]*tokenAttributes),
-	}
+	c := &tokenCache{}
 	go c.startWatcher()
 	return c
 }
@@ -59,12 +56,18 @@ func (c *tokenCache) startWatcher() {
 }
 
 func (c *tokenCache) clean() {
-	for token, attr := range c.TokenMap {
-		if attr.Expiration.Before(time.Now()) {
-			logging.Log.Debugf("deleting token with expiration %v", attr.Expiration)
-			c.delete(token)
+	c.Range(func(key, value interface{}) bool {
+		if attr, ok := value.(*tokenAttributes); ok {
+			if attr.Expiration.Before(time.Now()) {
+				logging.Log.Debugf("deleting token with expiration %v", attr.Expiration)
+				c.Delete(key)
+			}
+		} else {
+			logging.Log.Debugf("deleting token with invalid attributes %v", value)
+			c.Delete(key)
 		}
-	}
+		return true
+	})
 }
 
 func (c *tokenCache) generateToken(role string, ttlSeconds int) string {
@@ -74,25 +77,17 @@ func (c *tokenCache) generateToken(role string, ttlSeconds int) string {
 }
 
 func (c *tokenCache) checkToken(token string) (bool, int) {
-	attr, err := sessions.Get(token)
+	attr, err := c.Get(token)
 	if err != nil {
-		logging.Log.Warning("invalid session token")
+		logging.Log.Warningf("invalid session token: %v", err)
 		return false, 0
 	}
 	if attr.Expiration.Before(time.Now()) {
 		logging.Log.Warning("session token is expired")
 		return false, 0
 	}
-	remainingTtl := time.Now().Sub(attr.Expiration)
+	remainingTtl := attr.Expiration.Sub(time.Now())
 	return true, int(remainingTtl.Seconds())
-}
-
-func (c *tokenCache) delete(token string) {
-	c.Lock()
-	defer c.Unlock()
-	if _, ok := c.TokenMap[token]; ok {
-		delete(c.TokenMap, token)
-	}
 }
 
 func (c *tokenCache) Set(token, role string, ttl int) {
@@ -102,17 +97,19 @@ func (c *tokenCache) Set(token, role string, ttl int) {
 		Expiration: expiration,
 		Role:       role,
 	}
-	c.Lock()
-	defer c.Unlock()
-	c.TokenMap[token] = &attr
+	c.Store(token, &attr)
 }
 
 func (c *tokenCache) Get(token string) (*tokenAttributes, error) {
-	c.RLock()
-	defer c.RUnlock()
-	attr, ok := c.TokenMap[token]
+	var value interface{}
+	var ok bool
+	var attr *tokenAttributes
+	value, ok = c.Load(token)
 	if !ok {
 		return nil, errors.NoTokenFoundInCache
 	}
-	return attr, nil
+	if attr, ok = value.(*tokenAttributes); ok {
+		return attr, nil
+	}
+	return nil, errors.InvalidTokenFoundInCache
 }

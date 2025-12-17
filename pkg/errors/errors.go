@@ -23,6 +23,7 @@ func (e Error) Error() string { return string(e) }
 const (
 	NoCredentialsFoundInCache      = Error("no credentials found in cache")
 	NoTokenFoundInCache            = Error("no token found in cache")
+	InvalidTokenFoundInCache       = Error("token's cached attributes are invalid")
 	NoDefaultRoleSet               = Error("no default role set")
 	BrowserOpenError               = Error("could not launch browser, open link manually")
 	CredentialRetrievalError       = Error("failed to retrieve credentials from broker")
