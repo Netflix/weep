@@ -73,6 +73,7 @@ func getDefaultLogFile() string {
 //   - /etc/weep/weep.yaml
 //   - ~/.weep/weep.yaml
 //   - ./weep.yaml
+//
 // If a config file is specified via CLI arg, it will be read exclusively and not merged with other
 // configuration.
 func InitConfig(filename string) error {
