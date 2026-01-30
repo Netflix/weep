@@ -17,19 +17,18 @@
 package server
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/netflix/weep/pkg/logging"
-
 	"github.com/netflix/weep/pkg/session"
 	"github.com/netflix/weep/pkg/util"
-
 	"github.com/spf13/viper"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -55,7 +54,7 @@ func TokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				util.WriteError(w, "invalid session token", http.StatusForbidden)
 				return
 			}
-		} else if token == "" && viper.GetBool("server.enforce_imdsv2") {
+		} else if viper.GetBool("server.enforce_imdsv2") {
 			logging.Log.Info("request forbidden, imdsv2 required")
 			util.WriteError(w, "IMDSv2 required, please upgrade your SDK or CLI", http.StatusForbidden)
 			return
@@ -72,8 +71,13 @@ func TokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func AWSHeaderMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		w.Header().Set("ETag", strconv.FormatInt(rand.Int63n(10000000000), 10))
-		w.Header().Set("Last-Modified", time.Now().UTC().Format("2006-01-02T15:04:05Z")) // TODO: set this to cred refresh time
+		// use cryptographically safe ETag
+		var buf [8]byte
+		if _, err := rand.Read(buf[:]); err == nil {
+			w.Header().Set("ETag", strconv.FormatUint(binary.BigEndian.Uint64(buf[:]), 10))
+		}
+
+		w.Header().Set("Last-Modified", time.Now().UTC().Format(time.RFC3339)) // TODO: set this to cred refresh time
 		w.Header().Set("Server", "EC2ws")
 
 		ua := r.Header.Get("User-Agent")
@@ -111,8 +115,6 @@ var deniedHeaders = map[string]bool{
 	"x-forwarded-for": true,
 }
 
-// BrowserFilterMiddleware is a middleware designed mitigate risks related to DNS rebinding,
-// cross site request forgery, and any other traffic from a well behaved modern web browser
 func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check User-Agent
@@ -135,13 +137,22 @@ func BrowserFilterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		// Check host header
-		// This should only be 127.0.0.1 or 169.254.169.254
-		if host := r.Header.Get("Host"); host != "" && !allowedHosts[strings.ToLower(host)] {
-			logging.Log.Warn("bad host detected")
-			util.WriteError(w, "forbidden", http.StatusForbidden)
-			return
+		// Robust Host validation (port + IPv6 safe)
+		host := r.Host
+		if host != "" {
+			if h, _, err := net.SplitHostPort(host); err == nil {
+				host = h
+			}
+			host = strings.Trim(host, "[]")
+
+			ip := net.ParseIP(host)
+			if ip == nil || !allowedHosts[ip.String()] {
+				logging.Log.Warn("bad host detected")
+				util.WriteError(w, "forbidden", http.StatusForbidden)
+				return
+			}
 		}
+
 		next.ServeHTTP(w, r)
 	}
 }
