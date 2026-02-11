@@ -1,5 +1,33 @@
+# 🚨 Notice: ConsoleMe & Weep Are Being Archived 🚨 #
+This repository will be archived and set to read-only on March 1, 2026. After this date, no further changes, issues, or pull requests will be accepted. The Discord server will also be deleted.
+
+## 🙏 Thank You ##
+Since open-sourcing ConsoleMe and Weep in March 2021, the projects have grown into a widely adopted AWS IAM management solution (now with 3,200+ GitHub stars). We’re grateful to everyone—inside and outside Netflix—who has contributed code, feedback, documentation, and ideas over the years. Your support has been critical to the success of this ecosystem.
+
+## ❓ Why Are We Archiving? ##
+Over time, the internal versions of ConsoleMe and Weep at Netflix have evolved significantly, especially following a major refactor last year. As a result, the open-source versions now diverge substantially from our internal implementations and no longer reflect how we use or operate these tools.
+
+At the same time, due to ongoing bandwidth and resourcing constraints, we are no longer able to:
+- Keep the OSS codebase aligned with our internal versions
+- Responsively triage issues, review pull requests, and support the community
+
+Maintaining two divergent versions of ConsoleMe and Weep is no longer sustainable for the team.
+
+## ℹ️ What Does This Mean for You? ##
+- The codebase will remain publicly available in read-only mode.
+- No new issues, pull requests, or discussions will be accepted after archiving.
+- Existing issues and pull requests will be closed.
+- The Discord community will be deleted.
+
+If you’d like to continue development, we encourage you to fork the repository and maintain your own version.
+
+Thank you again to everyone who has used, contributed to, or advocated for ConsoleMe and Weep over the years.
+
+— The Cloud Security Team at Netflix
+
+-------------------------------------------------------------------------------------
+
 [![](https://img.shields.io/badge/docs-gitbook-blue`)](https://hawkins.gitbook.io/consoleme/weep-cli/)
-[![Discord Chat](https://img.shields.io/discord/730908778299523072?label=Chat&logo=discord)](https://discord.gg/tZ8S7Yg)
 [![pre-commit](https://github.com/Netflix/weep/actions/workflows/precommit.yml/badge.svg)](https://github.com/Netflix/weep/actions/workflows/precommit.yml)
 [![goreleaser](https://github.com/Netflix/weep/actions/workflows/release.yml/badge.svg)](https://github.com/Netflix/weep/actions/workflows/release.yml)
 
